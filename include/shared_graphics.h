@@ -1,0 +1,7 @@
+
+#define WIDTH 640
+#define HEIGHT 480
+
+#define MINIMAP_SCALE 150
+
+#define WALLHEIGHT_SCALAR 240.0f
