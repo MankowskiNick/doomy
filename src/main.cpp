@@ -35,18 +35,23 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         case GLFW_KEY_D:
             camera.MoveRight();
             break;
+        case GLFW_KEY_Q: // TEMP DEBUG
+            camera.angle += 0.1;
+            break;
+        case GLFW_KEY_E: // TEMP DEBUG
+            camera.angle -= 0.1;
         default:
             break;
     }
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-    camera.angle = (float)xpos / (1 / SENSITIVITY);
-    while (camera.angle > 2 * M_PI) camera.angle -= 2 * M_PI;
-    while (camera.angle < 0) camera.angle += 2 * M_PI;
+    // camera.angle = -1 * (float)xpos / (1 / SENSITIVITY);
+    // while (camera.angle > 2 * M_PI) camera.angle -= 2 * M_PI;
+    // while (camera.angle < 0) camera.angle += 2 * M_PI;
 
-    last_mousex = xpos;
-    last_mousey = ypos;
+    // last_mousex = xpos;
+    // last_mousey = ypos;
 }
 
 int main(int argc, char** argv) {
