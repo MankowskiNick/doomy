@@ -4,7 +4,7 @@ project(doomy VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-add_executable(doomy src/main.cpp src/glad.cpp src/draw.cpp src/std_graphics.cpp)
+add_executable(doomy src/main.cpp src/glad.cpp src/draw.cpp src/std_graphics.cpp src/geom.cpp)
 
 include_directories(include)
 

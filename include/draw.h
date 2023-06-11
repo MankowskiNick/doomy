@@ -7,9 +7,6 @@
 #include "map.h"
 #include "camera.h"
 
-#define WIDTH 640
-#define HEIGHT 480
-
 void InitView(GLLib& gl);
 
 void Render(Map map, Camera& camera);

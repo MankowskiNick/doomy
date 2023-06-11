@@ -3,14 +3,13 @@
 #include <GLFW/glfw3.h>
 #include <random>
 
+#include "shared_graphics.h"
+
 #include "gllib.h"
 #include "texture.h"
 #include "map.h"
 #include "camera.h"
 #include "draw.h"
-
-#define WIDTH 640
-#define HEIGHT 480
 
 #define SENSITIVITY 0.01f
 

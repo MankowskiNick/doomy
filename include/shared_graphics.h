@@ -1,6 +1,9 @@
 
-#define WIDTH 640
-#define HEIGHT 480
+#define WIDTH 1000
+#define HEIGHT 750
+
+//TODO: Implement render distance into rendering logic, it is sort of half baked currently.
+#define RENDER_DISTANCE 100.0f
 
 #define MINIMAP_SCALE 150
 
