@@ -9,6 +9,6 @@
 
 void InitView(GLLib& gl);
 
-void Render(Map map, Camera& camera);
+void Render(Map map, Camera& camera, int frameCount);
 
 void Draw(GLLib& gl);

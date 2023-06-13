@@ -66,167 +66,74 @@ void DrawMinimap(Map& map, Camera& camera) {
     DrawPlayer(camera);
 }
 
-// Calculate what vertex from the bottom the wall will be at
-int CalcRowOffset(const Vertex& vert, Camera& camera, int wallheight) {
-    float x = vert.x;
-    float y = vert.y;
-    int screenrow = (int)(((HEIGHT - wallheight) / 2) + (camera.z / sqrt(pow(x, 2) + pow(y, 2)))); // may not use y, may use sqrt(pow(x, 2) + pow(y, 2))
-    return screenrow;
-}
+struct Point {
+    float x, y, z;
+};
 
-// Calculate the wall height for a given wall
-int CalcWallHeight(const Wall& wall, const Vertex& vert, Camera& camera) {
-    float x = abs(vert.x);
-    float y = vert.y;
-    float dist = sqrt(pow(x, 2) + pow(y, 2));
-    if (x > 0)
-        return (int)(WALLHEIGHT_SCALAR * ((wall.h_ceiling - wall.h_floor) / dist));
-    else
-        return 0;
-}
+// Define the cube mesh by specifying the order of connecting points
+int cubeIndices[36] = {
+    0, 2, 1,  // Front face
+    1, 2, 3,
+    1, 3, 5,  // Right face
+    5, 3, 7,
+    5, 7, 4,  // Back face
+    4, 7, 6,
+    4, 6, 0,  // Left face
+    0, 6, 2,
+    2, 6, 3,  // Top face
+    3, 6, 7,
+    0, 1, 4,  // Bottom face
+    4, 1, 5
+};
 
-// Calculate what column the vertex will be at
-int CalcColumnOffset(const Vertex& vert, Camera& camera) {
-    float x = vert.x;
-    float y = vert.y;
+Point cube[8] = {
+    {1.5f, -0.5f, -0.5f},   // Point 1
+    {2.5f, -0.5f, -0.5f},   // Point 2
+    {1.5f, 0.5f, -0.5f},    // Point 3
+    {2.5f, 0.5f, -0.5f},    // Point 4
+    {1.5f, -0.5f, 0.5f},    // Point 5
+    {2.5f, -0.5f, 0.5f},    // Point 6
+    {1.5f, 0.5f, 0.5f},     // Point 7
+    {2.5f, 0.5f, 0.5f}      // Point 8
+};
 
-    float angle_to_vert = atan2(y, x);
-    float angle_in_degs = angle_to_vert * 180.0f / (M_PI * 2); // TEMP DEBUG
+void rotatePointXZ(Point& point, float r) {
+    //Point rotatedPoint;
 
-    float perc = angle_to_vert / (camera.fov / 2.0f);
-
-    int col = (perc * (WIDTH / 2)) + (WIDTH / 2);
-
-    return col;
-}
-
-// Check which side the the column should appear on.  We need to check this because
-// of the wall rendering in the wrong direction.
-int AdjustColumn(Wall wall) {
-    Line detector_line_up = {
-        .v1 = {
-            .x = 0,
-            .y = 0,
-        },
-        .v2 = {
-            .x = 0,
-            .y = RENDER_DISTANCE,
-        }
-    };    
-    Line detector_line_down = {
-        .v1 = {
-            .x = 0,
-            .y = 0,
-        },
-        .v2 = {
-            .x = 0,
-            .y = -1 * RENDER_DISTANCE,
-        }
-    };
-
-    return Intersect(wall.line, detector_line_up) ? WIDTH - 1 : 0;
-}
-
-bool IsInFront(Wall& wall, Camera& camera) {
-    
-    // Check if either point is in the fov and in front.  If so, display it.
-    float fov_slope = tan(camera.fov / 2);
-    float v1_slope = wall.line.v1.y / wall.line.v1.x;
-    float v2_slope = wall.line.v2.y / wall.line.v2.x;
-
-    bool v1_in = abs(v1_slope) <= abs(fov_slope) && wall.line.v1.x > 0;
-    bool v2_in = abs(v2_slope) <= abs(fov_slope) && wall.line.v2.x > 0;
-
-    // We still need to consider the case where a wall is very close to the camera and the vertices are out of the fov.  In this case, this wall would be "invisible"
-    // according to the fov check method, so let's check to see if the line produced intersects with the fov lines.
-
-    // Create fov lines    
-    Line fov_line_top = {
-        .v1 = {
-            .x = 0.0f,
-            .y = 0.0f,
-        },
-        .v2 = {
-            .x = RENDER_DISTANCE,
-            .y = fov_slope * RENDER_DISTANCE
-        }
-    };
-    Line fov_line_bot = {
-        .v1 = {
-            .x = 0.0f,
-            .y = 0.0f,
-        },
-        .v2 = {
-            .x = RENDER_DISTANCE,
-            .y = -1.0f * fov_slope * RENDER_DISTANCE
-        }
-    };
-
-    bool intersects_fov_lines = Intersect(fov_line_top, wall.line) || Intersect(fov_line_bot, wall.line);
-
-    return (v1_in || v2_in) || intersects_fov_lines;
-}
-
-// Draw an individual wall
-void DrawWall(Wall& wall, Map& map, Camera& camera) {
-
-    if (IsInFront(wall, camera)) {
-
-        // Calculate info for each vertex in the wall
-        int screencol_1 = CalcColumnOffset(wall.line.v1, camera);
-        int screencol_2 = CalcColumnOffset(wall.line.v2, camera);
-
-        if (wall.line.v1.x < 0)
-            screencol_1 = AdjustColumn(wall);
-        if (wall.line.v2.x < 0)
-            screencol_2 = AdjustColumn(wall);
-
-        int wallheight_1 = CalcWallHeight(wall, wall.line.v1, camera);
-        int wallheight_2 = CalcWallHeight(wall, wall.line.v2, camera);
-
-        int screenrow_1 = 100;//CalcRowOffset(wall.line.v1, camera, wallheight_1);
-        int screenrow_2 = 100;//CalcRowOffset(wall.line.v2, camera, wallheight_2);
-
-        // Calculate the step size for wallheight
-        float wallheight_stepsize = (float)(wallheight_2 - wallheight_1) / (float)(screencol_2 - screencol_1);
-        float screenrow_stepsize = (float)(screenrow_2 - screenrow_1) / (float)(screencol_2 - screencol_1);
-
-        // Don't allow drawing past the edge of the screen.
-        if (screencol_1 < 0)
-            screencol_1 = 0;
-        if (screencol_1 >= WIDTH)
-            screencol_1 = WIDTH - 1;
-        if (screencol_2 < 0)
-            screencol_2 = 0;
-        if (screencol_2 >= WIDTH)
-            screencol_2 = WIDTH - 1;
-
-        for (int col = fmin(screencol_1, screencol_2); col < fmax(screencol_1, screencol_2); col++) {
-            int cur_wallheight = (int)(wallheight_1 + (wallheight_stepsize * (col)));
-            int cur_screenrow = (int)(screenrow_1 + (screenrow_stepsize * (col)));
-
-            DrawLineVert(col, cur_screenrow, cur_screenrow + cur_wallheight, wall.color);
-        }
-
-        std::cout << "wall.color=[" << wall.color[0] << "," << wall.color[1] << "," << wall.color[2] << "], screencol_1=" << screencol_1 << ", screencol_2=" << screencol_2 << "\n";
-    }
-}
-
-// Draw all walls
-void DrawWalls(Map& map, Camera& camera) {
-    for (int i = 0; i < map.walls.size(); i++) {
-        DrawWall(map.walls[i], map, camera);
-    }
+    point.x = point.x * cos(r) + point.z * sin(r);
+    point.y = point.y;
+    point.z = -point.x * sin(r) + point.z * cos(r);
 }
 
 // Render code
-void Render(Map map, Camera& camera) {
+void Render(Map map, Camera& camera, int frameCount) {
 
+    float SCALAR = 50.0f;
     // Display a gray background
     FillScreen(100, 100, 100);
+    float last_screenx, last_screeny;
+
+    float rads = 0.001;
+
+    for (int j = 0; j < 36; j++) {
+
+        int i = cubeIndices[j];
+        float screenx, screeny;
+
+        //rotatePointXZ(cube[i], rads);
+        
+        screenx = SCALAR * cube[i].x / cube[i].y;
+        screeny = SCALAR * cube[i].z / cube[i].y;
+
+        DrawLine(screenx + (0.5 * WIDTH), screeny + (0.5 * HEIGHT), last_screenx + (0.5 * WIDTH), last_screeny + (0.5 * HEIGHT), 255, 0, 0);
+
+
+        //DrawPixel(screenx + (0.5 * WIDTH), screeny + (0.5 * HEIGHT), 255, 0, 0);
+        last_screenx = screenx;
+        last_screeny = screeny;
+    }
 
     // Draw walls
-    TranslateMap(map, camera);
-    DrawWalls(map, camera);
-    DrawMinimap(map, camera);
+    //TranslateMap(map, camera);
+    //DrawMinimap(map, camera);
 }

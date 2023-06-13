@@ -71,12 +71,14 @@ int main(int argc, char** argv) {
     map.AddWall(0, 2, 0.0f, 1.0f, 255, 255, 255);
     map.AddWall(1, 3, 0.0f, 1.0f, 0, 255, 0);
     map.AddWall(2, 3, 0.0f, 1.0f, 0, 0, 255);
+
+    int frameCount = 0;
     
     while (!glfwWindowShouldClose(gl.GetWindow())) {
-
+        frameCount++;
         // Perform work on pixelData
-        Render(map, camera);
-
+        Render(map, camera, frameCount);
+        
         // Draw pixels to the screen
         Draw(gl); 
 
