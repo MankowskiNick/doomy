@@ -62,19 +62,22 @@ void DrawPlayer(Camera& camera) {
             DrawPixel(x, y, 255, 0, 0);
         }
     }
-    for (int i = (WIDTH / 2 ) + 5; i < (WIDTH / 2) + 10; i++) {
-        DrawPixel(i, HEIGHT / 2, 255, 0, 0);
-    }
-
-    float slope = tan(camera.fov / 2);
-    for (int x = WIDTH / 2; x < WIDTH; x++) {
-        DrawPixel(x, (HEIGHT / 2) + ((x - WIDTH / 2) * slope), 255, 255, 255);
-        DrawPixel(x, (HEIGHT / 2) - ((x - WIDTH / 2) * slope), 255, 255, 255);
+    for (int i = (HEIGHT / 2 ) + 5; i < (HEIGHT / 2) + 10; i++) {
+        DrawPixel(WIDTH / 2, i, 255, 0, 0);
     }
 }
 
 // Draw a single vertical line
 void DrawLineVert(int col, int bot_row, int top_row, int color[3]) {
+
+    if (bot_row < 0)
+        bot_row = 0;
+    if (bot_row >= WIDTH)
+        bot_row = WIDTH - 1;
+    if (top_row < 0)
+        top_row = 0;
+    if (top_row >= WIDTH)
+        top_row = WIDTH - 1;
     for (int i = bot_row; i <= top_row; i++) {
         DrawPixel(col, i, color[0], color[1], color[2]);
     }
@@ -97,6 +100,22 @@ void FillScreen(int r, int g, int b) {
     for (int i = 0; i < WIDTH; i++) {
         for (int j = 0; j < HEIGHT; j++) {
             DrawPixel(i, j, r, g, b);
+        }
+    }
+}
+
+
+void DrawCircle(int x, int y, int radius, int r, int g, int b) {for (int i = x - radius; i <= x + radius; i++) {
+    for (int i = x - radius; i <= x + radius; i++) {
+        for (int j = y - radius; j <= y + radius; j++) {
+                int dx = i - x;
+                int dy = j - y;
+                int distanceSquared = dx * dx + dy * dy;
+
+                if (distanceSquared <= radius * radius) { // Check if the point is within the circle
+                    DrawPixel(i, j, r, g, b);
+                }
+            }
         }
     }
 }

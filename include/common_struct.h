@@ -3,7 +3,7 @@
 
 struct Vertex {
     int id;
-    float x, y;
+    float x, y, z;
 };
 
 struct Line {
@@ -14,9 +14,8 @@ struct Line {
 // TODO: maybe implement a wall id?
 struct Wall {
     Line line;
-    float h_floor, h_ceiling;
+    float height;
     int color[3];
 };
-
 
 #endif

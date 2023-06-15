@@ -24,4 +24,6 @@ void DrawLineVert(int col, int bot_row, int top_row, int color[3]);
 
 void DrawLine(int x1, int y1, int x2, int y2, int r, int g, int b);
 
+void DrawCircle(int x, int y, int radius, int r, int g, int b);
+
 void FillScreen(int r, int g, int b);

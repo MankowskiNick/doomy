@@ -34,23 +34,21 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         case GLFW_KEY_D:
             camera.MoveRight();
             break;
-        case GLFW_KEY_Q: // TEMP DEBUG
-            camera.angle += 0.1;
+        case GLFW_KEY_ESCAPE:
+            exit(0);
             break;
-        case GLFW_KEY_E: // TEMP DEBUG
-            camera.angle -= 0.1;
         default:
             break;
     }
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-    // camera.angle = -1 * (float)xpos / (1 / SENSITIVITY);
-    // while (camera.angle > 2 * M_PI) camera.angle -= 2 * M_PI;
-    // while (camera.angle < 0) camera.angle += 2 * M_PI;
+    camera.angle = -1 * (float)xpos / (1 / SENSITIVITY);
+    while (camera.angle > 2 * M_PI) camera.angle -= 2 * M_PI;
+    while (camera.angle < 0) camera.angle += 2 * M_PI;
 
-    // last_mousex = xpos;
-    // last_mousey = ypos;
+    last_mousex = xpos;
+    last_mousey = ypos;
 }
 
 int main(int argc, char** argv) {
@@ -61,16 +59,16 @@ int main(int argc, char** argv) {
     InitView(gl);
 
     // Initialize camera & map
-    camera = Camera(0.0f, 0, 0, 0, M_PI / 3);
+    camera = Camera(0.0f, 0.0f, 0.5f, 0.0f, M_PI / 3);
     Map map;
-    map.AddVertex(0, -1.0f, -1.0f);
-    map.AddVertex(1, -1.0f, 1.0f);
-    map.AddVertex(2, 1.0f, -1.0f);
-    map.AddVertex(3, 1.0f, 1.0f);
-    map.AddWall(0, 1, 0.0f, 1.0f, 255, 0, 0);
-    map.AddWall(0, 2, 0.0f, 1.0f, 255, 255, 255);
-    map.AddWall(1, 3, 0.0f, 1.0f, 0, 255, 0);
-    map.AddWall(2, 3, 0.0f, 1.0f, 0, 0, 255);
+    map.AddVertex(0, -1.0f, -1.0f, 0.0f);
+    map.AddVertex(1, -1.0f, 1.0f, 0.0f);
+    map.AddVertex(2, 1.0f, -1.0f, 0.0f);
+    map.AddVertex(3, 1.0f, 1.0f, 0.0f);
+    map.AddWall(0, 1, 1.0f, 255, 0, 0);
+    map.AddWall(0, 2, 1.0f, 255, 255, 255);
+    map.AddWall(1, 3, 1.0f, 0, 255, 0);
+    map.AddWall(2, 3, 1.0f, 0, 0, 255);
     
     while (!glfwWindowShouldClose(gl.GetWindow())) {
 
