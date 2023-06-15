@@ -30,9 +30,10 @@ float DistFromOrigin(const Vertex& v) {
 void Translate(Vertex& source, const Vertex& translation, float scalar) {
     source.x += translation.x * scalar;
     source.y += translation.y * scalar;
+    source.z += translation.z * scalar;
 }
 
-// Rotate a vertex around the origin by rads radians
+// Rotate a vertex around the origin by rads radians on the xy plane
 void Rotate(Vertex& source, float rads) {
     float x = (float)source.x;
     float y = (float)source.y;

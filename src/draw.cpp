@@ -21,32 +21,23 @@
 // Perform a translation on the walls to make the illusion that the camera is moving
 void ShiftWalls(Map& map, Camera& camera) {
     for (int i = 0; i < map.walls.size(); i++) {
-        map.walls[i].line.v1.x -= camera.x;
-        map.walls[i].line.v1.y -= camera.y;
-        map.walls[i].line.v1.z -= camera.z;
+        Vertex camera_pos = {
+            .x = camera.x,
+            .y = camera.y,
+            .z = camera.z
+        };
 
-        map.walls[i].line.v2.x -= camera.x;
-        map.walls[i].line.v2.y -= camera.y;
-        map.walls[i].line.v2.z -= camera.z;
+        Translate(map.walls[i].line.v1, camera_pos, -1.0f);
+        Translate(map.walls[i].line.v2, camera_pos, -1.0f);
+        
     }
 }
 
 // Rotate the vertices on the map around the camera to make the illusion the camera is turning
 void RotateWalls(Map& map, Camera& camera) {
     for (int i = 0; i < map.walls.size(); i++) {
-        float x1 = map.walls[i].line.v1.x;
-        float y1 = map.walls[i].line.v1.y;
-        float new_x1 = x1 * cos(-1 * camera.angle) - y1 * sin(-1 * camera.angle);
-        float new_y1 = y1 * cos(-1 * camera.angle) + x1 * sin(-1 * camera.angle);
-        map.walls[i].line.v1.x = new_x1;
-        map.walls[i].line.v1.y = new_y1;
-
-        float x2 = map.walls[i].line.v2.x;
-        float y2 = map.walls[i].line.v2.y;
-        float new_x2 = x2 * cos(-1 * camera.angle) - y2 * sin(-1 * camera.angle);
-        float new_y2 = y2 * cos(-1 * camera.angle) + x2 * sin(-1 * camera.angle);
-        map.walls[i].line.v2.x = new_x2;
-        map.walls[i].line.v2.y = new_y2;
+        Rotate(map.walls[i].line.v1, camera.angle);
+        Rotate(map.walls[i].line.v2, camera.angle);
     }
 }
 
@@ -97,7 +88,7 @@ int MapToScreenHeight(const Vertex& vert, Camera& camera, float wall_height) {
     return MapToScreenY(second_vert, camera) - MapToScreenY(vert, camera);
 }
 
-void ClipWall(Vertex& neg_y_vert, const Vertex& other) { // TODO: aybe refactor parameters?
+void ClipWall(Vertex& neg_y_vert, const Vertex& other) { // TODO: maybe refactor parameters?
     float dx = other.x - neg_y_vert.x;
     float dy = other.y - neg_y_vert.y;
     float dz = other.z - neg_y_vert.z;
@@ -108,10 +99,9 @@ void ClipWall(Vertex& neg_y_vert, const Vertex& other) { // TODO: aybe refactor 
     float scalar = -1.0f * neg_y_vert.y / dy;
     float new_x = neg_y_vert.x + scalar * dx;
     float new_z = neg_y_vert.z + scalar * dz;
-    //float new_y = neg_y_vert.y + scalar * dy / dx;
 
     neg_y_vert.x = new_x;
-    neg_y_vert.y = 0.01f;//new_y;
+    neg_y_vert.y = 0.01f;
     neg_y_vert.z = new_z;
 
 } 
@@ -127,7 +117,7 @@ void DrawWall(Wall& wall, Map& map, Camera& camera) {
         if (wall.line.v2.y < 0)
             ClipWall(wall.line.v2, wall.line.v1);
 
-        // // Calculate info for each vertex in the wall
+        // Calculate info for each vertex in the wall
         int screencol_1 = MapToScreenX(wall.line.v1, camera);
         int screencol_2 = MapToScreenX(wall.line.v2, camera);
 
