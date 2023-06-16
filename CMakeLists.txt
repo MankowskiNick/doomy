@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(doomy VERSION 0.1.0)
+set(CMAKE_CXX_STANDARD 11)
+
 
 include(CTest)
 enable_testing()
 
-add_executable(doomy src/main.cpp src/glad.cpp src/draw.cpp src/std_graphics.cpp src/geom.cpp)
+add_executable(doomy src/main.cpp src/glad.cpp src/draw.cpp src/std_graphics.cpp src/geom.cpp src/input.cpp)
 
 include_directories(include)
 

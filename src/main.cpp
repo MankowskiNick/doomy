@@ -10,6 +10,7 @@
 #include "map.h"
 #include "camera.h"
 #include "draw.h"
+#include "input.h"
 
 #define SENSITIVITY 0.01f
 
@@ -20,25 +21,15 @@ void error_callback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
 
+int* cur_key = NULL;
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    switch(key) {
-        case GLFW_KEY_W:
-            camera.MoveForward();
-            break;
-        case GLFW_KEY_S:
-            camera.MoveBackward();
-            break;
-        case GLFW_KEY_A:
-            camera.MoveLeft();
-            break;
-        case GLFW_KEY_D:
-            camera.MoveRight();
-            break;
-        case GLFW_KEY_ESCAPE:
-            exit(0);
-            break;
-        default:
-            break;
+    if (action == GLFW_RELEASE) {
+        delete cur_key;
+        cur_key = NULL;
+    } else {
+        cur_key = new int;
+        *cur_key = key;
     }
 }
 
@@ -69,8 +60,14 @@ int main(int argc, char** argv) {
     map.AddWall(0, 2, 1.0f, 255, 255, 255);
     map.AddWall(1, 3, 1.0f, 0, 255, 0);
     map.AddWall(2, 3, 1.0f, 0, 0, 255);
+
+    ConfigureKeyActions(camera);
     
     while (!glfwWindowShouldClose(gl.GetWindow())) {
+
+        // Perform work on keyboard input
+        if (cur_key != NULL)
+            PerformKeyAction(*cur_key);
 
         // Perform work on pixelData
         Render(map, camera);

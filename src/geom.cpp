@@ -22,7 +22,7 @@ float Dist(const Vertex& v1, const Vertex& v2) {
 }
 
 float DistFromOrigin(const Vertex& v) {
-    Vertex origin = { 0.0f, 0.0f, 0.0f };
+    Vertex origin = { .x = 0.0f, .y = 0.0f, .z = 0.0f };
     return Dist(origin, v);
 }
 

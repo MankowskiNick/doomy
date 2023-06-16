@@ -17,7 +17,7 @@ class Camera {
             z = new_z;
             angle = new_angle;
             fov = new_fov;
-            SPEED = 0.04f;
+            SPEED = 0.01f;
         }
 
         ~Camera() {}
