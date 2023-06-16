@@ -31,7 +31,7 @@ void ConfigureInput(Camera& ref_camera) {
 }
 
 void PerformKeyAction() {
-    if (cur_key != NULL)
+    if (cur_key != NULL && action_map.count(*cur_key) != 0)
         action_map[*cur_key]();
 }
 
