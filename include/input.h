@@ -1,7 +1,13 @@
+#include <GLFW/glfw3.h>
+
 #include "camera.h"
 
-// void PerformKeyAction(int* key, Camera& camera);
+#define SENSITIVITY 0.01f
 
-void ConfigureKeyActions(Camera& camera);
+void ConfigureInput(Camera& camera);
 
-void PerformKeyAction(int key);
+void PerformKeyAction();
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
