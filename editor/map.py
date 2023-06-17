@@ -28,11 +28,12 @@ class Map:
         vert = Vertex(id, x, y, z)
         self.Vertices.append(vert)
 
-    def AddWall(self, id1, id2, wall_height, r, g, b):
-        wall = Wall(None, wall_height, [r, g, b])
+    def AddWall(self, v1, v2, wall_height, r, g, b):
+        line = Line(v1, v2)
+        wall = Wall(line, wall_height, [r, g, b])
         for vertex in self.Vertices:
-            if vertex.id == id1:
+            if vertex.id == v1.id:
                 wall.line.v1 = vertex
-            if vertex.id == id2:
+            if vertex.id == v2.id:
                 wall.line.v2 = vertex
         self.Walls.append(wall)

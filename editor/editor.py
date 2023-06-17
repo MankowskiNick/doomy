@@ -1,6 +1,10 @@
 import tkinter as tk
 import map
+import math
 from tkinter import messagebox
+
+def rgb_to_hex(rgb):
+    return '#%02x%02x%02x' % tuple(rgb)
 
 class MapEditorGUI:
     def __init__(self):
@@ -17,6 +21,10 @@ class MapEditorGUI:
 
         self.canvas.bind("<Button-1>", self.on_canvas_click)
 
+        self.is_vertex_mode = True
+        self.mode_button = tk.Button(self.root, text = "Mode: " + "Add Vertices" if self.is_vertex_mode else "Add Walls", command=self.swap_vertex_mode)
+        self.mode_button.pack()
+
         self.create_menu()
         self.root.mainloop()
 
@@ -30,7 +38,7 @@ class MapEditorGUI:
 
         edit_menu = tk.Menu(menubar, tearoff=0)
         edit_menu.add_command(label="Add Vertex", command=self.add_vertex)
-        edit_menu.add_command(label="Add Wall", command=self.add_wall)
+        #edit_menu.add_command(label="Add Wall", command=self.add_wall)
         edit_menu.add_command(label="Delete Vertex", command=self.delete_vertex)
         edit_menu.add_command(label="Delete Wall", command=self.delete_wall)
         menubar.add_cascade(label="Edit", menu=edit_menu)
@@ -39,10 +47,22 @@ class MapEditorGUI:
 
     def on_canvas_click(self, event):
         x, y = event.x, event.y
-        if self.selected_vertex is None:
+        if (self.is_vertex_mode):
+            if(self.select_vertex(event)):
+                self.redraw_canvas()
+                return
             self.create_vertex(x, y)
+            self.redraw_canvas()
         else:
-            self.create_wall(x, y)
+            if self.selected_vertex is None:
+                self.select_vertex(event)
+                self.redraw_canvas()
+                #messagebox.showinfo("Error", "Please select a vertex first.")
+                return
+            
+            cur_vertex = self.get_vertex(x, y)
+            if (cur_vertex != None):
+                self.create_wall(cur_vertex, self.selected_vertex)
 
     def create_vertex(self, x, y):
         vertex_id = len(self.map.Vertices) + 1
@@ -51,32 +71,41 @@ class MapEditorGUI:
         self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill="black")
         self.canvas.create_text(x + 10, y - 10, text=str(vertex_id))
 
-    def create_wall(self, x, y):
-        if self.selected_vertex:
-            vertex_id = self.selected_vertex.id
+    def create_wall(self, v1, v2):
+        if self.selected_vertex.id:
             wall_height = 50
             wall_color = [255, 0, 0]  # Default color: red
 
-            wall_dialog = WallDialog(self.root, vertex_id)
-            if wall_dialog.result:
-                wall_height = wall_dialog.wall_height
-                wall_color = wall_dialog.wall_color
-
-            self.map.AddWall(self.selected_vertex.id, vertex_id, wall_height, *wall_color)
-            self.canvas.create_line(self.selected_vertex.x, self.selected_vertex.y, x, y)
-            self.selected_vertex = None
+            wall_dialog = WallDialog(self.root, v1, v2, self.build_wall)
         else:
             messagebox.showinfo("Error", "Please select a vertex first.")
+    
+    def build_wall(self, v1, v2, height, color):
+        self.map.AddWall(v1, v2, height, *color)
+        self.redraw_canvas()
 
     def select_vertex(self, event):
-        x, y = event.x, event.y
-        items = self.canvas.find_closest(x, y)
-        if items:
-            item = items[0]
-            tags = self.canvas.gettags(item)
-            if tags:
-                vertex_id = int(tags[0])
-                self.selected_vertex = self.get_vertex_by_id(vertex_id)
+        x = event.x
+        y = event.y
+
+        # Iterate over the vertices and check if the click coordinates are within a certain range
+        potential_vertex = self.get_vertex(x, y)
+        if (potential_vertex != None and potential_vertex == self.selected_vertex):
+            self.selected_vertex = None
+        else:
+            self.selected_vertex = self.get_vertex(x, y)
+        return self.selected_vertex != None
+
+    def get_vertex(self, x, y):
+        for vertex in self.map.Vertices:
+            if abs(vertex.x - x) <= 5 and abs(vertex.y - y) <= 5:
+                # Return the vertex
+                return vertex
+        return None
+
+    def swap_vertex_mode(self):
+        self.is_vertex_mode = False if self.is_vertex_mode else True
+        self.mode_button.configure(text="Mode: " + ("Add Vertices" if self.is_vertex_mode else "Add Walls"))
 
     def select_wall(self, event):
         x, y = event.x, event.y
@@ -102,46 +131,28 @@ class MapEditorGUI:
             self.selected_wall = None
             self.redraw_canvas()
 
+    def build_vertex(self, id, x, y, z):
+        self.map.AddVertex(id, x, y, z)
+        self.redraw_canvas()
+
     def add_vertex(self):
         vertex_id = len(self.map.Vertices) + 1
-        vertex_dialog = VertexDialog(self.root, vertex_id)
-        if vertex_dialog.result:
-            x = vertex_dialog.x
-            y = vertex_dialog.y
-            z = vertex_dialog.z
-            self.map.AddVertex(vertex_id, x, y, z)
-            self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill="black")
-            self.canvas.create_text(x + 10, y - 10, text=str(vertex_id))
-
-    def add_wall(self):
-        if len(self.map.Vertices) >= 2:
-            wall_dialog = WallDialog(self.root, self.map.Vertices)
-            if wall_dialog.result:
-                vertex_id1 = wall_dialog.vertex_id1
-                vertex_id2 = wall_dialog.vertex_id2
-                wall_height = wall_dialog.wall_height
-                wall_color = wall_dialog.wall_color
-
-                vertex1 = self.get_vertex_by_id(vertex_id1)
-                vertex2 = self.get_vertex_by_id(vertex_id2)
-
-                if vertex1 and vertex2:
-                    self.map.AddWall(vertex_id1, vertex_id2, wall_height, *wall_color)
-                    self.canvas.create_line(vertex1.x, vertex1.y, vertex2.x, vertex2.y)
-        else:
-            messagebox.showinfo("Error", "At least two vertices are required to create a wall.")
+        vertex_dialog = VertexDialog(self.root, vertex_id, build_vertex)
 
     def redraw_canvas(self):
         self.canvas.delete("all")
         for vertex in self.map.Vertices:
             x, y = vertex.x, vertex.y
+            if (self.selected_vertex != None and self.selected_vertex.id == vertex.id):
+                self.canvas.create_oval(x - 7, y - 7, x + 7, y + 7, fill="red")
             self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill="black")
             self.canvas.create_text(x + 10, y - 10, text=str(vertex.id))
 
         for wall in self.map.Walls:
             x1, y1 = wall.line.v1.x, wall.line.v1.y
             x2, y2 = wall.line.v2.x, wall.line.v2.y
-            self.canvas.create_line(x1, y1, x2, y2)
+            color = rgb_to_hex(wall.color)
+            self.canvas.create_line(x1, y1, x2, y2, fill=color)
 
     def get_vertex_by_id(self, vertex_id):
         for vertex in self.map.Vertices:
@@ -160,15 +171,15 @@ class MapEditorGUI:
         self.canvas.delete("all")
 
     def save_map(self):
-        # Implement your save functionality here
+        # TODO: Save functionality
         pass
 
     def load_map(self):
-        # Implement your load functionality here
+        # TODO: Load functionality
         pass
 
 class WallDialog:
-    def __init__(self, parent, vertex_id):
+    def __init__(self, parent, v1, v2, callback):
         self.result = None
 
         self.dialog = tk.Toplevel(parent)
@@ -193,7 +204,9 @@ class WallDialog:
         self.button_ok.pack()
         self.button_cancel.pack()
 
-        self.vertex_id = vertex_id
+        self.postdialog_callback = callback
+        self.v1 = v1
+        self.v2 = v2
 
     def ok(self):
         try:
@@ -203,6 +216,8 @@ class WallDialog:
             self.wall_height = wall_height
             self.wall_color = wall_color
             self.dialog.destroy()
+
+            self.postdialog_callback(self.v1, self.v2, self.wall_height, self.wall_color)
         except ValueError:
             messagebox.showinfo("Error", "Invalid input.")
 
@@ -210,9 +225,8 @@ class WallDialog:
         self.result = False
         self.dialog.destroy()
 
-
 class VertexDialog:
-    def __init__(self, parent, vertex_id):
+    def __init__(self, parent, vertex_id, callback):
         self.result = False
 
         self.dialog = tk.Toplevel(parent)
@@ -239,6 +253,8 @@ class VertexDialog:
         self.button_cancel.pack()
 
         self.vertex_id = vertex_id
+        
+        self.postdialog_callback = callback
 
     def ok(self):
         try:
@@ -250,6 +266,7 @@ class VertexDialog:
             self.y = y
             self.z = z
             self.dialog.destroy()
+            self.postdialog_callback(self.vertex_id, x, y, z)
         except ValueError:
             messagebox.showinfo("Error", "Invalid input.")
 
