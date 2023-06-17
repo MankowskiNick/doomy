@@ -7,13 +7,13 @@ struct Vertex {
 };
 
 struct Line {
-    Vertex v1;
-    Vertex v2;
+    struct Vertex v1;
+    struct Vertex v2;
 };
 
 // TODO: maybe implement a wall id?
 struct Wall {
-    Line line;
+    struct Line line;
     float height;
     int color[3];
 };
