@@ -6,7 +6,13 @@ from tkinter import messagebox
 from tkinter import filedialog
 
 def rgb_to_hex(rgb):
-    return '#%02x%02x%02x' % tuple(rgb)
+    return '#%02x%02x%02x' % tuple(rgb)    
+
+def ccw(v1, v2, v3):
+    return (v3.y - v1.y) * (v2.x - v1.x) > (v2.y - v1.y) * (v3.x - v1.x)
+
+def Intersect(l1, l2):
+    return ccw(l1.v1, l2.v1, l2.v2) != ccw(l1.v2, l2.v1, l2.v2) and ccw(l1.v1, l1.v2, l2.v1) != ccw(l1.v1, l1.v2, l2.v2)
 
 class MapEditorGUI:
     def __init__(self):
@@ -28,7 +34,28 @@ class MapEditorGUI:
         self.canvas.bind("<B1-Motion>", self.drag)
         self.canvas.bind("<ButtonRelease-1>", self.drag_stop)
 
+        self.mapping_scalar = 0.05
 
+        self.create_menu()
+        self.configure_buttons()
+        self.root.mainloop()
+
+    def create_menu(self):
+        menubar = tk.Menu(self.root)
+        file_menu = tk.Menu(menubar, tearoff=0)
+        file_menu.add_command(label="New Map", command=self.new_map)
+        file_menu.add_command(label="Save Map", command=self.save_map)
+        file_menu.add_command(label="Load Map", command=self.load_map)
+        menubar.add_cascade(label="File", menu=file_menu)
+
+        edit_menu = tk.Menu(menubar, tearoff=0)
+        edit_menu.add_command(label="Delete Vertex", command=self.delete_vertex)
+        edit_menu.add_command(label="Delete Wall", command=self.delete_wall)
+        menubar.add_cascade(label="Edit", menu=edit_menu)
+
+        self.root.config(menu=menubar)
+
+    def configure_buttons(self):        
         self.button_frame = tk.Frame(self.root)  # Create a frame for the buttons
         self.button_frame.pack()  # Pack the frame into the window
 
@@ -42,31 +69,11 @@ class MapEditorGUI:
         self.vert_mode_button.pack(side="left")
         self.edit_vert_button.pack(side="left")
         self.delete_vert_button.pack(side="left")
-        self.delete_wall_button.pack(side="left")
         self.edit_wall_button.pack(side="left")
+        self.delete_wall_button.pack(side="left")
 
         # Pack the buttons into the frame with center alignment
         self.button_frame.pack(anchor="center")
-
-        self.create_menu()
-        self.root.mainloop()
-
-    def create_menu(self):
-        menubar = tk.Menu(self.root)
-        file_menu = tk.Menu(menubar, tearoff=0)
-        file_menu.add_command(label="New Map", command=self.new_map)
-        file_menu.add_command(label="Save Map", command=self.save_map)
-        file_menu.add_command(label="Load Map", command=self.load_map)
-        menubar.add_cascade(label="File", menu=file_menu)
-
-        edit_menu = tk.Menu(menubar, tearoff=0)
-        # edit_menu.add_command(label="Add Vertex", command=self.add_vertex)
-        #edit_menu.add_command(label="Add Wall", command=self.add_wall)
-        edit_menu.add_command(label="Delete Vertex", command=self.delete_vertex)
-        edit_menu.add_command(label="Delete Wall", command=self.delete_wall)
-        menubar.add_cascade(label="Edit", menu=edit_menu)
-
-        self.root.config(menu=menubar)
 
     def on_canvas_click(self, event):
 
@@ -118,11 +125,11 @@ class MapEditorGUI:
                 self.selected_vertex = None
 
             if (cur_vertex == None):
-                self.select_wall()
+                self.select_wall(event)
                 self.redraw_canvas()
                 return
         # Redraw the canvas, just to be safe
-        self.redraw_canvas();
+        self.redraw_canvas()
 
     def drag(self, event):
         # Get the x and y of the event
@@ -241,20 +248,20 @@ class MapEditorGUI:
         return False
 
     def is_near_wall(self, x, y, wall):
-        # Calculate the distance between the click coordinates and the wall line segment
+        # # Calculate the distance between the click coordinates and the wall line segment
         x1, y1 = wall.line.v1.x, wall.line.v1.y
         x2, y2 = wall.line.v2.x, wall.line.v2.y
 
-        distance = abs((y2 - y1) * x - (x2 - x1) * y + x2 * y1 - y2 * x1) / (
-            ((y2 - y1) ** 2 + (x2 - x1) ** 2) ** 0.5
-        )
+        threshhold = 5
 
-        # Check if the distance is within a certain threshold
-        threshold = 5  # Adjust this value as needed
-        if distance <= threshold:
-            return True
-        else:
-            return False
+        # Create a line that is perpendicular to the line we are checking that has a length of threshold * 2
+        angle = math.atan2(x1 - x2, y2 - y1)
+        check_v1 = map.Vertex(-1, x - threshhold * math.cos(angle), y - (threshhold * math.sin(angle)), 0)
+        check_v2 = map.Vertex(-1, x + threshhold * math.cos(angle), y + (threshhold * math.sin(angle)), 0)
+        perp_line = map.Line(check_v1, check_v2)
+
+        # Return true if this intersects with wall, otherwise return false
+        return Intersect(perp_line, wall.line)
 
     def delete_vertex(self):
         if self.selected_vertex:
@@ -283,6 +290,8 @@ class MapEditorGUI:
 
         self.map.Walls.remove(wall)
         self.map.AddWall(v1.id, v2.id, height, color[0], color[1], color[2])
+
+        self.redraw_canvas()
     
     def redraw_canvas(self):
         self.canvas.delete("all")
@@ -291,7 +300,7 @@ class MapEditorGUI:
             if (self.selected_vertex != None and self.selected_vertex.id == vertex.id):
                 self.canvas.create_oval(x - 7, y - 7, x + 7, y + 7, fill="red")
             self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill="black")
-            self.canvas.create_text(x + 10, y - 10, text=str(vertex.id))
+            self.canvas.create_text(x + 10, y - 10, text=str(vertex.id) + ": (" + str(vertex.x) + " , " + str(vertex.y) + ")")
 
         for wall in self.map.Walls:
             x1, y1 = wall.line.v1.x, wall.line.v1.y
@@ -302,6 +311,8 @@ class MapEditorGUI:
             if (self.selected_wall != None and self.selected_wall == wall):
                 self.canvas.create_line(x1 - 1, y1 + 1, x2 - 1, y2 + 1, fill=color)
                 self.canvas.create_line(x1 + 1, y1 - 1, x2 + 1, y2 - 1, fill=color)
+                self.canvas.create_line(x1 + 1, y1 + 1, x2 + 1, y2 + 1, fill=color)
+                self.canvas.create_line(x1 - 1, y1 - 1, x2 - 1, y2 - 1, fill=color)
             self.canvas.create_line(x1, y1, x2, y2, fill=color)
 
     def get_vertex_by_id(self, vertex_id):
@@ -317,7 +328,7 @@ class MapEditorGUI:
         return None
 
     def new_map(self):
-        self.map = CreateEmptyMap()
+        self.map = map.CreateEmptyMap()
         self.canvas.delete("all")
 
     def save_map(self):
@@ -332,10 +343,8 @@ class MapEditorGUI:
 
         contents += "[verts]\n"
         for v in self.map.Vertices:
-            v.x = (v.x / 100) - (self.canvas_width / 2)
-            v.y = (v.y / 100) - (self.canvas_height / 2)
-            v.z = (v.z / 100)
-            contents += "vert: " + str(v.id) + " " + str(v.x) + " " + str(v.y) + " " + str(v.z) + "\n"
+            x, y, z = self.map_coords_to_file(v.x, v.y, v.z)
+            contents += "vert: " + str(v.id) + " " + str(x) + " " + str(y) + " " + str(z) + "\n"
         
         contents += "[walls]\n"
         for w in self.map.Walls:
@@ -347,6 +356,18 @@ class MapEditorGUI:
         if file_path:
             with open(file_path, "w") as file:
                 file.write(contents)
+
+    def map_coords_to_file(self, x, y, z):
+        x = (x - (self.canvas_width / 2)) * self.mapping_scalar
+        y = (y - (self.canvas_height / 2)) * self.mapping_scalar
+        z = z * self.mapping_scalar
+        return x, y, z
+
+    def map_coords_from_file(self, x, y, z):
+        x = (x / self.mapping_scalar) + (self.canvas_width / 2)
+        y = (y / self.mapping_scalar) + (self.canvas_height / 2)
+        z = (z / self.mapping_scalar)
+        return x, y, z
 
     def load_map(self):
         file_path = filedialog.askopenfilename(filetypes=[("Map Files", "*.dat")])
@@ -374,9 +395,8 @@ class MapEditorGUI:
             parts = line.split()
             if len(parts) == 5:
                 id = int(parts[1])
-                x = (100 * float(parts[2])) + (self.canvas_width / 2)
-                y = (100 * float(parts[3])) + (self.canvas_height / 2)
-                z = (100 * float(parts[4]))
+                x, y, z = float(parts[2]), float(parts[3]), float(parts[4])
+                x, y, z = self.map_coords_from_file(x, y, z)
                 self.map.AddVertex(id, x, y, z)
             else:
                 messagebox.showinfo("Error parsing file.")
