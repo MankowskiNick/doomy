@@ -96,17 +96,16 @@ class MapEditorGUI:
 
         # If we are in wall creation mode,
         else:
-            
+
+            # Get the current vertex
+            cur_vertex = self.get_vertex(x, y)
+
             # If there is no selected vertex,
             if self.selected_vertex is None:
-
                 # Try to select one and redraw the canvas
                 self.select_vertex(event)
                 self.redraw_canvas()
                 return
-            
-            # Get the current vertex
-            cur_vertex = self.get_vertex(x, y)
 
             # If it is a valid vertex and it's not the same one as the selected one, 
             if (cur_vertex != None and cur_vertex.id != self.selected_vertex.id):
@@ -114,10 +113,14 @@ class MapEditorGUI:
                 self.create_wall(cur_vertex, self.selected_vertex)
 
             # If it is the same vertex,
-            elif (cur_vertex.id == self.selected_vertex.id):
+            elif (cur_vertex == None or cur_vertex.id == self.selected_vertex.id):
                 # Deselect it
                 self.selected_vertex = None
-        
+
+            if (cur_vertex == None):
+                self.select_wall()
+                self.redraw_canvas()
+                return
         # Redraw the canvas, just to be safe
         self.redraw_canvas();
 
@@ -185,7 +188,7 @@ class MapEditorGUI:
 
     def create_wall(self, v1, v2):
         if (v1.z == v2.z):
-            wall_dialog = WallDialog(self.root, v1, v2, 0, 0, 0, 0, self.build_wall)
+            wall_dialog = WallDialog(self.root, v1, v2, 1, 255, 255, 255, self.build_wall)
         else:
             messagebox.showinfo("Error", "Vertices must be at same z level to create a wall.")
     
@@ -206,6 +209,7 @@ class MapEditorGUI:
                 self.selected_vertex = None
             else:
                 self.selected_vertex = potential_vertex
+                self.selected_wall = None
         return potential_vertex != None
 
     def get_vertex(self, x, y):
@@ -217,7 +221,7 @@ class MapEditorGUI:
 
     def swap_vertex_mode(self):
         self.is_vertex_mode = False if self.is_vertex_mode else True
-        self.mode_button.configure(text="Mode: " + ("Add Vertices" if self.is_vertex_mode else "Add Walls"))
+        self.vert_mode_button.configure(text="Mode: " + ("Add Vertices" if self.is_vertex_mode else "Add Walls"))
 
     def select_wall(self, event):
         x = event.x
@@ -231,6 +235,7 @@ class MapEditorGUI:
                     self.selected_wall = None
                 else:
                     self.selected_wall = wall
+                    self.selected_vertex = None
                 return True
 
         return False
@@ -336,6 +341,7 @@ class MapEditorGUI:
         for w in self.map.Walls:
             contents += "wall: " + str(w.line.v1.id) + " " + str(w.line.v2.id) + " " + str(w.height) + " " + str(w.color[0]) + " " + str(w.color[1]) + " " + str(w.color[2]) + "\n"
 
+        contents += "[end]"
 
         file_path = filedialog.asksaveasfilename(defaultextension=".dat")
         if file_path:

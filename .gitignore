@@ -1,4 +1,4 @@
 .vscode/
 build/
 editor/bin
-editor/pycache
+editor/__pycache__
