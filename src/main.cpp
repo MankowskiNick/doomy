@@ -21,15 +21,16 @@ void error_callback(int error, const char* description) {
 int main(int argc, char** argv) {
     GLLib gl = GLLib();
 
+    // Should this be done in ConfigureDraw?
     gl.Init("doomy", WIDTH, HEIGHT, error_callback, key_callback, mouse_callback);
     gl.BindShader("shaders/shader.vsh", "shaders/shader.fsh");
-    InitView(gl);
 
     // Initialize camera & map
-    camera = Camera(0.0f, 0.0f, 0.5f, 0.0f, M_PI / 3);
+    camera = Camera(0.0f, 0.0f, 0.5f, 0.0f);
     Map map;
     map.LoadFile("lvl/map.dat");
 
+    ConfigureDraw(gl);
     ConfigureInput(camera);
     
     while (!glfwWindowShouldClose(gl.GetWindow())) {

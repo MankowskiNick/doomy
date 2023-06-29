@@ -9,83 +9,55 @@
 #include "gllib.h"
 #include "texture.h"
 #include "map.h"
+#include "viewmap.h"
 #include "camera.h"
 #include "std_graphics.h"
 #include "geom.h"
+#include "bsp_tree.h"
+#include "wall_node.h"
 
 #define WIDTH_DRAW_SCALAR 200 / tan(FOV)
 #define HEIGHT_DRAW_SCALAR WIDTH_DRAW_SCALAR * (float)WIDTH / (float)HEIGHT
 
-// TODO: Abstract some of the functionality of these away to geom.h
-
-// Perform a translation on the walls to make the illusion that the camera is moving
-void ShiftWalls(Map& map, Camera& camera) {
-    for (int i = 0; i < map.walls.size(); i++) {
-        Vertex camera_pos = {
-            .x = camera.x,
-            .y = camera.y,
-            .z = camera.z
-        };
-
-        Translate(map.walls[i].line.v1, camera_pos, -1.0f);
-        Translate(map.walls[i].line.v2, camera_pos, -1.0f);
-        
-    }
+// Initialization code, just in case we end up needing to initialize things other than gl_lib
+void ConfigureDraw(GLLib& gl_lib) {
+    InitView(gl_lib);
 }
 
-// Rotate the vertices on the map around the camera to make the illusion the camera is turning
-void RotateWalls(Map& map, Camera& camera) {
-    for (int i = 0; i < map.walls.size(); i++) {
-        Rotate(map.walls[i].line.v1, camera.angle);
-        Rotate(map.walls[i].line.v2, camera.angle);
-    }
-}
-
-// Perform translations necessary to create the illusion of looking different directions & moving
-void TranslateMap(Map& map, Camera& camera) {
-    ShiftWalls(map, camera);
-    RotateWalls(map, camera);
-}
-
+// TODO: abstract to minimap utility
 // Draw the minimap
-void DrawMinimap(Map& map, Camera& camera) {
+void DrawMinimap(Map& map) {
     for (int i = 0; i < map.walls.size(); i++) {
-        int x1 = (int)(map.walls[i].line.v1.x * MINIMAP_SCALE) + (WIDTH / 2);
-        int y1 = (int)(map.walls[i].line.v1.y * MINIMAP_SCALE) + (HEIGHT / 2);
+        int x1 = (int)(map.walls[i].line.v1.x * MINIMAP_SCALE) + MINIMAP_X + (MINIMAP_WIDTH / 2);
+        int y1 = (int)(map.walls[i].line.v1.y * MINIMAP_SCALE) + MINIMAP_Y + (MINIMAP_HEIGHT / 2);
 
-        int x2 = (int)(map.walls[i].line.v2.x * MINIMAP_SCALE) + (WIDTH / 2);
-        int y2 = (int)(map.walls[i].line.v2.y * MINIMAP_SCALE) + (HEIGHT / 2);
+        int x2 = (int)(map.walls[i].line.v2.x * MINIMAP_SCALE) + MINIMAP_X + (MINIMAP_WIDTH / 2);
+        int y2 = (int)(map.walls[i].line.v2.y * MINIMAP_SCALE) + MINIMAP_Y + (MINIMAP_HEIGHT / 2);
 
         DrawLine(x1, y1, x2, y2, map.walls[i].color[0], map.walls[i].color[1], map.walls[i].color[2]);
     }
-    DrawPlayer(camera);
+    DrawPlayer();
 }
-
-// Check if the wall needs rendered
-bool IsInFront(Wall& wall, Camera& camera) {
-    return wall.line.v1.y > 0 ||  wall.line.v2.y > 0;
-}
-
 
 // Calculate what column the vertex will be at
-int MapToScreenX(const Vertex& vert, Camera& camera) {
+int MapToScreenX(const Vertex& vert) {
     float y = (vert.y == 0) ? 1.0f : vert.y; // Prevent division by 0
     return (WIDTH_DRAW_SCALAR * vert.x / y) + (WIDTH / 2);
 }
 
 // Calculate what row the vertex will be at
-int MapToScreenY(const Vertex& vert, Camera& camera) {
+int MapToScreenY(const Vertex& vert) {
     float y = (vert.y == 0) ? 1.0f : vert.y; // Prevent division by 0
     return (HEIGHT_DRAW_SCALAR * vert.z / y) + (HEIGHT / 2);
 }
 
-int MapToScreenHeight(const Vertex& vert, Camera& camera, float wall_height) {
+int MapToScreenHeight(const Vertex& vert, float wall_height) {
     Vertex second_vert = {
         .x = vert.x,
         .y = vert.y,
         .z = vert.z + wall_height
     };
-    return MapToScreenY(second_vert, camera) - MapToScreenY(vert, camera);
+    return MapToScreenY(second_vert) - MapToScreenY(vert);
 }
 
 void ClipWall(Vertex& neg_y_vert, const Vertex& other) { // TODO: maybe refactor parameters?
@@ -107,10 +79,7 @@ void ClipWall(Vertex& neg_y_vert, const Vertex& other) { // TODO: maybe refactor
 } 
 
 // Draw an individual wall
-void DrawWall(Wall& wall, Map& map, Camera& camera) {
-
-    if (IsInFront(wall, camera)) {
-
+void DrawWall(Wall& wall, bool* column_drawn_status) {
         // Fix a graphical bug that occurs when one point is behind the player
         if (wall.line.v1.y < 0)
             ClipWall(wall.line.v1, wall.line.v2);
@@ -118,14 +87,14 @@ void DrawWall(Wall& wall, Map& map, Camera& camera) {
             ClipWall(wall.line.v2, wall.line.v1);
 
         // Calculate info for each vertex in the wall
-        int screencol_1 = MapToScreenX(wall.line.v1, camera);
-        int screencol_2 = MapToScreenX(wall.line.v2, camera);
+        int screencol_1 = MapToScreenX(wall.line.v1);
+        int screencol_2 = MapToScreenX(wall.line.v2);
 
-        int vert1_bottom_y = MapToScreenY(wall.line.v1, camera);
-        int vert2_bottom_y = MapToScreenY(wall.line.v2, camera); 
+        int vert1_bottom_y = MapToScreenY(wall.line.v1);
+        int vert2_bottom_y = MapToScreenY(wall.line.v2); 
 
-        int vert1_height = MapToScreenHeight(wall.line.v1, camera, wall.height);
-        int vert2_height = MapToScreenHeight(wall.line.v2, camera, wall.height);
+        int vert1_height = MapToScreenHeight(wall.line.v1, wall.height);
+        int vert2_height = MapToScreenHeight(wall.line.v2, wall.height);
 
         float wallheight_stepsize = (float)(vert2_height - vert1_height) / (float)(screencol_2 - screencol_1);
         float screenrow_stepsize = (float)(vert2_bottom_y - vert1_bottom_y) / (float)(screencol_2 - screencol_1);
@@ -137,6 +106,9 @@ void DrawWall(Wall& wall, Map& map, Camera& camera) {
         int end_col = (screencol_2 < 0) ? 0 : ((screencol_2 > WIDTH - 1) ? WIDTH - 1 : screencol_2);
 
         for (int col = start_col; col != end_col; col += step) {
+            if (*(column_drawn_status + (col * sizeof(bool))))
+               continue;
+            *(column_drawn_status + (col * sizeof(bool))) = true;
             if (col < 0)
                 col = 0;
             if (col >= WIDTH)
@@ -146,14 +118,56 @@ void DrawWall(Wall& wall, Map& map, Camera& camera) {
 
             DrawLineVert(col, cur_screenrow, cur_screenrow + cur_wallheight, wall.color);
         }
-    }
 }
 
-// Draw all walls
-void DrawWalls(Map& map, Camera& camera) {
-    for (int i = 0; i < map.walls.size(); i++) {
-        DrawWall(map.walls[i], map, camera);
+// temp debug
+int CountNodes(Wall_Node* node) {
+    if (node == NULL) return 0;
+    return CountNodes(node->next) + 1;
+}
+
+void InitializeColumnStatus(bool* column_drawn_status) {
+    for (int i = 0; i < WIDTH; i++)
+        *(column_drawn_status + (i * sizeof(bool))) = false;
+}
+
+bool IsFinishedDrawing(bool* column_drawn_status) {
+    for (int i = 0; i < WIDTH; i++)
+        if (*(column_drawn_status + (i * sizeof(bool))) == false)
+            return false;
+    return true;
+}
+
+void DrawOrder(Wall_Node* head, Map& map, bool* column_drawn_status) {
+
+    // We have reached the end of the linked list
+    if (head == NULL)
+        return;
+
+    // Draw the current wall
+    Wall* cur_wall = map.GetWallByID(head->id);
+    DrawWall(*cur_wall, column_drawn_status);
+
+    // Recursively call the next DrawOrder
+    DrawOrder(head->next, map, column_drawn_status);
+
+    // Memory management
+    if (head->previous != NULL) {
+        head->previous->next = NULL;
     }
+    delete head;
+
+}
+
+
+// Draw all walls
+void DrawWalls(Map& map) {
+    bool column_drawn_status[WIDTH];
+    InitializeColumnStatus(column_drawn_status);
+
+    Wall_Node* render_head = FindOrder(&map.bsp_tree, map);
+    int node_count = CountNodes(render_head);
+    DrawOrder(render_head, map, column_drawn_status);
 }
 
 // Render code
@@ -162,8 +176,9 @@ void Render(Map map, Camera& camera) {
     // Display a gray background
     FillScreen(100, 100, 100);
 
-    // Draw walls
-    TranslateMap(map, camera);
-    //DrawMinimap(map, camera);
-    DrawWalls(map, camera);
+    ViewMap view_map = ViewMap(map, camera);
+    view_map.TranslateMap();
+
+    DrawWalls(map);
+    DrawMinimap(map);
 }

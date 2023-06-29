@@ -5,6 +5,9 @@ import math
 from tkinter import messagebox
 from tkinter import filedialog
 
+# TODO:
+#   -Don't allow intersections of walls
+
 def rgb_to_hex(rgb):
     return '#%02x%02x%02x' % tuple(rgb)    
 
@@ -337,7 +340,7 @@ class MapEditorGUI:
         #   v1.id v1.x v1.y v1.z
         #   ...
         #   [walls]
-        #   v1.id v2.id height r g b
+        #   id v1.id v2.id height r g b
         #   ...
         contents = ""
 
@@ -348,6 +351,7 @@ class MapEditorGUI:
         
         contents += "[walls]\n"
         for w in self.map.Walls:
+            # Note: We are writing walls in order of id, so they don't need to be stored.
             contents += "wall: " + str(w.line.v1.id) + " " + str(w.line.v2.id) + " " + str(w.height) + " " + str(w.color[0]) + " " + str(w.color[1]) + " " + str(w.color[2]) + "\n"
 
         contents += "[end]"

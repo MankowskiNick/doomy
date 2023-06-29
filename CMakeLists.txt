@@ -11,7 +11,7 @@ enable_testing()
 add_library(shared_graphics SHARED include/shared_graphics.h src/shared_graphics.cpp)
 
 # Add doomy executable
-add_executable(doomy src/main.cpp src/glad.cpp src/draw.cpp src/std_graphics.cpp src/geom.cpp src/input.cpp)
+add_executable(doomy src/main.cpp src/glad.cpp src/draw.cpp src/std_graphics.cpp src/geom.cpp src/input.cpp src/bsp_tree.cpp src/common_struct.cpp src/wall_node.cpp)
 
 # Include our include directory for the shared_graphics and doomy
 target_include_directories(doomy PUBLIC include)

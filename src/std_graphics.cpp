@@ -56,13 +56,13 @@ void DrawPixel(int x, int y, int r, int g, int b) {
     }
 }
 
-void DrawPlayer(Camera& camera) {
-    for (int x = (WIDTH / 2) - 5; x < (WIDTH / 2) + 5; x++) {
-        for (int y = (HEIGHT / 2) - 5; y < (HEIGHT / 2) + 5; y++) {
+void DrawPlayer() {
+    for (int x = MINIMAP_X + (MINIMAP_WIDTH / 2) - 5; x < MINIMAP_X + (MINIMAP_WIDTH / 2) + 5; x++) {
+        for (int y = MINIMAP_Y + (MINIMAP_HEIGHT / 2) - 5; y < MINIMAP_Y + (MINIMAP_HEIGHT/ 2) + 5; y++) {
             DrawPixel(x, y, 255, 0, 0);
         }
     }
-    for (int i = (HEIGHT / 2 ) + 5; i < (HEIGHT / 2) + 10; i++) {
+    for (int i = MINIMAP_Y + (MINIMAP_HEIGHT / 2) + 5; i < MINIMAP_Y + (MINIMAP_HEIGHT / 2) + 10; i++) {
         DrawPixel(WIDTH / 2, i, 255, 0, 0);
     }
 }

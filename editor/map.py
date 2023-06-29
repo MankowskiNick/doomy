@@ -14,7 +14,8 @@ class Line:
         self.v2 = v2
 
 class Wall:
-    def __init__(self, line, height, color):
+    def __init__(self, id, line, height, color):
+        self.id
         self.line = line
         self.height = height
         self.color = color
@@ -37,7 +38,8 @@ class Map:
                 v2 = v
         if v1 != None and v2 != None:
             line = Line(v1, v2)
-            wall = Wall(line, wall_height, [r, g, b])
+            wall_id = len(self.Walls)
+            wall = Wall(wall_id, line, wall_height, [r, g, b])
             for vertex in self.Vertices:
                 if vertex.id == v1.id:
                     wall.line.v1 = vertex
