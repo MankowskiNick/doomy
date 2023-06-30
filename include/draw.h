@@ -10,10 +10,12 @@
 #include "map.h"
 #include "camera.h"
 
-void ConfigureDraw(GLLib& gl_lib);
+GLFWwindow* ConfigureDraw(Camera& camera);
 
 void Render(Map map, Camera& camera);
 
-void Draw(GLLib& gl);
+void Draw();
+
+void Destroy();
 
 #endif

@@ -7,15 +7,20 @@
 
 class Shader {
     public:
-        Shader() {}
+        Shader() {
+            vShader = 0;
+            fShader = 0;
+        }
 
         Shader(const std::string& vert_shader_file, const std::string& frag_shader_file) {
             CompileShader(vert_shader_file, frag_shader_file);
         }
 
         ~Shader() {
-            glDeleteShader(vShader);
-            glDeleteShader(fShader);
+            if (vShader != 0)
+                glDeleteShader(vShader);
+            if (fShader != 0)
+                glDeleteShader(fShader);
         }
 
         unsigned int GetProgramID() {

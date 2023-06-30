@@ -10,9 +10,10 @@
 // work out some errors here
 class ViewMap {
     public:
-        ViewMap(Map& map, Camera& cam) {
+        ViewMap() {}
+
+        ViewMap(Camera& cam) {
             _camera = &cam;
-            _map = &map;
         }
 
         // Perform a translation on the walls to make the illusion that the camera is moving
@@ -36,6 +37,10 @@ class ViewMap {
                 Rotate(_map->walls[i].line.v1, _camera->angle);
                 Rotate(_map->walls[i].line.v2, _camera->angle);
             }
+        }
+
+        void LoadMap(Map& map) {
+            _map = &map;
         }
 
         // Perform translations necessary to create the illusion of looking different directions & moving
