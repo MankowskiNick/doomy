@@ -15,13 +15,34 @@
 #include "geom.h"
 #include "bsp_tree.h"
 #include "wall_node.h"
+#include "input.h"
 
 #define WIDTH_DRAW_SCALAR 200 / tan(FOV)
 #define HEIGHT_DRAW_SCALAR WIDTH_DRAW_SCALAR * (float)WIDTH / (float)HEIGHT
 
+ViewMap view_map;
+
+GLLib gl;
+
+void error_callback(int error, const char* description) {
+    fprintf(stderr, "Error: %s\n", description);
+}
+
 // Initialization code, just in case we end up needing to initialize things other than gl_lib
-void ConfigureDraw(GLLib& gl_lib) {
-    InitView(gl_lib);
+GLFWwindow* ConfigureDraw(Camera& camera) {
+
+    // Initialize a new gllib instance
+    gl = GLLib();
+    gl.Init("doomy", WIDTH, HEIGHT, error_callback, key_callback, mouse_callback);
+    gl.BindShader("shaders/shader.vsh", "shaders/shader.fsh");
+
+    // Initialize the view
+    InitView(gl);
+
+    // Initialize a view_map, this is a "worker" class that will translate the map
+    view_map = ViewMap(camera);
+
+    return gl.GetWindow();
 }
 
 // TODO: abstract to minimap utility
@@ -159,6 +180,10 @@ void DrawOrder(Wall_Node* head, Map& map, bool* column_drawn_status) {
 
 }
 
+void Destroy() {
+    glfwDestroyWindow(gl.GetWindow());
+    glfwTerminate();
+}
 
 // Draw all walls
 void DrawWalls(Map& map) {
@@ -176,9 +201,12 @@ void Render(Map map, Camera& camera) {
     // Display a gray background
     FillScreen(100, 100, 100);
 
-    ViewMap view_map = ViewMap(map, camera);
+    view_map.LoadMap(map);
     view_map.TranslateMap();
 
     DrawWalls(map);
     DrawMinimap(map);
+
+    Draw(gl);
+    glfwSwapBuffers(gl.GetWindow());
 }
