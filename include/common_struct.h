@@ -3,6 +3,8 @@
 
 #include "vectmath.h"
 
+#define ERROR_MARGIN 0.01f
+
 class Map;
 
 struct Vertex {
@@ -24,6 +26,6 @@ struct Wall {
 
 Vect2<float> VertToVect2(const Vertex& vert);
 
-
+bool VertexEquals(const Vertex& v1, const Vertex& v2);
 
 #endif

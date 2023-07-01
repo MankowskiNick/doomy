@@ -15,7 +15,7 @@ class Line:
 
 class Wall:
     def __init__(self, id, line, height, color):
-        self.id
+        self.id = id
         self.line = line
         self.height = height
         self.color = color

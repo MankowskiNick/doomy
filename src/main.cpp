@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
     // Initialize camera & map
     Camera camera = Camera(0.0f, 0.0f, 0.5f, 0.0f);
     Map map;
-    map.LoadFile("lvl/map.dat");
+    map.LoadFile("lvl/render_test.dat");
 
     // Configure drawing and store a pointer to the window
     GLFWwindow* window = ConfigureDraw(camera);
