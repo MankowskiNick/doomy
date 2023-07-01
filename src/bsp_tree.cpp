@@ -40,9 +40,6 @@ bool is_front(const Vertex& vertex, const Wall* wall) {
         .c = wall->line.v2.z - vertex.z,
     };
 
-    if (VectsParallel(line_vect, v1_to_vert_vect))
-        return true;
-
     Vect3<float> cross_product = CrossProduct(line_vect, v1_to_vert_vect);
 
     return cross_product.c > 0;
@@ -98,7 +95,7 @@ BSP_Tree* Generate_BSP_Subtree(std::vector<Wall>& walls, Map& map, BSP_Tree* par
             Wall* back_wall = new Wall;
 
             // The front wall will replace the wall at map.walls[id]
-            map.walls[id].line.v1 = is_front(walls[i].line.v1, &cur_wall) ? walls[i].line.v1 : walls[i].line.v2; // maybe this is the error
+            map.walls[id].line.v1 = is_front(walls[i].line.v1, &cur_wall) ? walls[i].line.v1 : walls[i].line.v2; // What if v1
             map.walls[id].line.v2 = *intersection;
 
             back_wall->id = map.walls.size();
