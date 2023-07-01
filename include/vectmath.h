@@ -1,6 +1,8 @@
 #ifndef VECTMATH_H
 #define VECTMATH_H
 
+#include "constants.h"
+
 // Formatted like
 // a b
 // c d
