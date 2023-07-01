@@ -5,8 +5,6 @@
 #include "geom.h"
 #include "map.h"
 
-#define ERROR_MARGIN 0.1f
-
 void ExtendDivisionLine(Line& line) {
     float line_dist = Dist(line.v1, line.v2);
     
@@ -25,24 +23,29 @@ void ExtendDivisionLine(Line& line) {
 
     Translate(line.v1, translation, -1.0f);
     Translate(line.v2, translation, 1.0f);
-
-
 }
 
 bool is_front(const Vertex& vertex, const Wall* wall) {
-    // Calculate the normal vector of the wall
-    float wall_normal_x = wall->line.v2.y - wall->line.v1.y;
-    float wall_normal_y = wall->line.v1.x - wall->line.v2.x;
+
+    // Look at z component of cross product of wall and vertex
+    Vect3<float> line_vect = {
+        .a = wall->line.v2.x - wall->line.v1.x,
+        .b = wall->line.v2.y - wall->line.v1.y,
+        .c = wall->line.v2.z - wall->line.v1.z,
+    };    
     
-    // Calculate the vector from the wall's v1 to the given vertex
-    float vertex_vector_x = vertex.x - wall->line.v1.x;
-    float vertex_vector_y = vertex.y - wall->line.v1.y;
-    
-    // Calculate the dot product between the wall normal and the vertex vector
-    float dot_product = wall_normal_x * vertex_vector_x + wall_normal_y * vertex_vector_y;
-    
-    // If the dot product is positive, the vertex is in front of the wall; otherwise, it is not
-    return dot_product > 0;
+    Vect3<float> v1_to_vert_vect = {
+        .a = wall->line.v2.x - vertex.x,
+        .b = wall->line.v2.y - vertex.y,
+        .c = wall->line.v2.z - vertex.z,
+    };
+
+    if (VectsParallel(line_vect, v1_to_vert_vect))
+        return true;
+
+    Vect3<float> cross_product = CrossProduct(line_vect, v1_to_vert_vect);
+
+    return cross_product.c > 0;
 }
 
 bool is_front(Wall& test_wall, Wall* divider_ptr) {
@@ -78,7 +81,7 @@ BSP_Tree* Generate_BSP_Subtree(std::vector<Wall>& walls, Map& map, BSP_Tree* par
         Vertex* intersection = FindIntersection(walls[i].line, division_line);
 
         // If there is no intersection, group the walls accordingly. This is the easy case
-        if (intersection == NULL) {
+        if (intersection == NULL || VertexEquals(*intersection, walls[i].line.v1) || VertexEquals(*intersection, walls[i].line.v2)) {
             if (is_front(walls[i], &cur_wall))
                 front_walls.push_back(walls[i]);
             else
@@ -123,26 +126,4 @@ BSP_Tree* Generate_BSP_Subtree(std::vector<Wall>& walls, Map& map, BSP_Tree* par
 
 BSP_Tree Generate_BSP_Tree(std::vector<Wall> walls, Map& map) {
     return *(Generate_BSP_Subtree(walls, map, NULL));
-}
-
-std::string BspToString(BSP_Tree* tree, int indent) {
-    std::string result;
-
-    // Generate indentation
-    for (int i = 0; i < indent; ++i) {
-        result += "    ";
-    }
-
-    // Append tree ID
-    result += std::to_string(tree->id) + "\n";
-
-    // Recursive calls for front and back subtrees
-    if (tree->front != nullptr) {
-        result += BspToString(tree->front, indent + 1);
-    }
-    if (tree->back != nullptr) {
-        result += BspToString(tree->back, indent + 1);
-    }
-
-    return result;
 }

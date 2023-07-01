@@ -1,9 +1,8 @@
 #ifndef COMMON_STRUCT_H
 #define COMMON_STRUCT_H
 
+#include "constants.h"
 #include "vectmath.h"
-
-#define ERROR_MARGIN 0.01f
 
 class Map;
 

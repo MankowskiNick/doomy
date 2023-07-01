@@ -125,8 +125,7 @@ class Map {
                 }
 
                 bsp_tree = Generate_BSP_Tree(walls, *this);
-                std::cout << BspToString(&bsp_tree);
-                // bsp_tree = *Generate_BSP_Tree(walls);
+                
             }
             catch(...) {
                 std::cout << "FATAL ERROR: Unable to load file '" << file_name << "'(Incorrect format?)";
