@@ -7,7 +7,7 @@
 #include "geom.h"
 
 
-// work out some errors here
+// TODO: work out some errors here(maybe)
 class ViewMap {
     public:
         ViewMap() {}

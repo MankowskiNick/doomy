@@ -23,6 +23,4 @@ BSP_Tree Generate_BSP_Tree(std::vector<Wall> walls, Map& map);
 
 bool is_front(const Vertex& test, const Wall* divider_ptr);
 
-std::string BspToString(BSP_Tree* tree, int indent = 0);
-
 #endif

@@ -128,7 +128,7 @@ void DrawWall(Wall& wall, bool* column_drawn_status) {
 
         for (int col = start_col; col != end_col; col += step) {
             if (*(column_drawn_status + (col * sizeof(bool))))
-               continue;
+              continue;
             *(column_drawn_status + (col * sizeof(bool))) = true;
             if (col < 0)
                 col = 0;
@@ -141,12 +141,6 @@ void DrawWall(Wall& wall, bool* column_drawn_status) {
         }
 }
 
-// temp debug
-int CountNodes(Wall_Node* node) {
-    if (node == NULL) return 0;
-    return CountNodes(node->next) + 1;
-}
-
 void InitializeColumnStatus(bool* column_drawn_status) {
     for (int i = 0; i < WIDTH; i++)
         *(column_drawn_status + (i * sizeof(bool))) = false;
@@ -157,6 +151,28 @@ bool IsFinishedDrawing(bool* column_drawn_status) {
         if (*(column_drawn_status + (i * sizeof(bool))) == false)
             return false;
     return true;
+}
+
+// temp debug
+void DrawBackToFront(Wall_Node* tail, Map& map, bool* column_drawn_status) {
+
+    // We have reached the end of the linked list
+    if (tail  == NULL)
+        return;
+
+    // Draw the current wall
+    Wall* cur_wall = map.GetWallByID(tail->id);
+    DrawWall(*cur_wall, column_drawn_status);
+
+
+    // Recursively call the next DrawOrder
+    DrawBackToFront(tail->previous, map, column_drawn_status);
+
+    // Memory management
+    if (tail->previous != NULL) {
+        tail->previous->next = NULL;
+    }
+    delete tail;
 }
 
 void DrawOrder(Wall_Node* head, Map& map, bool* column_drawn_status) {
@@ -191,7 +207,13 @@ void DrawWalls(Map& map) {
     InitializeColumnStatus(column_drawn_status);
 
     Wall_Node* render_head = FindOrder(&map.bsp_tree, map);
-    int node_count = CountNodes(render_head);
+    
+    Wall_Node* tail = render_head;
+
+    //while(tail->next != NULL)
+    //    tail = tail->next;
+    //DrawBackToFront(tail, map, column_drawn_status);
+
     DrawOrder(render_head, map, column_drawn_status);
 }
 

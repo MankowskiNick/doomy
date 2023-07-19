@@ -352,7 +352,23 @@ class MapEditorGUI:
         contents += "[walls]\n"
         for w in self.map.Walls:
             # Note: We are writing walls in order of id, so they don't need to be stored.
-            contents += "wall: " + str(w.line.v1.id) + " " + str(w.line.v2.id) + " " + str(w.height) + " " + str(w.color[0]) + " " + str(w.color[1]) + " " + str(w.color[2]) + "\n"
+            # The order they are presented in the file does matter, however.  We need to normalize this or we will encounter 
+            # overdraw errors with the bsp tree.  Let's do this in order of x ascending then y ascending.
+            if abs(w.line.v1.x) < abs(w.line.v2.x):
+                vert1_id = str(w.line.v1.id)
+                vert2_id = str(w.line.v2.id)
+            elif abs(w.line.v1.x) == abs(w.line.v2.x):
+                if abs(w.line.v1.y) < abs(w.line.v2.y):
+                    vert1_id = str(w.line.v1.id)
+                    vert2_id = str(w.line.v2.id)
+                else:
+                    vert1_id = str(w.line.v2.id)
+                    vert2_id = str(w.line.v1.id)
+            else:
+                vert1_id = str(w.line.v2.id)
+                vert2_id = str(w.line.v1.id)
+
+            contents += "wall: " + vert1_id + " " + vert2_id + " " + str(w.height) + " " + str(w.color[0]) + " " + str(w.color[1]) + " " + str(w.color[2]) + "\n"
 
         contents += "[end]"
 

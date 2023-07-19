@@ -73,12 +73,17 @@ BSP_Tree* Generate_BSP_Subtree(std::vector<Wall>& walls, Map& map, BSP_Tree* par
         // Ignore the current wall
         if (walls[i].id == cur_wall.id)
             continue;
+
+        Wall check_wall = walls[i]; // temp debug
             
         // Find the intersection
         Vertex* intersection = FindIntersection(walls[i].line, division_line);
 
-        // If there is no intersection, group the walls accordingly. This is the easy case
-        if (intersection == NULL || VertexEquals(*intersection, walls[i].line.v1) || VertexEquals(*intersection, walls[i].line.v2)) {
+        bool v1_equal = VertexEquals(*intersection, walls[i].line.v1);
+        bool v2_equal = VertexEquals(*intersection, walls[i].line.v2);
+
+        // If there is no intersection, group the walls accordingly. This is the easy case.  -- This is causing errors somehow, exposed with back to front rendering
+        if (intersection == NULL || v1_equal || v2_equal) {
             if (is_front(walls[i], &cur_wall))
                 front_walls.push_back(walls[i]);
             else
