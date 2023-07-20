@@ -165,7 +165,7 @@ void DrawBackToFront(Wall_Node* tail, Map& map, bool* column_drawn_status) {
     DrawWall(*cur_wall, column_drawn_status);
 
 
-    // Recursively call the next DrawOrder
+    // Recursively call the next
     DrawBackToFront(tail->previous, map, column_drawn_status);
 
     // Memory management
@@ -210,9 +210,9 @@ void DrawWalls(Map& map) {
     
     Wall_Node* tail = render_head;
 
-    //while(tail->next != NULL)
+    // while(tail->next != NULL)
     //    tail = tail->next;
-    //DrawBackToFront(tail, map, column_drawn_status);
+    // DrawBackToFront(tail, map, column_drawn_status);
 
     DrawOrder(render_head, map, column_drawn_status);
 }

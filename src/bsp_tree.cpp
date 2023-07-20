@@ -5,26 +5,6 @@
 #include "geom.h"
 #include "map.h"
 
-void ExtendDivisionLine(Line& line) {
-    float line_dist = Dist(line.v1, line.v2);
-    
-    if (line_dist < ERROR_MARGIN) 
-        return;
-
-
-    float dx = (line.v2.x - line.v1.x) / line_dist;
-    float dy = (line.v2.y - line.v1.y) / line_dist;
-
-    Vertex translation = {
-        .id = -1,
-        .x = DIVISION_LINE_SCALAR * dx,
-        .y = DIVISION_LINE_SCALAR * dy
-    };
-
-    Translate(line.v1, translation, -1.0f);
-    Translate(line.v2, translation, 1.0f);
-}
-
 bool is_front(const Vertex& vertex, const Wall* wall) {
 
     // Look at z component of cross product of wall and vertex
@@ -35,9 +15,9 @@ bool is_front(const Vertex& vertex, const Wall* wall) {
     };    
     
     Vect3<float> v1_to_vert_vect = {
-        .a = wall->line.v2.x - vertex.x,
-        .b = wall->line.v2.y - vertex.y,
-        .c = wall->line.v2.z - vertex.z,
+        .a = vertex.x - wall->line.v1.x,
+        .b = vertex.y - wall->line.v1.y,
+        .c = vertex.z - wall->line.v1.z,
     };
 
     Vect3<float> cross_product = CrossProduct(line_vect, v1_to_vert_vect);
@@ -50,82 +30,43 @@ bool is_front(Wall& test_wall, Wall* divider_ptr) {
     return is_front(midpoint, divider_ptr);
 }
 
-BSP_Tree* Generate_BSP_Subtree(std::vector<Wall>& walls, Map& map, BSP_Tree* parent) {
+BSP_Tree* _DeserializeBSPHelper(const std::string& bsp_string, int& pos) {
 
-    // Nothing to partition, return null
-    if (walls.size() == 0)
+    // Base case, we have reached a leaf
+    if (bsp_string[pos] == '#') {
+        pos++;
         return NULL;
-
-    // Create groups of walls in front and walls in back.
-    std::vector<Wall> front_walls;
-    std::vector<Wall> back_walls;
-
-    // Choose a partition wall
-    Wall cur_wall = walls[walls.size() / 2];
-
-    // Create a division line based on the partition wall
-    Line division_line = cur_wall.line;
-    ExtendDivisionLine(division_line);
-
-    // Partition each wall
-    for (int i = 0; i < walls.size(); i++) {
-
-        // Ignore the current wall
-        if (walls[i].id == cur_wall.id)
-            continue;
-
-        Wall check_wall = walls[i]; // temp debug
-            
-        // Find the intersection
-        Vertex* intersection = FindIntersection(walls[i].line, division_line);
-
-        bool v1_equal = VertexEquals(*intersection, walls[i].line.v1);
-        bool v2_equal = VertexEquals(*intersection, walls[i].line.v2);
-
-        // If there is no intersection, group the walls accordingly. This is the easy case.  -- This is causing errors somehow, exposed with back to front rendering
-        if (intersection == NULL || v1_equal || v2_equal) {
-            if (is_front(walls[i], &cur_wall))
-                front_walls.push_back(walls[i]);
-            else
-                back_walls.push_back(walls[i]);
-        }
-
-        // Otherwise, we need to split the wall
-        else {
-
-            // Grab the id of the current wall
-            int id = walls[i].id;
-
-            // Create a back wall
-            Wall* back_wall = new Wall;
-
-            // The front wall will replace the wall at map.walls[id]
-            map.walls[id].line.v1 = is_front(walls[i].line.v1, &cur_wall) ? walls[i].line.v1 : walls[i].line.v2; // What if v1
-            map.walls[id].line.v2 = *intersection;
-
-            back_wall->id = map.walls.size();
-            back_wall->line.v1 = is_front(walls[i].line.v1, &cur_wall) ? walls[i].line.v2 : walls[i].line.v1;
-            back_wall->line.v2 = *intersection;
-            back_wall->height = walls[i].height;
-            back_wall->color[0] = walls[i].color[0];
-            back_wall->color[1] = walls[i].color[1];
-            back_wall->color[2] = walls[i].color[2];
-
-            map.walls.push_back(*back_wall);
-
-            front_walls.push_back(map.walls[id]);
-            back_walls.push_back(*back_wall);
-        }
     }
 
-    BSP_Tree* return_tree = new BSP_Tree;
-    return_tree->root = parent;
-    return_tree->id = cur_wall.id;
-    return_tree->front = Generate_BSP_Subtree(front_walls, map, return_tree);
-    return_tree->back = Generate_BSP_Subtree(back_walls, map, return_tree);
-    return return_tree;
+    // Read id
+    pos += 4; // Skip past (id=
+    std::string id_str = "";
+    while (bsp_string[pos] != ',')
+        id_str += bsp_string[pos++];
+    int id = std::stoi(id_str);
+
+    // Read the front node
+    pos += 7; // Skip past ,front=
+    BSP_Tree* front_subtree = _DeserializeBSPHelper(bsp_string, pos);
+
+    // Read the back node
+    pos += 6; // Skip past ,back=
+    BSP_Tree* back_subtree = _DeserializeBSPHelper(bsp_string, pos);
+
+    // Skip past the closing )
+    pos++;
+
+    // Assemble the root node
+    BSP_Tree* root_tree = new BSP_Tree;
+    root_tree->id = id;
+    root_tree->front = front_subtree;
+    root_tree->back = back_subtree;
+
+    // Return it
+    return root_tree;
 }
 
-BSP_Tree Generate_BSP_Tree(std::vector<Wall> walls, Map& map) {
-    return *(Generate_BSP_Subtree(walls, map, NULL));
+BSP_Tree DeseralizeBSP(const std::string& bsp_string) {
+    int pos = 0;
+    return *(_DeserializeBSPHelper(bsp_string, pos));
 }

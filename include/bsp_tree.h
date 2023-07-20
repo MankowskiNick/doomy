@@ -18,8 +18,9 @@ struct BSP_Tree {
     BSP_Tree* back;
 };
 
-BSP_Tree Generate_BSP_Tree(std::vector<Wall> walls, Map& map);
+//BSP_Tree Generate_BSP_Tree(std::vector<Wall> walls, Map& map);
 // BSP_Tree* Generate_BSP_Tree(const std::vector<Wall>& walls);
+BSP_Tree DeseralizeBSP(const std::string& bsp_string);
 
 bool is_front(const Vertex& test, const Wall* divider_ptr);
 

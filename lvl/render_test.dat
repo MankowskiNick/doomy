@@ -21,4 +21,6 @@ wall: 2 5 1.0 0 255 255
 wall: 0 4 1.0 0 255 255
 wall: 7 6 1.0 0 255 255
 wall: 8 7 1.0 255 255 0
+[bsp]
+(id=6,front=#,back=(id=5,front=#,back=(id=7,front=(id=4,front=#,back=(id=2,front=(id=9,front=#,back=#),back=(id=0,front=#,back=#))),back=(id=8,front=#,back=(id=10,front=(id=3,front=#,back=(id=1,front=#,back=#)),back=(id=11,front=#,back=#))))))
 [end]

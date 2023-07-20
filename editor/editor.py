@@ -1,6 +1,7 @@
 import tkinter as tk
 import map
 import load_library
+import bsp_tree
 import math
 from tkinter import messagebox
 from tkinter import filedialog
@@ -342,6 +343,9 @@ class MapEditorGUI:
         #   [walls]
         #   id v1.id v2.id height r g b
         #   ...
+        #   [bsp]
+        #   bsp string
+        #   [end]
         contents = ""
 
         contents += "[verts]\n"
@@ -369,6 +373,12 @@ class MapEditorGUI:
                 vert2_id = str(w.line.v1.id)
 
             contents += "wall: " + vert1_id + " " + vert2_id + " " + str(w.height) + " " + str(w.color[0]) + " " + str(w.color[1]) + " " + str(w.color[2]) + "\n"
+        
+        
+        contents += "[bsp]\n"
+
+        bsp = bsp_tree.BSP_Tree(self.map)
+        contents += bsp.to_string() + "\n"
 
         contents += "[end]"
 

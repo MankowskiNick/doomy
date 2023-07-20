@@ -101,7 +101,7 @@ class Map {
 
                 file_stream >> cur_line_header;
 
-                while (cur_line_header != "[end]") {
+                while (cur_line_header != "[bsp]") {
 
                     // Declare variables needed
                     int wall_id, id1, id2; 
@@ -124,8 +124,9 @@ class Map {
                     file_stream >> cur_line_header;
                 }
 
-                bsp_tree = Generate_BSP_Tree(walls, *this);
-                
+                std::string bsp_string = "";
+                file_stream >> bsp_string;
+                bsp_tree = DeseralizeBSP(bsp_string);
             }
             catch(...) {
                 std::cout << "FATAL ERROR: Unable to load file '" << file_name << "'(Incorrect format?)";

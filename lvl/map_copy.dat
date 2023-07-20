@@ -36,15 +36,8 @@ wall: 3 5 1.0 0 255 255
 wall: 4 2 1.0 0 255 255
 wall: 5 6 1.0 255 0 255
 wall: 4 7 1.0 255 0 255
-wall: 7 9 1.0 255 255 0
-wall: 8 6 1.0 255 255 0
 wall: 3 11 1.0 0 255 255
 wall: 2 10 1.0 0 255 255
-wall: 9 12 1.0 255 255 0
-wall: 8 13 1.0 255 255 0
-wall: 15 17 1.0 255 255 0
-wall: 17 16 1.0 255 255 0
-wall: 14 16 1.0 255 255 0
 wall: 24 25 1.0 255 0 0
 wall: 19 24 1.0 255 0 0
 wall: 21 25 1.0 255 0 0
@@ -57,6 +50,13 @@ wall: 27 17 1.0 0 255 255
 wall: 11 27 1.0 0 255 255
 wall: 10 26 1.0 0 255 255
 wall: 16 26 1.0 0 255 255
+wall: 8 6 1.0 255 255 0
+wall: 8 13 1.0 255 255 0
+wall: 15 17 1.0 255 255 0
+wall: 17 16 1.0 255 255 0
+wall: 14 16 1.0 255 255 0
+wall: 9 12 1.0 255 255 0
+wall: 7 9 1.0 255 255 0
 [bsp]
-(id=14,front=(id=12,front=(id=28,front=(id=27,front=#,back=#),back=#),back=(id=11,front=(id=2,front=#,back=(id=1,front=(id=3,front=#,back=(id=0,front=#,back=#)),back=#)),back=(id=16,front=#,back=(id=17,front=(id=18,front=(id=10,front=(id=19,front=#,back=(id=9,front=(id=6,front=(id=7,front=(id=5,front=#,back=#),back=#),back=(id=4,front=#,back=#)),back=(id=22,front=(id=8,front=#,back=#),back=(id=23,front=(id=21,front=#,back=(id=24,front=(id=20,front=#,back=#),back=#)),back=#)))),back=#),back=#),back=(id=15,front=#,back=#))))),back=(id=25,front=(id=26,front=(id=13,front=#,back=#),back=#),back=#))
+(id=21,front=(id=7,front=(id=28,front=(id=11,front=(id=3,front=#,back=#),back=(id=27,front=#,back=(id=5,front=#,back=#))),back=#),back=(id=2,front=#,back=(id=4,front=(id=1,front=(id=0,front=#,back=#),back=#),back=(id=6,front=#,back=#)))),back=(id=24,front=(id=20,front=#,back=(id=22,front=#,back=(id=19,front=(id=28,front=#,back=#),back=(id=18,front=(id=23,front=(id=17,front=#,back=#),back=#),back=#)))),back=(id=28,front=(id=10,front=#,back=#),back=(id=26,front=(id=25,front=#,back=#),back=#))))
 [end]
