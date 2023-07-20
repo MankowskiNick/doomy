@@ -19,6 +19,10 @@ class Wall:
         self.line = line
         self.height = height
         self.color = color
+    def edit_wall(self, v1, v2, height, color):
+        self.line = Line(v1, v2)
+        self.height = height
+        self.color = color
 
 class Map:
     def __init__(self):

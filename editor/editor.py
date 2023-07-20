@@ -186,7 +186,7 @@ class MapEditorGUI:
         vert.y = y
         vert.z = z
 
-        #Modify walls attached
+        # Modify walls attached
         for wall in self.map.Walls:
             if (wall.line.v1.id == id):
                 wall.line.v1 = vert
@@ -290,11 +290,10 @@ class MapEditorGUI:
             messagebox.showinfo("Error", "Please select a wall first.")
 
     def modify_wall(self, v1, v2, height, color):
-        wall = self.selected_wall
+        # Edit the current wall
+        self.selected_wall.edit_wall(v1, v2, height, color)
 
-        self.map.Walls.remove(wall)
-        self.map.AddWall(v1.id, v2.id, height, color[0], color[1], color[2])
-
+        # Redraw canvas
         self.redraw_canvas()
     
     def redraw_canvas(self):

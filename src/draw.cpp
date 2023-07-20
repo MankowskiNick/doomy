@@ -62,13 +62,13 @@ void DrawMinimap(Map& map) {
 
 // Calculate what column the vertex will be at
 int MapToScreenX(const Vertex& vert) {
-    float y = (vert.y == 0) ? 1.0f : vert.y; // Prevent division by 0
+    float y = (abs(vert.y) < ERROR_MARGIN) ? 10000.0f : vert.y; // Prevent division by 0
     return (WIDTH_DRAW_SCALAR * vert.x / y) + (WIDTH / 2);
 }
 
 // Calculate what row the vertex will be at
 int MapToScreenY(const Vertex& vert) {
-    float y = (vert.y == 0) ? 1.0f : vert.y; // Prevent division by 0
+    float y = (abs(vert.y) < ERROR_MARGIN) ? 10000.0f : vert.y; // Prevent division by 0
     return (HEIGHT_DRAW_SCALAR * vert.z / y) + (HEIGHT / 2);
 }
 
@@ -81,13 +81,13 @@ int MapToScreenHeight(const Vertex& vert, float wall_height) {
     return MapToScreenY(second_vert) - MapToScreenY(vert);
 }
 
-void ClipWall(Vertex& neg_y_vert, const Vertex& other) { // TODO: maybe refactor parameters?
+void ClipWall(Vertex& neg_y_vert, const Vertex& other) { // TODO: Resolve issue with clipping that causes random strips of wall to take up entire screen columns
     float dx = other.x - neg_y_vert.x;
     float dy = other.y - neg_y_vert.y;
     float dz = other.z - neg_y_vert.z;
 
-    if (dy == 0.0f)
-        dy = 1.0f; // prevent division by 0
+    if (abs(dy) < ERROR_MARGIN)
+        dy = 0.01f; // prevent division by 0
 
     float scalar = -1.0f * neg_y_vert.y / dy;
     float new_x = neg_y_vert.x + scalar * dx;
@@ -101,6 +101,10 @@ void ClipWall(Vertex& neg_y_vert, const Vertex& other) { // TODO: maybe refactor
 
 // Draw an individual wall
 void DrawWall(Wall& wall, bool* column_drawn_status) {
+        // Don't draw walls that are too close
+        if (abs(wall.line.v1.y) < ERROR_MARGIN || abs(wall.line.v2.y) < ERROR_MARGIN)
+            return;
+
         // Fix a graphical bug that occurs when one point is behind the player
         if (wall.line.v1.y < 0)
             ClipWall(wall.line.v1, wall.line.v2);
@@ -127,8 +131,8 @@ void DrawWall(Wall& wall, bool* column_drawn_status) {
         int end_col = (screencol_2 < 0) ? 0 : ((screencol_2 > WIDTH - 1) ? WIDTH - 1 : screencol_2);
 
         for (int col = start_col; col != end_col; col += step) {
-            if (*(column_drawn_status + (col * sizeof(bool))))
-              continue;
+            // if (*(column_drawn_status + (col * sizeof(bool))))
+            //   continue;
             *(column_drawn_status + (col * sizeof(bool))) = true;
             if (col < 0)
                 col = 0;
@@ -210,11 +214,11 @@ void DrawWalls(Map& map) {
     
     Wall_Node* tail = render_head;
 
-    // while(tail->next != NULL)
-    //    tail = tail->next;
-    // DrawBackToFront(tail, map, column_drawn_status);
+    while(tail->next != NULL)
+       tail = tail->next;
+    DrawBackToFront(tail, map, column_drawn_status);
 
-    DrawOrder(render_head, map, column_drawn_status);
+    //DrawOrder(render_head, map, column_drawn_status);
 }
 
 // Render code
