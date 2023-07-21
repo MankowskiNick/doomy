@@ -87,7 +87,7 @@ void ClipWall(Vertex& neg_y_vert, const Vertex& other) { // TODO: Resolve issue 
     float dz = other.z - neg_y_vert.z;
 
     if (abs(dy) < ERROR_MARGIN)
-        dy = 0.01f; // prevent division by 0
+        dy = 1.0f; // prevent division by 0
 
     float scalar = (NEAREST_RENDER_DIST + (-1.0f * neg_y_vert.y)) / dy;
     float new_x = neg_y_vert.x + scalar * dx;

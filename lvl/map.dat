@@ -32,41 +32,72 @@ vert: 29 -13.15 8.0 0.0
 vert: 30 -16.000000000000025 -6.25 0.0
 vert: 31 -10.0 -13.750000000000004 0.0
 vert: 32 -10.0 6.7500000000000036 0.0
+vert: 33 -1.0 -15.0 0.0
+vert: 34 -1.0 8.0 0.0
+vert: 35 -1.0 -16.75 0.0
+vert: 36 -1.0 11.25 0.0
+vert: 37 -10.0 -0.75 0.0
+vert: 38 -14.0 -9.750000000000004 0.0
+vert: 39 -10.0 -5.749999999999995 0.0
+vert: 40 -14.9 -0.75 0.0
+vert: 42 -10.0 11.25 0.0
+vert: 43 -6.5 8.0 0.0
+vert: 44 -6.5 -15.0 0.0
+vert: 45 -6.5 -16.75 0.0
+vert: 46 -6.5 11.25 0.0
+vert: 47 -10.0 -6.250000000000002 0.0
+vert: 47 -10.0 -16.75 0.0
+vert: 48 -10.0 -6.249999999999999 0.0
 [walls]
-wall: 1 0 1.0 0 255 255
-wall: 1 30 1.0 0 255 255
-wall: 1 0 1.0 0 255 255
-wall: 0 2 1.0 0 255 255
-wall: 3 5 1.0 0 255 255
-wall: 4 2 1.0 0 255 255
-wall: 5 6 1.0 255 0 255
-wall: 4 7 1.0 255 0 255
-wall: 7 32 3.0 255 255 0
-wall: 8 31 3.0 255 255 0
-wall: 3 28 1.0 0 255 255
-wall: 2 29 1.0 0 255 255
-wall: 9 12 3.0 255 255 0
-wall: 8 13 3.0 255 255 0
-wall: 15 17 3.0 255 255 0
-wall: 17 16 3.0 255 255 0
-wall: 14 16 3.0 255 255 0
-wall: 24 25 1.0 255 0 0
-wall: 19 24 3.0 255 0 0
-wall: 21 25 1.0 255 0 0
-wall: 20 21 3.0 255 0 0
-wall: 23 20 3.0 255 0 0
-wall: 22 23 3.0 255 0 0
-wall: 22 18 3.0 255 0 0
-wall: 18 19 3.0 255 0 0
-wall: 27 17 1.0 0 255 255
-wall: 11 27 1.0 0 255 255
-wall: 10 26 1.0 0 255 255
-wall: 16 26 1.0 0 255 255
-wall: 28 11 1.0 0 255 255
-wall: 29 10 1.0 0 255 255
-wall: 30 3 1.0 0 255 255
-wall: 31 6 3.0 255 255 0
-wall: 32 9 3.0 255 255 0
+wall: 0 1 0 1.0 0 255 255
+wall: 1 1 30 1.0 0 255 255
+wall: 2 1 0 1.0 0 255 255
+wall: 3 0 2 1.0 0 255 255
+wall: 4 3 5 1.0 0 255 255
+wall: 5 4 2 1.0 0 255 255
+wall: 6 5 6 1.0 255 0 255
+wall: 7 4 7 1.0 255 0 255
+wall: 8 7 37 3.0 255 255 0
+wall: 9 8 31 3.0 255 255 0
+wall: 10 3 38 1.0 0 255 255
+wall: 11 2 40 1.0 0 255 255
+wall: 12 9 43 3.0 255 255 0
+wall: 13 8 44 3.0 255 255 0
+wall: 14 15 33 3.0 255 255 0
+wall: 16 14 34 3.0 255 255 0
+wall: 17 24 25 1.0 255 0 0
+wall: 18 19 24 1.5 255 0 0
+wall: 19 21 25 1.5 255 0 0
+wall: 20 20 21 2.0 255 0 0
+wall: 21 23 20 2.5 255 0 0
+wall: 22 22 23 3.0 255 0 0
+wall: 23 22 18 2.5 255 0 0
+wall: 24 18 19 2.0 255 0 0
+wall: 25 27 17 1.0 0 255 255
+wall: 26 11 47 1.0 0 255 255
+wall: 27 10 42 1.0 0 255 255
+wall: 28 16 26 1.0 0 255 255
+wall: 29 28 11 1.0 0 255 255
+wall: 30 29 10 1.0 0 255 255
+wall: 31 30 3 1.0 0 255 255
+wall: 32 47 31 3.0 255 255 0
+wall: 33 32 9 3.0 255 255 0
+wall: 34 33 17 3.0 255 255 0
+wall: 35 34 16 3.0 255 255 0
+wall: 36 35 27 1.0 0 255 255
+wall: 37 36 26 1.0 0 255 255
+wall: 38 37 32 3.0 255 255 0
+wall: 39 38 28 1.0 0 255 255
+wall: 40 39 6 3.0 255 255 0
+wall: 41 40 29 1.0 0 255 255
+wall: 43 42 46 1.0 0 255 255
+wall: 44 43 12 3.0 255 255 0
+wall: 45 44 13 3.0 255 255 0
+wall: 46 45 35 1.0 0 255 255
+wall: 47 46 36 1.0 0 255 255
+wall: 48 47 48 3.0 255 255 0
+wall: 47 47 45 1.0 0 255 255
+wall: 48 48 39 3.0 255 255 0
 [bsp]
-(id=14,front=(id=12,front=(id=27,front=#,back=(id=28,front=(id=30,front=#,back=#),back=#)),back=(id=11,front=(id=2,front=#,back=(id=1,front=(id=3,front=#,back=(id=0,front=#,back=#)),back=#)),back=(id=16,front=#,back=(id=15,front=(id=17,front=(id=10,front=(id=18,front=(id=19,front=(id=33,front=#,back=#),back=(id=32,front=(id=6,front=(id=7,front=(id=5,front=#,back=#),back=#),back=(id=4,front=#,back=#)),back=(id=22,front=(id=8,front=#,back=#),back=(id=23,front=(id=21,front=#,back=(id=24,front=(id=20,front=#,back=#),back=#)),back=#)))),back=(id=9,front=#,back=#)),back=(id=31,front=#,back=#)),back=#),back=#)))),back=(id=25,front=(id=26,front=(id=13,front=#,back=(id=29,front=#,back=#)),back=#),back=#))
+(id=25,front=(id=24,front=(id=21,front=(id=27,front=#,back=(id=16,front=(id=43,front=#,back=(id=37,front=#,back=(id=47,front=#,back=(id=30,front=#,back=#)))),back=(id=11,front=(id=2,front=#,back=(id=3,front=#,back=(id=0,front=#,back=#))),back=(id=33,front=(id=6,front=(id=7,front=(id=41,front=#,back=(id=5,front=#,back=#)),back=#),back=(id=4,front=#,back=#)),back=(id=38,front=#,back=(id=35,front=#,back=(id=40,front=#,back=(id=12,front=#,back=(id=44,front=#,back=(id=8,front=#,back=#)))))))))),back=(id=20,front=#,back=(id=22,front=(id=48,front=#,back=#),back=(id=19,front=#,back=(id=18,front=(id=23,front=(id=17,front=#,back=#),back=#),back=#))))),back=(id=32,front=(id=36,front=(id=34,front=#,back=(id=14,front=#,back=(id=45,front=#,back=(id=13,front=#,back=#)))),back=(id=47,front=#,back=(id=46,front=#,back=#))),back=(id=29,front=(id=26,front=(id=48,front=#,back=(id=9,front=#,back=#)),back=#),back=(id=31,front=#,back=(id=10,front=(id=39,front=#,back=#),back=(id=1,front=#,back=#)))))),back=(id=28,front=#,back=#))
 [end]

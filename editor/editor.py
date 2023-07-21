@@ -376,7 +376,7 @@ class MapEditorGUI:
                 vert1_id = str(w.line.v2.id)
                 vert2_id = str(w.line.v1.id)
 
-            contents += "wall: " + vert1_id + " " + vert2_id + " " + str(w.height) + " " + str(w.color[0]) + " " + str(w.color[1]) + " " + str(w.color[2]) + "\n"
+            contents += "wall: "  + str(w.id) + " " + vert1_id + " " + vert2_id + " " + str(w.height) + " " + str(w.color[0]) + " " + str(w.color[1]) + " " + str(w.color[2]) + "\n"
         
         
         contents += "[bsp]\n"
@@ -437,14 +437,15 @@ class MapEditorGUI:
     def parse_wall(self, line):
         if line.startswith('wall:'):
             parts = line.split()
-            if len(parts) == 7:
-                v1_id = int(parts[1])
-                v2_id = int(parts[2])
-                wall_height = float(parts[3])
-                r = int(parts[4])
-                g = int(parts[5])
-                b = int(parts[6])
-                self.map.AddWall(v1_id, v2_id, wall_height, r, g, b)
+            if len(parts) == 8:
+                wall_id = int(parts[1])
+                v1_id = int(parts[2])
+                v2_id = int(parts[3])
+                wall_height = float(parts[4])
+                r = int(parts[5])
+                g = int(parts[6])
+                b = int(parts[7])
+                self.map.AddWallWithId(wall_id, v1_id, v2_id, wall_height, r, g, b)
             else:
                 messagebox.showinfo("Error parsing file.")
 

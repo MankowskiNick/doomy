@@ -106,11 +106,10 @@ class Map {
                     // Declare variables needed
                     int wall_id, id1, id2; 
                     float height;
-                    int r, g, b;
-
-                    wall_id = walls.size();
+                    int r, g, b;;
 
                     // Input the data values
+                    file_stream >> wall_id;
                     file_stream >> id1;
                     file_stream >> id2;
                     file_stream >> height;
