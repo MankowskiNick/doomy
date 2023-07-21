@@ -285,7 +285,7 @@ class MapEditorGUI:
         wall = self.selected_wall
         if (wall != None):
             r, g, b = wall.color[0], wall.color[1], wall.color[2]
-            wall_dialog = WallDialog(self.root, wall.line.v1, wall.line.v2, wall.height, r, g, b, self.modify_wall)
+            wall_dialog = WallDialog(self.root, wall.line.v1, wall.line.v2, wall.height, r, g, b, self.modify_wall, wall.id)
         else:
             messagebox.showinfo("Error", "Please select a wall first.")
 
@@ -345,6 +345,11 @@ class MapEditorGUI:
         #   [bsp]
         #   bsp string
         #   [end]
+
+        # Process the bsp for the map and reassign self.map to be this
+        bsp = bsp_tree.BSP_Tree(self.map)
+        self.map = bsp.get_map()
+
         contents = ""
 
         contents += "[verts]\n"
@@ -376,7 +381,6 @@ class MapEditorGUI:
         
         contents += "[bsp]\n"
 
-        bsp = bsp_tree.BSP_Tree(self.map)
         contents += bsp.to_string() + "\n"
 
         contents += "[end]"
@@ -445,11 +449,11 @@ class MapEditorGUI:
                 messagebox.showinfo("Error parsing file.")
 
 class WallDialog:
-    def __init__(self, parent, v1, v2, height, r, g, b, callback):
+    def __init__(self, parent, v1, v2, height, r, g, b, callback, id = None):
         self.result = None
 
         self.dialog = tk.Toplevel(parent)
-        self.dialog.title("Add Wall")
+        self.dialog.title("Add Wall" + str(id))
 
         self.label_height = tk.Label(self.dialog, text="Wall Height:")
         self.entry_height = tk.Entry(self.dialog)

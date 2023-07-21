@@ -2,8 +2,30 @@ import map
 
 ERROR_MARGIN = 1e-6
 
+def extend_line(line, scalar=100):
+    # Calculate the direction vector between the two vertices
+    direction_vector = map.Vertex(line.v2.id,
+                              line.v2.x - line.v1.x,
+                              line.v2.y - line.v1.y,
+                              line.v2.z - line.v1.z)
+
+    # Calculate the extension for each vertex
+    ext_x = direction_vector.x * scalar
+    ext_y = direction_vector.y * scalar
+    ext_z = direction_vector.z * scalar
+
+    # Create the new extended vertices
+    ext_v1 = map.Vertex(line.v1.id, line.v1.x - ext_x, line.v1.y - ext_y, line.v1.z - ext_z)
+    ext_v2 = map.Vertex(line.v2.id, line.v2.x + ext_x, line.v2.y + ext_y, line.v2.z + ext_z)
+
+    # Create and return the extended line
+    extended_line = map.Line(ext_v1, ext_v2)
+    return extended_line
+
 def get_midpoint(wall):
-    return map.Vertex(-1, (wall.line.v1.x + wall.line.v2.x) / 2, (wall.line.v1.y + wall.line.v2.y) / 2, (wall.line.v1.z + wall.line.v2.z) / 2)
+    return map.Vertex(-1, (wall.line.v1.x + wall.line.v2.x) / 2, 
+                    (wall.line.v1.y + wall.line.v2.y) / 2, 
+                    (wall.line.v1.z + wall.line.v2.z) / 2)
 
 def vertex_equals(v1, v2):
     if (v1 is None or v2 is None):

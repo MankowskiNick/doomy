@@ -31,23 +31,42 @@ class BSP_Tree:
 
         # Pick a partition wall
         partition_wall = walls[int(len(walls) / 2)]
+        partition_line = editor_math.extend_line(partition_wall.line)
 
         for wall in walls:
             if wall.id == partition_wall.id:
                 continue
 
-            intersection = editor_math.find_intersection(wall.line, partition_wall.line)
+            intersection = editor_math.find_intersection(wall.line, partition_line)
 
             v1_equal = editor_math.vertex_equals(intersection, wall.line.v1)
             v2_equal = editor_math.vertex_equals(intersection, wall.line.v2)
 
-            # if (intersection is None or v1_equal or v2_equal):
-            if editor_math.is_front_walls(wall, partition_wall):
-                front_walls.append(wall)
-            else:
-                back_walls.append(wall)
+            # Easy case, the wall is wholely either in front or behind the current partition wall
+            if (intersection is None or v1_equal or v2_equal):
+                if editor_math.is_front_walls(wall, partition_wall):
+                    front_walls.append(wall)
+                else:
+                    back_walls.append(wall)
 
-            # TODO: Split walls that intersect with the dividing wall
+            # We need to split the wall into a front and back portion - this still seems to not work entirely.  
+            # Inspecting the output for the map, it appears to work.  But still getting some overdraw issues.
+            else:
+                # Add the intersection as a vertex
+                intersection.id = len(self.ref_map.Vertices)
+                self.ref_map.AddVertex(intersection.id, intersection.x, intersection.y, intersection.z)
+
+                # Add the new wall and update v2 of the wall we are modifying
+                self.ref_map.AddWall(intersection.id, wall.line.v2.id, wall.height, wall.color[0], wall.color[1], wall.color[2])
+                wall.line.v2 = intersection
+
+                if editor_math.is_front_walls(wall, partition_wall):
+                    front_walls.append(wall)
+                    back_walls.append(self.ref_map.Walls[len(self.ref_map.Walls) - 1])
+                else:
+                    back_walls.append(wall)
+                    front_walls.append(self.ref_map.Walls[len(self.ref_map.Walls) - 1])
+                
         
         front_subtree = self.generate_bsp_subtree(front_walls)
         back_subtree = self.generate_bsp_subtree(back_walls)
@@ -68,3 +87,6 @@ class BSP_Tree:
         back_string = self._to_string_helper(cur_head.back)
 
         return "(id=" + str(cur_head.id) + ",front=" + front_string + ",back=" + back_string + ")"
+
+    def get_map(self):
+        return self.ref_map

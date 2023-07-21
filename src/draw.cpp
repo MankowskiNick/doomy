@@ -89,12 +89,12 @@ void ClipWall(Vertex& neg_y_vert, const Vertex& other) { // TODO: Resolve issue 
     if (abs(dy) < ERROR_MARGIN)
         dy = 0.01f; // prevent division by 0
 
-    float scalar = -1.0f * neg_y_vert.y / dy;
+    float scalar = (NEAREST_RENDER_DIST + (-1.0f * neg_y_vert.y)) / dy;
     float new_x = neg_y_vert.x + scalar * dx;
     float new_z = neg_y_vert.z + scalar * dz;
 
     neg_y_vert.x = new_x;
-    neg_y_vert.y = 0.01f;
+    neg_y_vert.y = NEAREST_RENDER_DIST;
     neg_y_vert.z = new_z;
 
 } 
@@ -106,9 +106,9 @@ void DrawWall(Wall& wall, bool* column_drawn_status) {
             return;
 
         // Fix a graphical bug that occurs when one point is behind the player
-        if (wall.line.v1.y < 0)
+        if (wall.line.v1.y < NEAREST_RENDER_DIST)
             ClipWall(wall.line.v1, wall.line.v2);
-        if (wall.line.v2.y < 0)
+        if (wall.line.v2.y < NEAREST_RENDER_DIST)
             ClipWall(wall.line.v2, wall.line.v1);
 
         // Calculate info for each vertex in the wall

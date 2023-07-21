@@ -31,6 +31,9 @@ class Map:
 
     def AddVertex(self, id, x, y, z):
         vert = Vertex(id, x, y, z)
+        self.AddExistingVertex(vert)
+
+    def AddExistingVertex(self, vert):
         self.Vertices.append(vert)
 
     def AddWall(self, v1_id, v2_id, wall_height, r, g, b):

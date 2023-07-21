@@ -27,19 +27,24 @@ vert: 25 -1.0 -2.25 0.0
 vert: 26 2.5 11.25 0.0
 vert: 27 2.5 -16.75 0.0
 vert: 24 -1.0 -4.75 0.0
+vert: 28 -12.5 -15.0 0.0
+vert: 29 -13.15 8.0 0.0
+vert: 30 -16.000000000000025 -6.25 0.0
+vert: 31 -10.0 -13.750000000000004 0.0
+vert: 32 -10.0 6.7500000000000036 0.0
 [walls]
 wall: 1 0 1.0 0 255 255
-wall: 1 3 1.0 0 255 255
+wall: 1 30 1.0 0 255 255
 wall: 1 0 1.0 0 255 255
 wall: 0 2 1.0 0 255 255
 wall: 3 5 1.0 0 255 255
 wall: 4 2 1.0 0 255 255
 wall: 5 6 1.0 255 0 255
 wall: 4 7 1.0 255 0 255
-wall: 7 9 3.0 255 255 0
-wall: 8 6 3.0 255 255 0
-wall: 3 11 1.0 0 255 255
-wall: 2 10 1.0 0 255 255
+wall: 7 32 3.0 255 255 0
+wall: 8 31 3.0 255 255 0
+wall: 3 28 1.0 0 255 255
+wall: 2 29 1.0 0 255 255
 wall: 9 12 3.0 255 255 0
 wall: 8 13 3.0 255 255 0
 wall: 15 17 3.0 255 255 0
@@ -57,6 +62,11 @@ wall: 27 17 1.0 0 255 255
 wall: 11 27 1.0 0 255 255
 wall: 10 26 1.0 0 255 255
 wall: 16 26 1.0 0 255 255
+wall: 28 11 1.0 0 255 255
+wall: 29 10 1.0 0 255 255
+wall: 30 3 1.0 0 255 255
+wall: 31 6 3.0 255 255 0
+wall: 32 9 3.0 255 255 0
 [bsp]
-(id=14,front=(id=12,front=(id=28,front=(id=27,front=#,back=#),back=#),back=(id=11,front=(id=2,front=#,back=(id=1,front=(id=3,front=#,back=(id=0,front=#,back=#)),back=#)),back=(id=16,front=#,back=(id=17,front=(id=18,front=(id=10,front=(id=19,front=#,back=(id=9,front=(id=6,front=(id=7,front=(id=5,front=#,back=#),back=#),back=(id=4,front=#,back=#)),back=(id=22,front=(id=8,front=#,back=#),back=(id=23,front=(id=21,front=#,back=(id=24,front=(id=20,front=#,back=#),back=#)),back=#)))),back=#),back=#),back=(id=15,front=#,back=#))))),back=(id=25,front=(id=26,front=(id=13,front=#,back=#),back=#),back=#))
+(id=14,front=(id=12,front=(id=27,front=#,back=(id=28,front=(id=30,front=#,back=#),back=#)),back=(id=11,front=(id=2,front=#,back=(id=1,front=(id=3,front=#,back=(id=0,front=#,back=#)),back=#)),back=(id=16,front=#,back=(id=15,front=(id=17,front=(id=10,front=(id=18,front=(id=19,front=(id=33,front=#,back=#),back=(id=32,front=(id=6,front=(id=7,front=(id=5,front=#,back=#),back=#),back=(id=4,front=#,back=#)),back=(id=22,front=(id=8,front=#,back=#),back=(id=23,front=(id=21,front=#,back=(id=24,front=(id=20,front=#,back=#),back=#)),back=#)))),back=(id=9,front=#,back=#)),back=(id=31,front=#,back=#)),back=#),back=#)))),back=(id=25,front=(id=26,front=(id=13,front=#,back=(id=29,front=#,back=#)),back=#),back=#))
 [end]

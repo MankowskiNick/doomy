@@ -1,3 +1,4 @@
 
 
 #define ERROR_MARGIN 0.01f
+#define NEAREST_RENDER_DIST 0.1f
