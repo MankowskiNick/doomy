@@ -62,11 +62,14 @@ class Map {
 
             // File format: 
             //     [verts]
-            //     v1.id v1.x v1.y v1.z
+            //     v1.id v1.x v1.y v1.z is_temp
             //     ...
             //     [walls]
-            //     v1.id v2.id height r g b
+            //     v1.id v2.id height r g b is_temp is_ancestral
             //     ...
+            //     [bsp]
+            //     bsp_string
+            //     [end]
             try {
                 std::ifstream file_stream(file_name);
 
@@ -84,7 +87,7 @@ class Map {
                 while (cur_line_header != "[walls]") {
 
                     // Declare variables needed
-                    int id;
+                    int id, is_temp;
                     float x, y, z;
 
                     // Input data values
@@ -92,6 +95,7 @@ class Map {
                     file_stream >> x;
                     file_stream >> y;
                     file_stream >> z;
+                    file_stream >> is_temp;
 
                     // Add the vertex to the map
                     AddVertex(id, x, y, z);
@@ -104,7 +108,7 @@ class Map {
                 while (cur_line_header != "[bsp]") {
 
                     // Declare variables needed
-                    int wall_id, id1, id2; 
+                    int wall_id, id1, id2, is_temp, is_ancestral; 
                     float height;
                     int r, g, b;;
 
@@ -116,9 +120,12 @@ class Map {
                     file_stream >> r;
                     file_stream >> g;
                     file_stream >> b;
+                    file_stream >> is_temp;
+                    file_stream >> is_ancestral;
 
                     // Add the wall to the map
-                    AddWall(wall_id, id1, id2, height, r, g, b);
+                    if (is_ancestral == 0)
+                        AddWall(wall_id, id1, id2, height, r, g, b);
 
                     file_stream >> cur_line_header;
                 }

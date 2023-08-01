@@ -1,10 +1,10 @@
-import map
+from map import *
 
 ERROR_MARGIN = 1e-6
 
 def extend_line(line, scalar=100):
     # Calculate the direction vector between the two vertices
-    direction_vector = map.Vertex(line.v2.id,
+    direction_vector = Vertex(line.v2.id,
                               line.v2.x - line.v1.x,
                               line.v2.y - line.v1.y,
                               line.v2.z - line.v1.z)
@@ -15,15 +15,15 @@ def extend_line(line, scalar=100):
     ext_z = direction_vector.z * scalar
 
     # Create the new extended vertices
-    ext_v1 = map.Vertex(line.v1.id, line.v1.x - ext_x, line.v1.y - ext_y, line.v1.z - ext_z)
-    ext_v2 = map.Vertex(line.v2.id, line.v2.x + ext_x, line.v2.y + ext_y, line.v2.z + ext_z)
+    ext_v1 = Vertex(line.v1.id, line.v1.x - ext_x, line.v1.y - ext_y, line.v1.z - ext_z)
+    ext_v2 = Vertex(line.v2.id, line.v2.x + ext_x, line.v2.y + ext_y, line.v2.z + ext_z)
 
     # Create and return the extended line
-    extended_line = map.Line(ext_v1, ext_v2)
+    extended_line = Line(ext_v1, ext_v2)
     return extended_line
 
 def get_midpoint(wall):
-    return map.Vertex(-1, (wall.line.v1.x + wall.line.v2.x) / 2, 
+    return Vertex(-1, (wall.line.v1.x + wall.line.v2.x) / 2, 
                     (wall.line.v1.y + wall.line.v2.y) / 2, 
                     (wall.line.v1.z + wall.line.v2.z) / 2)
 
@@ -73,7 +73,7 @@ def find_intersection(l1, l2):
 
     result = Add(A, Scale(AB, t.a))
 
-    intersection = map.Vertex(-1, result.a, result.b, 0)
+    intersection = Vertex(-1, result.a, result.b, 0)
     return intersection
 
 def Midpoint(wall):

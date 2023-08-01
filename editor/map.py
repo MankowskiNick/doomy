@@ -1,12 +1,12 @@
-def CreateEmptyMap():
-    return Map()
-
 class Vertex:
     def __init__(self, id, x, y, z):
         self.id = id
         self.x = x
         self.y = y
         self.z = z
+        self.is_temp = 0
+    def set_temp(self):
+        self.is_temp = 1
 
 class Line:
     def __init__(self, v1, v2):
@@ -19,10 +19,17 @@ class Wall:
         self.line = line
         self.height = height
         self.color = color
+        self.is_temp = 0
+        self.is_ancestral = 0
     def edit_wall(self, v1, v2, height, color):
         self.line = Line(v1, v2)
         self.height = height
         self.color = color
+    def set_temp(self):
+        self.is_temp = 1
+    def set_ancestral(self):
+        self.is_ancestral = 1
+    
 
 class Map:
     def __init__(self):
@@ -52,9 +59,12 @@ class Map:
                     wall.line.v1 = vertex
                 if vertex.id == v2.id:
                     wall.line.v2 = vertex
-            self.Walls.append(wall)
+            self.AddExistingWall(wall)
         else:
             print("Failed to add wall with vertex ids:" + str(v1_id) + " " + str(v2_id))
+
+    def AddExistingWall(self, wall):
+        self.Walls.append(wall)
     
     def AddWallWithId(self, id, v1_id, v2_id, wall_height, r, g, b):
         v1, v2 = None, None

@@ -1,4 +1,5 @@
 import editor_math
+from map import *
 
 class BSP_Node:
     def __init__(self, id, front, back):
@@ -34,7 +35,7 @@ class BSP_Tree:
         partition_line = editor_math.extend_line(partition_wall.line)
 
         for wall in walls:
-            if wall.id == partition_wall.id:
+            if wall.id == partition_wall.id or wall.is_ancestral == 1:
                 continue
 
             intersection = editor_math.find_intersection(wall.line, partition_line)
@@ -54,18 +55,32 @@ class BSP_Tree:
             else:
                 # Add the intersection as a vertex
                 intersection.id = len(self.ref_map.Vertices)
-                self.ref_map.AddVertex(intersection.id, intersection.x, intersection.y, intersection.z)
+
+                new_vert = Vertex(intersection.id, intersection.x, intersection.y, intersection.z)
+                new_vert.set_temp()
+                self.ref_map.AddExistingVertex(new_vert)
+
+                # Only set a wall as ancestral if it isn't temporary
+                if not wall.is_temp:
+                    wall.set_ancestral()
 
                 # Add the new wall and update v2 of the wall we are modifying
-                self.ref_map.AddWall(intersection.id, wall.line.v2.id, wall.height, wall.color[0], wall.color[1], wall.color[2])
-                wall.line.v2 = intersection
+                new_line1 = Line(intersection, wall.line.v2)
+                new_wall1 = Wall(intersection.id, new_line1, wall.height, wall.color)
+                new_wall1.set_temp()
+                self.ref_map.AddExistingWall(new_wall1)
 
-                if editor_math.is_front_walls(wall, partition_wall):
-                    front_walls.append(wall)
-                    back_walls.append(self.ref_map.Walls[len(self.ref_map.Walls) - 1])
+                new_line2 = Line(wall.line.v1, intersection)
+                new_wall2 = Wall(wall.id, new_line2, wall.height, wall.color)
+                new_wall2.set_temp()
+                self.ref_map.AddExistingWall(new_wall2)
+
+                if editor_math.is_front_walls(new_wall1, partition_wall):
+                    front_walls.append(new_wall1)
+                    back_walls.append(new_wall2)
                 else:
-                    back_walls.append(wall)
-                    front_walls.append(self.ref_map.Walls[len(self.ref_map.Walls) - 1])
+                    back_walls.append(new_wall1)
+                    front_walls.append(new_wall2)
                 
         
         front_subtree = self.generate_bsp_subtree(front_walls)

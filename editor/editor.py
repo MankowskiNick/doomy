@@ -1,38 +1,40 @@
 import tkinter as tk
-import map
-import load_library
-import bsp_tree
 import math
 from tkinter import messagebox
 from tkinter import filedialog
 
+from bsp_tree import BSP_Tree
+from wall_dialog import WallDialog
+from vertex_dialog import VertexDialog
+from load_library import *
+from map import *
+from editor_math import *
+
 # TODO:
-#   -Don't allow intersections of walls
+#   -Build in support for attaching images
+#   -Fix bug with line selection not working in add wall mode
+#   -Bug where splitting walls cause random artifacts(Maybe we should make the walls/vertices added in this process temporary?)
 
 def rgb_to_hex(rgb):
     return '#%02x%02x%02x' % tuple(rgb)    
-
-def ccw(v1, v2, v3):
-    return (v3.y - v1.y) * (v2.x - v1.x) > (v2.y - v1.y) * (v3.x - v1.x)
-
-def Intersect(l1, l2):
-    return ccw(l1.v1, l2.v1, l2.v2) != ccw(l1.v2, l2.v1, l2.v2) and ccw(l1.v1, l1.v2, l2.v1) != ccw(l1.v1, l1.v2, l2.v2)
 
 class MapEditorGUI:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Map Editor")
-        self.shared_graphics = load_library.LoadSharedGraphics()
+        self.shared_graphics = LoadSharedGraphics()
         self.canvas_width = self.shared_graphics.GetWidth()
         self.canvas_height = self.shared_graphics.GetHeight()
         self.canvas = tk.Canvas(self.root, width=self.canvas_width, height=self.canvas_height, bg="white")
         self.canvas.pack()
 
-        self.map = map.CreateEmptyMap()
+        self.map = Map()
         self.selected_vertex = None
         self.selected_wall = None
         self.drag_vert_id = None
         self.dragging = False
+
+        self.textures = []
 
         self.canvas.bind("<Button-1>", self.on_canvas_click)
         self.canvas.bind("<B1-Motion>", self.drag)
@@ -252,7 +254,7 @@ class MapEditorGUI:
         return False
 
     def is_near_wall(self, x, y, wall):
-        # # Calculate the distance between the click coordinates and the wall line segment
+        # Calculate the distance between the click coordinates and the wall line segment
         x1, y1 = wall.line.v1.x, wall.line.v1.y
         x2, y2 = wall.line.v2.x, wall.line.v2.y
 
@@ -260,12 +262,12 @@ class MapEditorGUI:
 
         # Create a line that is perpendicular to the line we are checking that has a length of threshold * 2
         angle = math.atan2(x1 - x2, y2 - y1)
-        check_v1 = map.Vertex(-1, x - threshhold * math.cos(angle), y - (threshhold * math.sin(angle)), 0)
-        check_v2 = map.Vertex(-1, x + threshhold * math.cos(angle), y + (threshhold * math.sin(angle)), 0)
-        perp_line = map.Line(check_v1, check_v2)
+        check_v1 = Vertex(-1, x - threshhold * math.cos(angle), y - (threshhold * math.sin(angle)), 0)
+        check_v2 = Vertex(-1, x + threshhold * math.cos(angle), y + (threshhold * math.sin(angle)), 0)
+        perp_line = Line(check_v1, check_v2)
 
         # Return true if this intersects with wall, otherwise return false
-        return Intersect(perp_line, wall.line)
+        return intersect(perp_line, wall.line)
 
     def delete_vertex(self):
         if self.selected_vertex:
@@ -303,7 +305,7 @@ class MapEditorGUI:
             if (self.selected_vertex != None and self.selected_vertex.id == vertex.id):
                 self.canvas.create_oval(x - 7, y - 7, x + 7, y + 7, fill="red")
             self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5, fill="black")
-            self.canvas.create_text(x + 10, y - 10, text=str(vertex.id) + ": (" + str(vertex.x) + " , " + str(vertex.y) + ")")
+            self.canvas.create_text(x + 10, y - 10, text=str(vertex.id) + ": (" + str(vertex.x) + " , " + str(vertex.y) + ")", fill="black", font=('Arial', 12))
 
         for wall in self.map.Walls:
             x1, y1 = wall.line.v1.x, wall.line.v1.y
@@ -331,23 +333,23 @@ class MapEditorGUI:
         return None
 
     def new_map(self):
-        self.map = map.CreateEmptyMap()
+        self.map = map.Map()
         self.canvas.delete("all")
 
     def save_map(self):
         # File format: 
         #   [verts]
-        #   v1.id v1.x v1.y v1.z
+        #   v1.id v1.x v1.y v1.z is_temp
         #   ...
         #   [walls]
-        #   id v1.id v2.id height r g b
+        #   id v1.id v2.id height r g b is_temp is_ancestral
         #   ...
         #   [bsp]
         #   bsp string
         #   [end]
 
         # Process the bsp for the map and reassign self.map to be this
-        bsp = bsp_tree.BSP_Tree(self.map)
+        bsp = BSP_Tree(self.map)
         self.map = bsp.get_map()
 
         contents = ""
@@ -355,7 +357,7 @@ class MapEditorGUI:
         contents += "[verts]\n"
         for v in self.map.Vertices:
             x, y, z = self.map_coords_to_file(v.x, v.y, v.z)
-            contents += "vert: " + str(v.id) + " " + str(x) + " " + str(y) + " " + str(z) + "\n"
+            contents += "vert: " + str(v.id) + " " + str(x) + " " + str(y) + " " + str(z) + " " + str(v.is_temp) + "\n"
         
         contents += "[walls]\n"
         for w in self.map.Walls:
@@ -376,7 +378,7 @@ class MapEditorGUI:
                 vert1_id = str(w.line.v2.id)
                 vert2_id = str(w.line.v1.id)
 
-            contents += "wall: "  + str(w.id) + " " + vert1_id + " " + vert2_id + " " + str(w.height) + " " + str(w.color[0]) + " " + str(w.color[1]) + " " + str(w.color[2]) + "\n"
+            contents += "wall: "  + str(w.id) + " " + vert1_id + " " + vert2_id + " " + str(w.height) + " " + str(w.color[0]) + " " + str(w.color[1]) + " " + str(w.color[2]) +  " " + str(w.is_temp) + " " + str(w.is_ancestral) + "\n"
         
         
         contents += "[bsp]\n"
@@ -406,7 +408,7 @@ class MapEditorGUI:
         file_path = filedialog.askopenfilename(filetypes=[("Map Files", "*.dat")])
         if file_path:
             with open(file_path, 'r') as file:
-                self.map = map.CreateEmptyMap()
+                self.map = Map()
                 section = None
                 for line in file:
                     line = line.strip()
@@ -426,18 +428,20 @@ class MapEditorGUI:
     def parse_vertex(self, line):
         if line.startswith('vert:'):
             parts = line.split()
-            if len(parts) == 5:
+            if len(parts) == 6:
                 id = int(parts[1])
                 x, y, z = float(parts[2]), float(parts[3]), float(parts[4])
                 x, y, z = self.map_coords_from_file(x, y, z)
-                self.map.AddVertex(id, x, y, z)
+                is_temp = int(parts[5])
+                if is_temp == 0:
+                    self.map.AddVertex(id, x, y, z)
             else:
                 messagebox.showinfo("Error parsing file.")
 
     def parse_wall(self, line):
         if line.startswith('wall:'):
             parts = line.split()
-            if len(parts) == 8:
+            if len(parts) == 10:
                 wall_id = int(parts[1])
                 v1_id = int(parts[2])
                 v2_id = int(parts[3])
@@ -445,115 +449,14 @@ class MapEditorGUI:
                 r = int(parts[5])
                 g = int(parts[6])
                 b = int(parts[7])
-                self.map.AddWallWithId(wall_id, v1_id, v2_id, wall_height, r, g, b)
+                is_temp = int(parts[8])
+                if is_temp == 0:
+                    self.map.AddWallWithId(wall_id, v1_id, v2_id, wall_height, r, g, b)
             else:
                 messagebox.showinfo("Error parsing file.")
 
-class WallDialog:
-    def __init__(self, parent, v1, v2, height, r, g, b, callback, id = None):
-        self.result = None
-
-        self.dialog = tk.Toplevel(parent)
-        self.dialog.title("Add Wall" + str(id))
-
-        self.label_height = tk.Label(self.dialog, text="Wall Height:")
-        self.entry_height = tk.Entry(self.dialog)
-        self.label_height.pack()
-        self.entry_height.pack()
-
-        self.label_color = tk.Label(self.dialog, text="Wall Color (R, G, B):")
-        self.entry_r = tk.Entry(self.dialog)
-        self.entry_g = tk.Entry(self.dialog)
-        self.entry_b = tk.Entry(self.dialog)
-        self.label_color.pack()
-        self.entry_r.pack()
-        self.entry_g.pack()
-        self.entry_b.pack()
-
-        self.button_ok = tk.Button(self.dialog, text="OK", command=self.ok)
-        self.button_cancel = tk.Button(self.dialog, text="Cancel", command=self.cancel)
-        self.button_ok.pack()
-        self.button_cancel.pack()
-
-        self.postdialog_callback = callback
-        self.v1 = v1
-        self.v2 = v2
-
-        self.height = height
-        self.color = [r, g, b]
-        
-        self.entry_r.insert(0, str(r))
-        self.entry_g.insert(0, str(g))
-        self.entry_b.insert(0, str(b))
-        self.entry_height.insert(0, str(height))
-
-    def ok(self):
-        try:
-            wall_height = float(self.entry_height.get())
-            wall_color = [int(self.entry_r.get()), int(self.entry_g.get()), int(self.entry_b.get())]
-            self.result = True
-            self.wall_height = wall_height
-            self.wall_color = wall_color
-            self.dialog.destroy()
-
-            self.postdialog_callback(self.v1, self.v2, self.wall_height, self.wall_color)
-        except ValueError:
-            messagebox.showinfo("Error", "Invalid input.")
-
-    def cancel(self):
-        self.result = False
-        self.dialog.destroy()
-
-class VertexDialog:
-    def __init__(self, parent, vertex_id, x, y, z, callback):
-        self.result = False
-
-        self.dialog = tk.Toplevel(parent)
-        self.dialog.title("Add Vertex")
-
-        self.label_x = tk.Label(self.dialog, text="X:")
-        self.entry_x = tk.Entry(self.dialog)
-        self.label_x.pack()
-        self.entry_x.pack()
-
-        self.label_y = tk.Label(self.dialog, text="Y:")
-        self.entry_y = tk.Entry(self.dialog)
-        self.label_y.pack()
-        self.entry_y.pack()
-
-        self.label_z = tk.Label(self.dialog, text="Z:")
-        self.entry_z = tk.Entry(self.dialog)
-        self.label_z.pack()
-        self.entry_z.pack()
-
-        self.button_ok = tk.Button(self.dialog, text="OK", command=self.ok)
-        self.button_cancel = tk.Button(self.dialog, text="Cancel", command=self.cancel)
-        self.button_ok.pack()
-        self.button_cancel.pack()
-
-        self.vertex_id = vertex_id
-        
-        self.postdialog_callback = callback
-
-        self.entry_x.insert(0, str(x))
-        self.entry_y.insert(0, str(y))
-        self.entry_z.insert(0, str(z))
-
-    def ok(self):
-        try:
-            x = float(self.entry_x.get())
-            y = float(self.entry_y.get())
-            z = float(self.entry_z.get())
-            self.x = x
-            self.y = y
-            self.z = z
-            self.dialog.destroy()
-            self.postdialog_callback(self.vertex_id, x, y, z)
-        except ValueError:
-            messagebox.showinfo("Error", "Invalid input.")
-
-    def cancel(self):
-        self.dialog.destroy()
+    def add_texture(self):
+        pass
 
 if __name__ == "__main__":
     MapEditorGUI()
