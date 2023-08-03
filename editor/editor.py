@@ -14,6 +14,7 @@ from editor_math import *
 #   -Build in support for attaching images
 #   -Fix bug with line selection not working in add wall mode
 #   -Bug where splitting walls cause random artifacts(Maybe we should make the walls/vertices added in this process temporary?)
+#   -Normalize xy and z values when loading/saving maps
 
 def rgb_to_hex(rgb):
     return '#%02x%02x%02x' % tuple(rgb)    
@@ -395,13 +396,13 @@ class MapEditorGUI:
     def map_coords_to_file(self, x, y, z):
         x = (x - (self.canvas_width / 2)) * self.mapping_scalar
         y = (y - (self.canvas_height / 2)) * self.mapping_scalar
-        z = z * self.mapping_scalar
+        z = z # * self.mapping_scalar
         return x, y, z
 
     def map_coords_from_file(self, x, y, z):
         x = (x / self.mapping_scalar) + (self.canvas_width / 2)
         y = (y / self.mapping_scalar) + (self.canvas_height / 2)
-        z = (z / self.mapping_scalar)
+        z = z
         return x, y, z
 
     def load_map(self):

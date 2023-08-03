@@ -53,7 +53,9 @@ def ccw(v1, v2, v3):
 # NOTE: This solution does not produce correct results when the two lines are colinear.
 # TODO: Find a more general case?
 def intersect(l1, l2):
-    return ccw(l1.v1, l2.v1, l2.v2) != ccw(l1.v2, l2.v1, l2.v2) and ccw(l1.v1, l1.v2, l2.v1) != ccw(l1.v1, l1.v2, l2.v2);
+    if abs(l1.v1.z - l2.v1.z) < ERROR_MARGIN:
+        return ccw(l1.v1, l2.v1, l2.v2) != ccw(l1.v2, l2.v1, l2.v2) and ccw(l1.v1, l1.v2, l2.v1) != ccw(l1.v1, l1.v2, l2.v2);
+    return False
 
 # Return the intersection of 2 lines
 def find_intersection(l1, l2):
@@ -73,7 +75,7 @@ def find_intersection(l1, l2):
 
     result = Add(A, Scale(AB, t.a))
 
-    intersection = Vertex(-1, result.a, result.b, 0)
+    intersection = Vertex(-1, result.a, result.b, l1.v1.z)
     return intersection
 
 def Midpoint(wall):
