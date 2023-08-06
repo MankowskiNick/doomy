@@ -35,70 +35,67 @@ vert: 33 8.5 -2.25 2.5 0
 vert: 30 10.0 -0.75 2.5 0
 vert: 34 14.0 -2.25 2.5 0
 vert: 31 12.5 -0.75 2.5 0
-vert: 36 -10.0 6.7500000000000036 0.0 1
-vert: 37 -12.833333333333337 9.583333333333314 0.0 1
-vert: 38 -12.5 -15.0 0.0 1
-vert: 39 -16.428571428571423 -1.25 0.0 1
-vert: 40 -10.0 -13.750000000000004 0.0 1
-vert: 41 -10.0 -0.75 0.0 1
-vert: 42 -10.0 -0.75 0.0 1
-vert: 43 -10.0 -1.2500000000000142 0.0 1
-vert: 44 -10.0 -1.2500000000000142 0.0 1
+vert: 37 10.0 3.75 0.0 0
+vert: 36 15.0 3.75 0.0 0
+vert: 38 -10.0 6.749999999999983 0.0 1
+vert: 39 -12.833333333333332 9.583333333333337 0.0 1
+vert: 40 -12.5 -15.0 0.0 1
+vert: 41 -16.000000000000025 -6.25 0.0 1
+vert: 42 -10.0 -13.749999999999984 0.0 1
+vert: 43 -10.0 -0.75 0.0 1
+vert: 44 -10.0 -0.75 0.0 1
 [walls]
-wall: 1 1 0 1.0 0 255 255 0 0
-wall: 2 1 3 1.0 0 255 255 0 0
-wall: 3 1 0 1.0 0 255 255 0 0
-wall: 4 0 2 1.0 0 255 255 0 1
-wall: 5 3 5 1.0 0 255 255 0 0
-wall: 6 4 2 1.0 0 255 255 0 0
-wall: 7 5 6 1.0 255 0 255 0 0
-wall: 8 4 7 1.0 255 0 255 0 0
-wall: 9 7 9 3.0 255 255 0 0 1
-wall: 10 8 6 3.0 255 255 0 0 1
-wall: 11 3 11 1.0 0 255 255 0 1
-wall: 12 2 10 1.0 0 255 255 0 1
-wall: 13 9 12 3.0 255 255 0 0 0
-wall: 14 8 13 3.0 255 255 0 0 0
-wall: 15 15 17 3.0 255 255 0 0 0
-wall: 17 14 16 3.0 255 255 0 0 0
-wall: 18 24 25 1.0 255 0 0 0 0
-wall: 19 19 24 1.5 255 0 0 0 0
-wall: 20 21 25 1.5 255 0 0 0 0
-wall: 21 20 21 2.0 255 0 0 0 0
-wall: 22 23 20 2.5 255 0 0 0 0
-wall: 23 22 23 3.0 255 0 0 0 0
-wall: 24 22 18 2.5 255 0 0 0 0
-wall: 25 18 19 2.0 255 0 0 0 0
-wall: 26 27 17 1.0 0 255 255 0 0
-wall: 27 11 27 1.0 0 255 255 0 0
-wall: 28 10 26 1.0 0 255 255 0 0
-wall: 29 16 26 1.0 0 255 255 0 0
-wall: 28 33 30 0.5 0 255 255 0 0
-wall: 29 30 31 0.5 0 255 255 0 0
-wall: 30 31 34 0.5 0 255 255 0 0
-wall: 31 35 34 0.5 0 255 255 0 0
-wall: 32 29 35 0.5 0 255 255 0 0
-wall: 33 28 29 0.5 0 255 255 0 0
-wall: 34 32 28 0.5 0 255 255 0 0
-wall: 35 32 33 0.5 0 255 255 0 0
-wall: 36 36 9 3.0 255 255 0 1 0
-wall: 9 7 36 3.0 255 255 0 1 0
-wall: 37 37 10 1.0 0 255 255 1 0
-wall: 12 2 37 1.0 0 255 255 1 0
-wall: 38 38 11 1.0 0 255 255 1 0
-wall: 11 3 38 1.0 0 255 255 1 0
+wall: 1 0 1 1.0 0 255 255 0 0
+wall: 2 3 1 1.0 0 255 255 0 1
+wall: 3 0 1 1.0 0 255 255 0 0
+wall: 4 2 0 1.0 0 255 255 0 0
+wall: 5 5 3 1.0 0 255 255 0 0
+wall: 6 2 4 1.0 0 255 255 0 0
+wall: 7 6 5 1.0 255 0 255 0 0
+wall: 8 7 4 1.0 255 0 255 0 0
+wall: 9 9 7 3.0 255 255 0 0 1
+wall: 10 6 8 3.0 255 255 0 0 1
+wall: 11 11 3 1.0 0 255 255 0 1
+wall: 12 10 2 1.0 0 255 255 0 1
+wall: 13 12 9 3.0 255 255 0 0 0
+wall: 14 13 8 3.0 255 255 0 0 0
+wall: 15 17 15 3.0 255 255 0 0 0
+wall: 17 16 14 3.0 255 255 0 0 0
+wall: 18 25 24 1.0 255 0 0 0 0
+wall: 19 24 19 1.5 255 0 0 0 0
+wall: 20 25 21 1.5 255 0 0 0 0
+wall: 21 21 20 2.0 255 0 0 0 0
+wall: 22 20 23 2.5 255 0 0 0 0
+wall: 23 23 22 3.0 255 0 0 0 0
+wall: 24 18 22 2.5 255 0 0 0 0
+wall: 25 19 18 2.0 255 0 0 0 0
+wall: 26 17 27 1.0 0 255 255 0 0
+wall: 27 27 11 1.0 0 255 255 0 0
+wall: 28 26 10 1.0 0 255 255 0 0
+wall: 29 26 16 1.0 0 255 255 0 0
+wall: 28 30 33 0.5 0 255 255 0 0
+wall: 29 31 30 0.5 0 255 255 0 0
+wall: 30 34 31 0.5 0 255 255 0 0
+wall: 31 34 35 0.5 0 255 255 0 0
+wall: 32 35 29 0.5 0 255 255 0 0
+wall: 33 29 28 0.5 0 255 255 0 0
+wall: 34 28 32 0.5 0 255 255 0 0
+wall: 35 33 32 0.5 0 255 255 0 0
+wall: 36 36 37 1.0 0 0 0 0 0
+wall: 37 38 7 3.0 255 255 0 1 0
+wall: 38 9 38 3.0 255 255 0 1 0
 wall: 39 39 2 1.0 0 255 255 1 0
-wall: 4 0 39 1.0 0 255 255 1 0
-wall: 40 40 6 3.0 255 255 0 1 0
-wall: 10 8 40 3.0 255 255 0 1 0
-wall: 41 41 36 3.0 255 255 0 1 0
-wall: 9 7 41 3.0 255 255 0 1 0
-wall: 42 42 36 3.0 255 255 0 1 0
-wall: 9 7 42 3.0 255 255 0 1 0
-wall: 43 43 41 3.0 255 255 0 1 0
-wall: 9 7 43 3.0 255 255 0 1 0
-wall: 44 44 42 3.0 255 255 0 1 0
-wall: 9 7 44 3.0 255 255 0 1 0
+wall: 40 10 39 1.0 0 255 255 1 0
+wall: 41 40 3 1.0 0 255 255 1 0
+wall: 42 11 40 1.0 0 255 255 1 0
+wall: 43 41 1 1.0 0 255 255 1 0
+wall: 44 3 41 1.0 0 255 255 1 0
+wall: 45 42 8 3.0 255 255 0 1 0
+wall: 46 6 42 3.0 255 255 0 1 0
+wall: 47 43 7 3.0 255 255 0 1 0
+wall: 48 38 43 3.0 255 255 0 1 0
+wall: 49 44 7 3.0 255 255 0 1 0
+wall: 50 38 44 3.0 255 255 0 1 0
 [bsp]
-(id=20,front=(id=30,front=(id=29,front=#,back=#),back=(id=31,front=(id=29,front=(id=17,front=(id=28,front=#,back=(id=37,front=#,back=#)),back=(id=13,front=#,back=(id=36,front=#,back=#))),back=(id=33,front=(id=34,front=(id=32,front=(id=35,front=#,back=(id=28,front=#,back=#)),back=#),back=#),back=#)),back=#)),back=(id=14,front=(id=11,front=(id=18,front=(id=19,front=(id=12,front=(id=39,front=#,back=#),back=(id=21,front=(id=42,front=#,back=(id=41,front=#,back=#)),back=(id=40,front=(id=7,front=(id=8,front=(id=6,front=#,back=#),back=#),back=(id=5,front=#,back=#)),back=(id=24,front=(id=23,front=(id=44,front=#,back=(id=43,front=#,back=#)),back=(id=25,front=(id=22,front=#,back=#),back=#)),back=(id=9,front=#,back=#))))),back=(id=10,front=#,back=#)),back=#),back=(id=3,front=#,back=(id=2,front=(id=4,front=#,back=(id=1,front=#,back=#)),back=#))),back=(id=26,front=(id=15,front=#,back=(id=27,front=(id=38,front=#,back=#),back=#)),back=#)))
+(id=20,front=(id=14,front=(id=26,front=#,back=(id=27,front=#,back=(id=42,front=#,back=#))),back=(id=39,front=(id=15,front=#,back=(id=18,front=#,back=(id=41,front=(id=44,front=#,back=#),back=(id=19,front=(id=45,front=#,back=#),back=(id=21,front=(id=46,front=(id=24,front=#,back=(id=23,front=(id=25,front=#,back=(id=22,front=#,back=#)),back=#)),back=(id=8,front=(id=7,front=(id=5,front=#,back=#),back=#),back=(id=47,front=#,back=(id=49,front=#,back=(id=6,front=#,back=#))))),back=(id=50,front=#,back=(id=48,front=#,back=#))))))),back=(id=3,front=(id=4,front=(id=43,front=#,back=#),back=#),back=(id=1,front=#,back=#)))),back=(id=30,front=(id=31,front=#,back=(id=29,front=(id=33,front=#,back=(id=34,front=#,back=(id=32,front=#,back=(id=35,front=(id=28,front=#,back=#),back=#)))),back=(id=17,front=(id=38,front=#,back=#),back=(id=28,front=(id=13,front=#,back=(id=40,front=#,back=#)),back=#)))),back=(id=36,front=#,back=(id=29,front=#,back=#))))
 [end]

@@ -127,7 +127,7 @@ class MapEditorGUI:
                 self.create_wall(cur_vertex, self.selected_vertex)
 
             # If it is the same vertex,
-            elif (cur_vertex == None or cur_vertex.id == self.selected_vertex.id):
+            elif (cur_vertex.id == self.selected_vertex.id):
                 # Deselect it
                 self.selected_vertex = None
 
@@ -362,22 +362,8 @@ class MapEditorGUI:
         
         contents += "[walls]\n"
         for w in self.map.Walls:
-            # Note: We are writing walls in order of id, so they don't need to be stored.
-            # The order they are presented in the file does matter, however.  We need to normalize this or we will encounter 
-            # overdraw errors with the bsp tree.  Let's do this in order of x ascending then y ascending.
-            if abs(w.line.v1.x) < abs(w.line.v2.x):
-                vert1_id = str(w.line.v1.id)
-                vert2_id = str(w.line.v2.id)
-            elif abs(w.line.v1.x) == abs(w.line.v2.x):
-                if abs(w.line.v1.y) < abs(w.line.v2.y):
-                    vert1_id = str(w.line.v1.id)
-                    vert2_id = str(w.line.v2.id)
-                else:
-                    vert1_id = str(w.line.v2.id)
-                    vert2_id = str(w.line.v1.id)
-            else:
-                vert1_id = str(w.line.v2.id)
-                vert2_id = str(w.line.v1.id)
+            vert1_id = str(w.line.v1.id) # TODO: why does reversing these change the draw order?
+            vert2_id = str(w.line.v2.id)
 
             contents += "wall: "  + str(w.id) + " " + vert1_id + " " + vert2_id + " " + str(w.height) + " " + str(w.color[0]) + " " + str(w.color[1]) + " " + str(w.color[2]) +  " " + str(w.is_temp) + " " + str(w.is_ancestral) + "\n"
         
