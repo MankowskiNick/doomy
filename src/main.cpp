@@ -10,6 +10,7 @@
 #include "camera.h"
 #include "draw.h"
 #include "input.h"
+#include "callback.h"
 
 int main(int argc, char** argv) {
 
@@ -18,17 +19,21 @@ int main(int argc, char** argv) {
     Map map;
     map.LoadFile("lvl/map.dat");
 
-    // Configure drawing and store a pointer to the window
-    GLFWwindow* window = ConfigureDraw(camera);
+    // Configure callbacks
+    CallbackHandler callbackHandler(camera);
 
     // Configure input
-    ConfigureInput(camera);
+    InputHandler inputHandler(camera, callbackHandler);
+
+    // Configure drawing and store a pointer to the window
+    GLFWwindow* window = ConfigureDraw(camera, callbackHandler);
+
     
     // Main loop
     while (!glfwWindowShouldClose(window)) {
         
         // Perform work on keyboard input and poll key events
-        PerformKeyAction();
+        inputHandler.PerformKeyAction();
 
         // Render the scene
         Render(map, camera);

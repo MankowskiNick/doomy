@@ -24,16 +24,26 @@ ViewMap view_map;
 
 GLLib gl;
 
-void error_callback(int error, const char* description) {
-    fprintf(stderr, "Error: %s\n", description);
+CallbackHandler* callbackHandler;
+
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    callbackHandler->KeyBind(window, key, scancode, action, mods);
+}
+void MouseCallback(GLFWwindow* window, double xpos, double ypos) {
+    callbackHandler->MouseBind(window, xpos, ypos);
+}
+void ErrorCallback(int error, const char* description) {
+    callbackHandler->ErrorBind(error, description);
 }
 
 // Initialization code, just in case we end up needing to initialize things other than gl_lib
-GLFWwindow* ConfigureDraw(Camera& camera) {
+GLFWwindow* ConfigureDraw(Camera& camera, CallbackHandler& newCallbackHandler) {
+
+    callbackHandler = &newCallbackHandler;
 
     // Initialize a new gllib instance
     gl = GLLib();
-    gl.Init("doomy", WIDTH, HEIGHT, error_callback, key_callback, mouse_callback);
+    gl.Init("doomy", WIDTH, HEIGHT, ErrorCallback, KeyCallback, MouseCallback);
     gl.BindShader("shaders/shader.vsh", "shaders/shader.fsh");
 
     // Initialize the view

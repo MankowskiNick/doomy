@@ -9,8 +9,9 @@
 #include "texture.h"
 #include "map.h"
 #include "camera.h"
+#include "callback.h"
 
-GLFWwindow* ConfigureDraw(Camera& camera);
+GLFWwindow* ConfigureDraw(Camera& camera, CallbackHandler& newCallbackHandler);
 
 void Render(Map map, Camera& camera);
 
