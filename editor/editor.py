@@ -164,11 +164,10 @@ class MapEditorGUI:
         self.dragging = False
 
     def create_vertex(self, x, y):
-        vertex_id = len(self.map.Vertices)
-        vertex_dialog = VertexDialog(self.root, vertex_id, x, y, 0, self.build_vertex)
+        vertex_dialog = VertexDialog(self.root, x, y, 0, self.build_vertex)
 
-    def build_vertex(self, id, x, y, z):
-        self.map.AddVertex(id, x, y, z)
+    def build_vertex(self, x, y, z):
+        self.map.AddVertex(x, y, z)
         self.redraw_canvas()
 
     def edit_vertex(self):
@@ -421,7 +420,7 @@ class MapEditorGUI:
                 x, y, z = self.map_coords_from_file(x, y, z)
                 is_temp = int(parts[5])
                 if is_temp == 0:
-                    self.map.AddVertex(id, x, y, z)
+                    self.map.AddVertexWithId(id, x, y, z)
             else:
                 messagebox.showinfo("Error parsing file.")
 

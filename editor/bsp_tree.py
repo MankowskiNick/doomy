@@ -43,12 +43,6 @@ class BSP_Tree:
             v1_equal = editor_math.vertex_equals(intersection, wall.line.v1)
             v2_equal = editor_math.vertex_equals(intersection, wall.line.v2)
 
-
-            if (wall.line.v1.id == 10 and wall.line.v2.id == 26) or (wall.line.v1.id == 26 and wall.line.v2.id == 10):
-                print("found the problem child")
-            if (wall.line.v1.id == 11 and wall.line.v2.id == 27) or (wall.line.v1.id == 27 and wall.line.v2.id == 11):
-                print("found the non problem child")
-
             # Easy case, the wall is wholely either in front or behind the current partition wall
             if (intersection is None or v1_equal or v2_equal):
                 if editor_math.is_front_walls(wall, partition_wall):
@@ -60,9 +54,8 @@ class BSP_Tree:
             # Inspecting the output for the map, it appears to work.  But still getting some overdraw issues.
             else:
                 # Add the intersection as a vertex
-                intersection.id = len(self.ref_map.Vertices)
-
-                new_vert = Vertex(intersection.id, intersection.x, intersection.y, intersection.z)
+                new_vert_id = self.ref_map.GetNewVertexId()
+                new_vert = Vertex(new_vert_id, intersection.x, intersection.y, intersection.z)
                 new_vert.set_temp()
                 self.ref_map.AddExistingVertex(new_vert)
 
@@ -71,13 +64,13 @@ class BSP_Tree:
                     wall.set_ancestral()
 
                 # Add the new wall and update v2 of the wall we are modifying
-                new_line1 = Line(intersection, wall.line.v2)
-                new_wall1 = Wall(len(self.ref_map.Walls), new_line1, wall.height, wall.color)
+                new_line1 = Line(new_vert, wall.line.v2)
+                new_wall1 = Wall(self.ref_map.GetNewWallId(), new_line1, wall.height, wall.color)
                 new_wall1.set_temp()
                 self.ref_map.AddExistingWall(new_wall1)
 
-                new_line2 = Line(wall.line.v1, intersection)
-                new_wall2 = Wall(len(self.ref_map.Walls), new_line2, wall.height, wall.color)
+                new_line2 = Line(wall.line.v1, new_vert)
+                new_wall2 = Wall(self.ref_map.GetNewWallId(), new_line2, wall.height, wall.color)
                 new_wall2.set_temp()
                 self.ref_map.AddExistingWall(new_wall2)
 

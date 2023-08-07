@@ -4,7 +4,7 @@ from tkinter import messagebox
 from tkinter import filedialog
 
 class VertexDialog:
-    def __init__(self, parent, vertex_id, x, y, z, callback):
+    def __init__(self, parent, x, y, z, callback):
         self.result = False
 
         self.dialog = tk.Toplevel(parent)
@@ -29,8 +29,6 @@ class VertexDialog:
         self.button_cancel = tk.Button(self.dialog, text="Cancel", command=self.cancel)
         self.button_ok.pack()
         self.button_cancel.pack()
-
-        self.vertex_id = vertex_id
         
         self.postdialog_callback = callback
 
@@ -47,7 +45,7 @@ class VertexDialog:
             self.y = y
             self.z = z
             self.dialog.destroy()
-            self.postdialog_callback(self.vertex_id, x, y, z)
+            self.postdialog_callback(x, y, z)
         except ValueError:
             messagebox.showinfo("Error", "Invalid input.")
 

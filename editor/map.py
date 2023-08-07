@@ -35,12 +35,17 @@ class Map:
     def __init__(self):
         self.Walls = []
         self.Vertices = []
+        
 
-    def AddVertex(self, id, x, y, z):
+    def AddVertex(self, x, y, z):
+        vert = Vertex(self.GetNewVertexId(), x, y, z)
+        self.AddExistingVertex(vert)
+
+    def AddVertexWithId(self, id, x, y, z):
         vert = Vertex(id, x, y, z)
         self.AddExistingVertex(vert)
 
-    def AddExistingVertex(self, vert):
+    def AddExistingVertex(self, vert): # TODO: Should we override the vert id to make sure it's legal?
         self.Vertices.append(vert)
 
     def AddWall(self, v1_id, v2_id, wall_height, r, g, b):
@@ -52,7 +57,7 @@ class Map:
                 v2 = v
         if v1 != None and v2 != None:
             line = Line(v1, v2)
-            wall_id = len(self.Walls)
+            wall_id = self.GetNewWallId()
             wall = Wall(wall_id, line, wall_height, [r, g, b])
             for vertex in self.Vertices:
                 if vertex.id == v1.id:
@@ -84,3 +89,17 @@ class Map:
             self.Walls.append(wall)
         else:
             print("Failed to add wall with vertex ids:" + str(v1_id) + " " + str(v2_id))
+
+    def GetNewWallId(self):
+        ids = [w.id for w in self.Walls]
+        return self._GetNewId(ids)    
+    
+    def GetNewVertexId(self):
+        ids = [v.id for v in self.Vertices]
+        return self._GetNewId(ids)
+
+    def _GetNewId(self, ids):
+        new_id = 0
+        while new_id in ids:
+            new_id += 1
+        return new_id
