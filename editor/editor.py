@@ -6,7 +6,6 @@ from tkinter import filedialog
 from bsp_tree import BSP_Tree
 from wall_dialog import WallDialog
 from vertex_dialog import VertexDialog
-from load_library import *
 from map import *
 from editor_math import *
 
@@ -23,9 +22,8 @@ class MapEditorGUI:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Map Editor")
-        self.shared_graphics = LoadSharedGraphics()
-        self.canvas_width = self.shared_graphics.GetWidth()
-        self.canvas_height = self.shared_graphics.GetHeight()
+        self.canvas_width = 1000
+        self.canvas_height = 750
         self.canvas = tk.Canvas(self.root, width=self.canvas_width, height=self.canvas_height, bg="white")
         self.canvas.pack()
 
