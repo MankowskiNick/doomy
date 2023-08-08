@@ -1,15 +1,15 @@
 #ifndef CALLBACK_H
 #define CALLBACK_H
 
-#include <GLFW/glfw3.h>
-
 #include "constants.h"
 #include "camera.h"
+
+class GLLib; // TODO: Sort this out? Maybe?
 
 class CallbackHandler {
 
     public:
-        CallbackHandler(Camera& newCamera);
+        CallbackHandler(Camera& newCamera, GLLib& gl);
         ~CallbackHandler();
 
         // Callback method -- these probably have to exist outside of the class definition
@@ -31,5 +31,7 @@ class CallbackHandler {
         // Current mouse position
         double cur_mousex, cur_mousey;
 };
+
+void ConfigureCallbacks(CallbackHandler* newCallbackHandler, GLLib& gl); // This is kinda janky
 
 #endif

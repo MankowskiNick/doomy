@@ -1,41 +1,51 @@
 #include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <random>
 
-#include "map.h"
-#include "camera.h"
-#include "draw.h"
-#include "input.h"
+#include "shared_graphics.h"
+#include "gllib.h"
 #include "callback.h"
+#include "input.h"
+#include "std_graphics.h"
+#include "draw.h"
+#include "camera.h"
+#include "map.h"
+#include "minimap.h"
 
 int main(int argc, char** argv) {
 
-    // Initialize camera & map
-    Camera camera = Camera(0.0f, 0.0f, 0.5f, 0.0f);
+    // Initialize map
     Map map;
     map.LoadFile("lvl/map.dat");
 
-    // Configure callbacks
-    CallbackHandler callbackHandler(camera);
+    Camera camera(0.0f, 0.0f, 0.5f, 0.0f);
+    GLLib glHandler;
+    StdGraphicsHandler stdGraphicsHandler(glHandler);
 
-    // Configure input
-    InputHandler inputHandler(camera, callbackHandler);
 
     // Configure drawing and store a pointer to the window
-    GLFWwindow* window = ConfigureDraw(camera, callbackHandler);
+    ConfigureDraw(camera, stdGraphicsHandler, glHandler);
+
+
+    CallbackHandler callbackHandler(camera, glHandler);
+    InputHandler inputHandler(camera, callbackHandler);
+    MinimapHandler minimapHandler(camera, map, stdGraphicsHandler);
+
+
 
     
     // Main loop
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(glHandler.GetWindow())) {
         
         // Perform work on keyboard input and poll key events
         inputHandler.PerformKeyAction();
 
         // Render the scene
         Render(map, camera);
-    }
 
-    Destroy();
+        // Draw the minimap
+        minimapHandler.Draw();
+
+        // Update the display
+        stdGraphicsHandler.UpdateDisplay();
+    }
     exit(EXIT_SUCCESS);
 }

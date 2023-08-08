@@ -1,13 +1,16 @@
-#include <GLFW/glfw3.h>
-#include <math.h>
-#include <iostream>
 
 #include "constants.h"
+#include "gllib.h" // this breaks the build
 #include "callback.h"
 #include "camera.h"
 
-CallbackHandler::CallbackHandler(Camera& newCamera) { 
+#include <iostream>
+#include <GLFW/glfw3.h>
+
+
+CallbackHandler::CallbackHandler(Camera& newCamera, GLLib& gl) { 
     camera_ptr = &newCamera;
+    ConfigureCallbacks(this, gl);
 }
 
 CallbackHandler::~CallbackHandler() { }
@@ -37,4 +40,24 @@ void CallbackHandler::ErrorBind(int error, const char* description) {
 
 int* CallbackHandler::GetCurKey() const {
     return cur_key;
+}
+
+CallbackHandler* callbackHandler;
+
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    callbackHandler->KeyBind(window, key, scancode, action, mods);
+}
+void MouseCallback(GLFWwindow* window, double xpos, double ypos) {
+    callbackHandler->MouseBind(window, xpos, ypos);
+}
+void ErrorCallback(int error, const char* description) {
+    callbackHandler->ErrorBind(error, description);
+}
+
+void ConfigureCallbacks(CallbackHandler* newCallbackHandler, GLLib& gl) {
+    callbackHandler = newCallbackHandler;
+
+    gl.BindKeyCallback(KeyCallback);
+    gl.BindMouseCallback(MouseCallback);
+    gl.BindErrorCallback(ErrorCallback);
 }

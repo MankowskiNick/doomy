@@ -22,52 +22,20 @@
 
 ViewMap view_map;
 
-GLLib gl;
+GLLib* gl;
 
-CallbackHandler* callbackHandler;
-
-void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    callbackHandler->KeyBind(window, key, scancode, action, mods);
-}
-void MouseCallback(GLFWwindow* window, double xpos, double ypos) {
-    callbackHandler->MouseBind(window, xpos, ypos);
-}
-void ErrorCallback(int error, const char* description) {
-    callbackHandler->ErrorBind(error, description);
-}
+StdGraphicsHandler* stdGraphicsHandler;
 
 // Initialization code, just in case we end up needing to initialize things other than gl_lib
-GLFWwindow* ConfigureDraw(Camera& camera, CallbackHandler& newCallbackHandler) {
+void ConfigureDraw(Camera& camera, StdGraphicsHandler& newStdGraphicsHandler, GLLib& newGlLib) {
 
-    callbackHandler = &newCallbackHandler;
+    stdGraphicsHandler = &newStdGraphicsHandler;
 
     // Initialize a new gllib instance
-    gl = GLLib();
-    gl.Init("doomy", WIDTH, HEIGHT, ErrorCallback, KeyCallback, MouseCallback);
-    gl.BindShader("shaders/shader.vsh", "shaders/shader.fsh");
-
-    // Initialize the view
-    InitView(gl);
+    gl = &newGlLib;
 
     // Initialize a view_map, this is a "worker" class that will translate the map
     view_map = ViewMap(camera);
-
-    return gl.GetWindow();
-}
-
-// TODO: abstract to minimap utility
-// Draw the minimap
-void DrawMinimap(Map& map) {
-    for (int i = 0; i < map.walls.size(); i++) {
-        int x1 = (int)(map.walls[i].line.v1.x * MINIMAP_SCALE) + MINIMAP_X + (MINIMAP_WIDTH / 2);
-        int y1 = (int)(map.walls[i].line.v1.y * MINIMAP_SCALE) + MINIMAP_Y + (MINIMAP_HEIGHT / 2);
-
-        int x2 = (int)(map.walls[i].line.v2.x * MINIMAP_SCALE) + MINIMAP_X + (MINIMAP_WIDTH / 2);
-        int y2 = (int)(map.walls[i].line.v2.y * MINIMAP_SCALE) + MINIMAP_Y + (MINIMAP_HEIGHT / 2);
-
-        DrawLine(x1, y1, x2, y2, map.walls[i].color[0], map.walls[i].color[1], map.walls[i].color[2]);
-    }
-    DrawPlayer();
 }
 
 // Calculate what column the vertex will be at
@@ -91,7 +59,7 @@ int MapToScreenHeight(const Vertex& vert, float wall_height) {
     return MapToScreenY(second_vert) - MapToScreenY(vert);
 }
 
-void ClipWall(Vertex& neg_y_vert, const Vertex& other) { // TODO: Resolve issue with clipping that causes random strips of wall to take up entire screen columns
+void ClipWall(Vertex& neg_y_vert, const Vertex& other) {
     float dx = other.x - neg_y_vert.x;
     float dy = other.y - neg_y_vert.y;
     float dz = other.z - neg_y_vert.z;
@@ -151,7 +119,7 @@ void DrawWall(Wall& wall, bool* column_drawn_status) {
             int cur_wallheight = (int)(vert1_height + (wallheight_stepsize * (col - screencol_1)));
             int cur_screenrow = (int)(vert1_bottom_y + (screenrow_stepsize * (col - screencol_1)));
 
-            DrawLineVert(col, cur_screenrow, cur_screenrow + cur_wallheight, wall.color);
+            stdGraphicsHandler->DrawLineVert(col, cur_screenrow, cur_screenrow + cur_wallheight, wall.color);
         }
 }
 
@@ -210,11 +178,6 @@ void DrawOrder(Wall_Node* head, Map& map, bool* column_drawn_status) {
 
 }
 
-void Destroy() {
-    glfwDestroyWindow(gl.GetWindow());
-    glfwTerminate();
-}
-
 // Draw all walls
 void DrawWalls(Map& map) {
     bool column_drawn_status[WIDTH];
@@ -235,14 +198,10 @@ void DrawWalls(Map& map) {
 void Render(Map map, Camera& camera) {
 
     // Display a gray background
-    FillScreen(100, 100, 100);
+    stdGraphicsHandler->FillScreen(100, 100, 100);
 
+    // TOOD: Maybe get rid of view_map?
     view_map.LoadMap(map);
     view_map.TranslateMap();
-
     DrawWalls(map);
-    DrawMinimap(map);
-
-    Draw(gl);
-    glfwSwapBuffers(gl.GetWindow());
 }

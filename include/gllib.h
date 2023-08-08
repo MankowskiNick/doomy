@@ -1,7 +1,11 @@
 #ifndef gllib_h
 #define gllib_h
 
+#include "shared_graphics.h"
+#include "constants.h"
+
 #define GLFW_INCLUDE_NONE
+#define GL_SILENCE_DEPRECATION
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <vector>
@@ -20,6 +24,8 @@ class GLLib {
             VAOs_size = 0;
             VBOs_size = 0;
             EBOs_size = 0;
+
+            Init(APPLICATION_TITLE, WIDTH, HEIGHT);
         }
         ~GLLib() { }
 
@@ -29,60 +35,61 @@ class GLLib {
             void (*error_callback_func)(int, const char*) = NULL, 
             void (*key_callback_func)(GLFWwindow*, int, int, int, int) = NULL,
             void (*mouse_callback_func)(GLFWwindow*, double, double) = NULL
-        ) { 
-            // Set error callback
-            if (error_callback_func != NULL)
-                glfwSetErrorCallback(error_callback_func);
-            // Init GLFW
-            if (!glfwInit()) 
-                return false;
-        
-            // Window hints
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            #ifdef __APPLE__ 
-                glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-            #endif
+        ) {
+            try {
+                // Init GLFW
+                if (!glfwInit()) 
+                    return false;
+            
+                // Window hints
+                glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+                glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+                glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+                #ifdef __APPLE__ 
+                    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+                #endif
 
-            // Create window
-            width = window_width;
-            height = window_height;
-            window = glfwCreateWindow(width, height, window_name, NULL, NULL);
+                // Create window
+                width = window_width;
+                height = window_height;
+                window = glfwCreateWindow(width, height, window_name, NULL, NULL);
 
-            // Window creation failure
-            if (!window)
-            {
-                glfwTerminate();
-                return false;
+                // Window creation failure
+                if (!window)
+                {
+                    glfwTerminate();
+                    return false;
+                }
+
+
+                //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
+                glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
+
+                BindErrorCallback(error_callback_func);
+                BindKeyCallback(key_callback_func);
+                BindMouseCallback(mouse_callback_func);
+
+                // Set OpenGL context
+                glfwMakeContextCurrent(window);
+                glfwSwapInterval(1);
+
+                // Initialize GLAD
+                gladLoadGL();    
+
+                // Glad init failure
+                if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+                    std::cout << "Failed to initialize OpenGL context" << std::endl;
+                    return false;
+                }
+
+                glEnable(GL_DEPTH_TEST);
+
+                return true;
             }
-
-
-            //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
-            glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
-
-            if (key_callback_func != NULL)
-                glfwSetKeyCallback(window, key_callback_func);   
-            if (mouse_callback_func != NULL)
-                glfwSetCursorPosCallback(window, mouse_callback_func);
-
-            // Set OpenGL context
-            glfwMakeContextCurrent(window);
-            glfwSwapInterval(1);
-
-            // Initialize GLAD
-            gladLoadGL();    
-
-            // Glad init failure
-            if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-                std::cout << "Failed to initialize OpenGL context" << std::endl;
-                return false;
+            catch(...) {
+                std::cout << "ERROR: Unable to initialize GLLib.\n";
+                exit(1);
             }
-
-            glEnable(GL_DEPTH_TEST);
-
-            return true;
-
         }
         
         int GetWidth() {
@@ -105,12 +112,17 @@ class GLLib {
             }
         }
         
-        void BindKeyCallback(GLFWwindow*& window, void (*key_callback_func)(GLFWwindow*, int, int, int, int)) {
+        void BindKeyCallback(void (*key_callback_func)(GLFWwindow*, int, int, int, int)) {
             if (key_callback_func != NULL)
                 glfwSetKeyCallback(window, key_callback_func);
         }
+        
+        void BindMouseCallback(void (*mouse_callback_func)(GLFWwindow*, double, double)) {
+            if (mouse_callback_func != NULL)
+                glfwSetCursorPosCallback(window, mouse_callback_func);
+        }
 
-        void BindKeyCallback(GLFWwindow*& window, void (*error_callback_func)(int, const char*)) {
+        void BindErrorCallback(void (*error_callback_func)(int, const char*)) {
             if (error_callback_func != NULL) 
                 glfwSetErrorCallback(error_callback_func);
         }

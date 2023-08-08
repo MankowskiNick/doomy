@@ -1,6 +1,8 @@
-
-
 #define ERROR_MARGIN 0.0001f
 #define NEAREST_RENDER_DIST 0.01f
 
 #define SENSITIVITY 0.01f
+
+#define APPLICATION_TITLE "doomy"
+
+#define ENABLE_MINIMAP
