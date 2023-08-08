@@ -1,6 +1,6 @@
 
 #include "constants.h"
-#include "gllib.h" // this breaks the build
+#include "gllib.h"
 #include "callback.h"
 #include "camera.h"
 

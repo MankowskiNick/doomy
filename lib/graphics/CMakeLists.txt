@@ -1,10 +1,4 @@
 add_library(graphics SHARED
-    draw.h
-    gllib.h
-    minimap.h
-    Shader.h
-    shared_graphics.h
-    std_graphics.h
     src/bsp_tree.cpp
     src/draw.cpp
     src/geom.cpp
