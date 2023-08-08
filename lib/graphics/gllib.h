@@ -171,6 +171,10 @@ class GLLib {
             return window;
         }
 
+        bool WindowShouldClose() {
+            return glfwWindowShouldClose(GetWindow());
+        }
+
         Shader shader;
     private:
         GLFWwindow* window;

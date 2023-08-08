@@ -18,5 +18,8 @@ void Rotate(Vertex& source, float rads);
 void Translate(Vertex& source, const Vertex& translation, float scalar);
 
 
+Vect2<float> VertToVect2(const Vertex& vert); // TODO: Where should these go?
+bool VertexEquals(const Vertex& v1, const Vertex& v2);
+
 
 #endif

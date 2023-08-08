@@ -23,8 +23,4 @@ struct Wall {
     int color[3];
 };
 
-Vect2<float> VertToVect2(const Vertex& vert);
-
-bool VertexEquals(const Vertex& v1, const Vertex& v2);
-
 #endif

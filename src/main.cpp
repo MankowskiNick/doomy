@@ -20,20 +20,15 @@ int main(int argc, char** argv) {
     GLLib glHandler;
     StdGraphicsHandler stdGraphicsHandler(glHandler);
 
-
     // Configure drawing and store a pointer to the window
     ConfigureDraw(camera, stdGraphicsHandler, glHandler);
-
 
     CallbackHandler callbackHandler(camera, glHandler);
     InputHandler inputHandler(camera, callbackHandler);
     MinimapHandler minimapHandler(camera, map, stdGraphicsHandler);
-
-
-
     
     // Main loop
-    while (!glfwWindowShouldClose(glHandler.GetWindow())) {
+    while (!glHandler.WindowShouldClose()) {
         
         // Perform work on keyboard input and poll key events
         inputHandler.PerformKeyAction();
