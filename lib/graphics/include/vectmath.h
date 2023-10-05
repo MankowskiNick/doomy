@@ -22,6 +22,11 @@ template <typename T>
 struct Vect3 { T a, b, c; };
 
 template <typename T>
+T abs(const T& element) {
+    return (element > 0.0f) ? element : (T)(element * -1.0f);
+}
+
+template <typename T>
 T Det(const Matrix2x2<T>& mat) {
     return (mat.a * mat.d) - (mat.c * mat.b);
 }

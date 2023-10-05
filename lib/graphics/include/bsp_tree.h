@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "common_struct.h"
-//#include "map.h"
 
 #include <iostream>
 

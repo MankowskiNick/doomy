@@ -6,6 +6,7 @@ add_library(graphics SHARED
     src/minimap.cpp
     src/std_graphics.cpp
     src/wall_node.cpp
+    src/screen_space_mapper.cpp
     )
     
 # Link GLFW to the Graphics library
