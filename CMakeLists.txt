@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(doomy VERSION 0.1.0)
 
-# This project required C++11
+# This project requires C++11
 set(CMAKE_CXX_STANDARD 11)
 
 include(CTest)
