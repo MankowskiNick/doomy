@@ -4,6 +4,8 @@
 #include "constants.h"
 #include "camera.h"
 
+#define NO_KEY -1
+
 class GLLib; // TODO: Sort this out? Maybe?
 
 class CallbackHandler {
@@ -18,12 +20,12 @@ class CallbackHandler {
         void ErrorBind(int error, const char* description);
 
         // Getter to grab the current key, used by InputHandler
-        int* GetCurKey() const;
+        int GetCurKey() const;
 
     private:
 
-         // Current key being pressed, if NULL, no key is pressed
-        int* cur_key;
+         // Current key being pressed, if -1, no key is pressed
+        int cur_key;
 
         // Pointer to the camera object coming from main
         Camera* camera_ptr;

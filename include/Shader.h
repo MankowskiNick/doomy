@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include<string>
 #include <glad/glad.h>
 
 class Shader {
@@ -63,7 +64,7 @@ class Shader {
         void LoadSource(const unsigned int type, std::string& source, const std::string& file_name, std::string &error_msg) {
             std::ifstream fin;
             if (type == GL_VERTEX_SHADER) {
-                fin.open(file_name.data());
+                fin.open(file_name.data(), std::ios::in);
                 if (!fin.is_open()) {
                     error_msg += "Error: Vertex shader source file doesn't exist.  (" + file_name + ") \n";
                     fin.close();
@@ -71,7 +72,7 @@ class Shader {
                 }
             }
             else if (type == GL_FRAGMENT_SHADER) {
-                fin.open(file_name.data());
+                fin.open(file_name.data(), std::ios::in);
                 if (!fin) {
                   error_msg += "Error: Fragment shader source file doesn't exist.  (" + file_name + ") \n";
                   fin.close();

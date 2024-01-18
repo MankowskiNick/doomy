@@ -4,9 +4,12 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <string>
 
 #include "bsp_tree.h"
 #include "common_struct.h"
+
+#define MAX_LINE_COUNT 10000
 
 class Map {
     public:
@@ -58,7 +61,7 @@ class Map {
             AddWall(wall.id, wall.line.v1.id, wall.line.v2.id, wall.height, wall.color[0], wall.color[1], wall.color[2]);
         }
 
-        void LoadFile(char* file_name) {
+        void LoadFile(std::string file_name) {
 
             // File format: 
             //     [verts]
@@ -71,14 +74,26 @@ class Map {
             //     bsp_string
             //     [end]
             try {
-                std::ifstream file_stream(file_name);
+                std::ifstream file_stream;
+
+                file_stream.open(file_name);
+
+                if (!file_stream.is_open()) {
+                    std::cerr << "Unable to open file '" << file_name << "'. Check the file path and permissions." << std::endl;
+                    return;
+                }
+
+                if (!file_stream.good()) {
+                    std::cerr << "File stream is not good after opening file '" << file_name << "'. Check the file contents and encoding." << std::endl;
+                    return;
+                }
 
                 std::string cur_line_header = "";
 
                 int skiplines = 0;
                 while (cur_line_header != "[verts]") {
                     skiplines++;
-                    if (skiplines > 1000) 
+                    if (skiplines > MAX_LINE_COUNT) 
                         throw;
                     file_stream >> cur_line_header;
                 }

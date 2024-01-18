@@ -27,9 +27,9 @@ void InputHandler::ConfigureInput(Camera& ref_camera) {
 }
 
 void InputHandler::PerformKeyAction() {
-    int* cur_key = callbackHandler->GetCurKey();
-    if (cur_key != NULL && action_map.count(*cur_key) != 0)
-        action_map[*cur_key]();
+    int cur_key = callbackHandler->GetCurKey();
+    if (cur_key != NO_KEY && action_map.count(cur_key) != 0)
+        action_map[cur_key]();
 
     glfwPollEvents();
 }

@@ -17,11 +17,9 @@ CallbackHandler::~CallbackHandler() { }
 
 void CallbackHandler::KeyBind(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (action == GLFW_RELEASE) {
-        delete cur_key;
-        cur_key = NULL;
+        cur_key = NO_KEY;
     } else {
-        cur_key = new int;
-        *cur_key = key;
+        cur_key = key;
     }
 }
 
@@ -38,7 +36,7 @@ void CallbackHandler::ErrorBind(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
 
-int* CallbackHandler::GetCurKey() const {
+int CallbackHandler::GetCurKey() const {
     return cur_key;
 }
 

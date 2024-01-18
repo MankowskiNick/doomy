@@ -43,6 +43,8 @@ class StdGraphicsHandler {
         // GL Library Instance
         GLLib* gl;
 
+        Texture screenView;
+
         // Pixel data
         unsigned char pixelData[HEIGHT][WIDTH][3];
 };

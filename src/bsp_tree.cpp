@@ -1,4 +1,5 @@
 #include <math.h>
+#include<string>
 
 #include "common_struct.h"
 #include "bsp_tree.h"
