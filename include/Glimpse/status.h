@@ -3,12 +3,12 @@
 
 #include <string>
 
-enum GLLogStatus : int {
-    FATAL,
-    WARNING
-};
+namespace Glimpse {
+    enum GLLogStatus : int {
+        FATAL,
+        WARNING
+    };
 
-
-std::string GetGLLogStatusText(const GLLogStatus status);
-
+    std::string GetGLLogStatusText(const GLLogStatus status);
+}
 #endif

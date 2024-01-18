@@ -1,31 +1,33 @@
 #include "glimpse.h"
 
-Glimpse::Glimpse() {
-    Glimpse(NULL);
+using namespace Glimpse;
+
+GlimpseLogger::GlimpseLogger() {
+    GlimpseLogger(NULL);
 }
 
-Glimpse::Glimpse(GLOut* newOutput) {
+GlimpseLogger::GlimpseLogger(GLOut* newOutput) {
     this->AddLogging(newOutput);
 }
 
-Glimpse::~Glimpse() {
+GlimpseLogger::~GlimpseLogger() {
     for (int i = 0; i < gLogOutputs.size(); i++)
         delete gLogOutputs[i];
 }
 
-void Glimpse::AddLogging(GLOut* newOutput) {
+void GlimpseLogger::AddLogging(GLOut* newOutput) {
     if (newOutput != NULL)
         gLogOutputs.push_back(newOutput);
 }
 
-void Glimpse::Log(const std::string& message, GLLogStatus status) {
+void GlimpseLogger::Log(const std::string& message, GLLogStatus status) {
     for (int i = 0; i < gLogOutputs.size(); i++)
         gLogOutputs[i]->Output(message, status);
     if (status == FATAL)
         exit(status);
 }
 
-void Glimpse::LogGL(GLErrorCode code) {
+void GlimpseLogger::LogGL(int code) {
     std::string errorMessage = "OpenGL Error - " + GetGLErrorString(code);
     this->Log(errorMessage, FATAL);
 }

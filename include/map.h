@@ -6,17 +6,26 @@
 #include <vector>
 #include <string>
 
+#include <Glimpse/glimpse.h>
+#include <Glimpse/consoleout.h>
+#include <Glimpse/status.h>
+#include <Glimpse/glerrorcode.h>
+
 #include "bsp_tree.h"
 #include "common_struct.h"
 
 #define MAX_LINE_COUNT 10000
 
+// TODO: Add more error handling here
+
 class Map {
     public:
         
-        Map() {}
+        Map(Glimpse::GlimpseLogger* newLogger) {
+            logger = newLogger;
+        }
 
-        Map(Map* copy_map) {
+        Map(Map* copy_map, Glimpse::GlimpseLogger* logger) {
             for (int i =0; i < copy_map->vertices.size(); i++)
                 AddVertex(copy_map->vertices[i]);
 
@@ -79,12 +88,12 @@ class Map {
                 file_stream.open(file_name);
 
                 if (!file_stream.is_open()) {
-                    std::cerr << "Unable to open file '" << file_name << "'. Check the file path and permissions." << std::endl;
+                    logger->Log("Unable to open file '" + file_name + "'. Check file path and permissions.", Glimpse::FATAL);
                     return;
                 }
 
                 if (!file_stream.good()) {
-                    std::cerr << "File stream is not good after opening file '" << file_name << "'. Check the file contents and encoding." << std::endl;
+                    logger->Log("File stream is not good after opening file '" + file_name + "'. Check the file contents and encoding.", Glimpse::FATAL);
                     return;
                 }
 
@@ -94,7 +103,7 @@ class Map {
                 while (cur_line_header != "[verts]") {
                     skiplines++;
                     if (skiplines > MAX_LINE_COUNT) 
-                        throw;
+                        logger->Log("Invalid level file(" + file_name + ").", Glimpse::FATAL);
                     file_stream >> cur_line_header;
                 }
                 file_stream >> cur_line_header;
@@ -150,7 +159,7 @@ class Map {
                 bsp_tree = DeseralizeBSP(bsp_string);
             }
             catch(...) {
-                std::cout << "FATAL ERROR: Unable to load file '" << file_name << "'(Incorrect format?)";
+                logger->Log("FATAL ERROR: Unable to load file '" + file_name + "'(Incorrect format?)", Glimpse::FATAL);
             }
         }
 
@@ -165,6 +174,8 @@ class Map {
         BSP_Tree bsp_tree;
         std::vector<Wall> walls;
         std::vector<Vertex> vertices;
+
+        Glimpse::GlimpseLogger* logger;
 };
 
 #endif

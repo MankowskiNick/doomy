@@ -1,6 +1,11 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include <Glimpse/glimpse.h>
+#include <Glimpse/consoleout.h>
+#include <Glimpse/status.h>
+#include <Glimpse/glerrorcode.h>
+
 #include <iostream>
 #include <fstream>
 #include<string>
@@ -8,12 +13,18 @@
 
 class Shader {
     public:
-        Shader() {
+        Shader(Glimpse::GlimpseLogger* newLogger) {
             vShader = 0;
             fShader = 0;
+            logger = newLogger;
         }
 
-        Shader(const std::string& vert_shader_file, const std::string& frag_shader_file) {
+        Shader(
+            const std::string& vert_shader_file, 
+            const std::string& frag_shader_file, 
+            Glimpse::GlimpseLogger* newLogger
+        ) {
+            logger = newLogger;
             CompileShader(vert_shader_file, frag_shader_file);
         }
 
@@ -51,7 +62,7 @@ class Shader {
             LoadSource(GL_FRAGMENT_SHADER, frag_shader_source, frag_shader_file, load_error_msg);
 
             if (load_error_msg != "") {
-                std::cout << "ERROR: Failed to load one or more source files.\n" << load_error_msg;
+                logger->Log("ERROR: Failed to load one or more source files.  " + load_error_msg, Glimpse::FATAL);
                 exit(1);
             }
 
@@ -59,6 +70,8 @@ class Shader {
         }
         
     private:
+        Glimpse::GlimpseLogger* logger;
+
         unsigned int id, vShader, fShader;
         
         void LoadSource(const unsigned int type, std::string& source, const std::string& file_name, std::string &error_msg) {
@@ -117,16 +130,14 @@ class Shader {
             glGetShaderiv(id, GL_COMPILE_STATUS, &result);
 
             if (result == GL_FALSE) {
-                std::cout << "Error compiling shaders.\n";
                 int length;
                 glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
                 char* message = (char*)alloca(length * sizeof(char));
-
                 glGetShaderInfoLog(id, length, &length, message);
-
-                std::cout << message << "\n";
-
                 glDeleteShader(id);
+
+                logger->Log("Error compiling shaders.  " + std::string(message), Glimpse::FATAL);
+
                 return 0;
             }
 

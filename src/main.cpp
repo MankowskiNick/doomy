@@ -23,15 +23,14 @@
 
 int main() {
 
-    Glimpse logger;
-    logger.AddLogging(new ConsoleOut);
+    Glimpse::GlimpseLogger logger(new ConsoleOut);
 
     // Initialize map
-    Map map;
+    Map map(&logger);
     map.LoadFile(LEVEL);
 
     Camera camera(0.0f, 0.0f, 0.5f, 0.0f);
-    GLLib glHandler;
+    GLLib glHandler(&logger);
     StdGraphicsHandler stdGraphicsHandler(glHandler);
 
     // Configure drawing and store a pointer to the window

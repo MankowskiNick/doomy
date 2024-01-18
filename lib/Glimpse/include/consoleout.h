@@ -5,12 +5,12 @@
 
 #include <string>
 
-class ConsoleOut : public GLOut {
+class ConsoleOut : public Glimpse::GLOut {
 public:
     ConsoleOut();
     ~ConsoleOut() override;
 
-    void Output(const std::string& message, const GLLogStatus status)  override;
+    void Output(const std::string& message, const Glimpse::GLLogStatus status)  override;
 };
 
 #endif

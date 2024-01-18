@@ -6,6 +6,6 @@
 ConsoleOut::ConsoleOut() {}
 ConsoleOut::~ConsoleOut() {}
 
-void ConsoleOut::Output(const std::string& message, const GLLogStatus status) {
+void ConsoleOut::Output(const std::string& message, const Glimpse::GLLogStatus status) {
     std::cout << GetGLLogStatusText(status) << " ERROR: " << message << "\n";
 }

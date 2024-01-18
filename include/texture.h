@@ -37,7 +37,7 @@ class Texture {
         }
 
         void Activate(GLLib* gl_lib, const char* uniform) {    
-            gl_lib->shader.SetInt(uniform, id);
+            gl_lib->shader->SetInt(uniform, id);
         }
 
         void UpdateTextureData(unsigned char* new_data) {

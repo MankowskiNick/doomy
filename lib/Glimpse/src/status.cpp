@@ -2,7 +2,9 @@
 
 #include <string>
 
-std::string GetGLLogStatusText(const GLLogStatus status) {
+using namespace Glimpse;
+
+std::string Glimpse::GetGLLogStatusText(const GLLogStatus status) {
     switch (status) {
         case FATAL:   return "FATAL";
         case WARNING: return "WARNING";

@@ -1,6 +1,11 @@
 #ifndef gllib_h
 #define gllib_h
 
+#include <Glimpse/glimpse.h>
+#include <Glimpse/consoleout.h>
+#include <Glimpse/status.h>
+#include <Glimpse/glerrorcode.h>
+
 #include "shared_graphics.h"
 #include "constants.h"
 
@@ -16,7 +21,7 @@
 
 class GLLib {
     public:
-        GLLib() { 
+        GLLib(Glimpse::GlimpseLogger* newLogger) { 
             VAOs = new GLuint;
             VBOs = new GLuint;
             EBOs = new GLuint;
@@ -24,6 +29,8 @@ class GLLib {
             VAOs_size = 0;
             VBOs_size = 0;
             EBOs_size = 0;
+
+            logger = newLogger;
 
             Init(APPLICATION_TITLE, WIDTH, HEIGHT);
         }
@@ -55,8 +62,8 @@ class GLLib {
                 window = glfwCreateWindow(width, height, window_name, NULL, NULL);
 
                 // Window creation failure
-                if (!window)
-                {
+                if (!window) {
+                    logger->Log("Failed to create window.", Glimpse::FATAL);
                     glfwTerminate();
                     return false;
                 }
@@ -78,7 +85,7 @@ class GLLib {
 
                 // Glad init failure
                 if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-                    std::cout << "Failed to initialize OpenGL context" << std::endl;
+                    logger->Log("Failed to initialize OpenGL context.", Glimpse::FATAL);
                     return false;
                 }
 
@@ -87,8 +94,8 @@ class GLLib {
                 return true;
             }
             catch(...) {
-                std::cout << "ERROR: Unable to initialize GLLib.\n";
-                exit(1);
+                logger->Log("Failed to initialize OpenGL context.", Glimpse::FATAL);
+                return false;
             }
         }
         
@@ -103,8 +110,8 @@ class GLLib {
         bool BindShader(const std::string& vert_shader_file, const std::string& frag_shader_file) {
             try {
                 // Compile vertex shader
-                shader = Shader(vert_shader_file, frag_shader_file);
-                shader.Use();
+                shader = new Shader(vert_shader_file, frag_shader_file, logger);
+                shader->Use();
                 return true; 
             }
             catch(...) {
@@ -151,7 +158,7 @@ class GLLib {
         }
 
         unsigned int GetShaderProgram() {
-            return shader.GetProgramID();
+            return shader->GetProgramID();
         }
 
         void DrawTriangles(unsigned int num_vertices) {
@@ -175,8 +182,10 @@ class GLLib {
             return glfwWindowShouldClose(GetWindow());
         }
 
-        Shader shader;
+        Shader* shader;
     private:
+        Glimpse::GlimpseLogger* logger;
+
         GLFWwindow* window;
 
         int width, height;

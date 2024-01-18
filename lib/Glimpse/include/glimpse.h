@@ -14,20 +14,21 @@
 /// Logging hierarchy
 ///     -Fatal: Log and crash program, spit out stack trace
 ///     -Noncritical: Just log, sort of like a warning(optional spit out stack trace?)
+namespace Glimpse {
+    class GlimpseLogger {
+    public:
+        GlimpseLogger();
+        GlimpseLogger(GLOut* newOutput);
+        ~GlimpseLogger();
 
-class Glimpse {
-public:
-    Glimpse();
-    Glimpse(GLOut* newOutput);
-    ~Glimpse();
+        void AddLogging(GLOut* newOutput);
 
-    void AddLogging(GLOut* newOutput);
+        void Log(const std::string& message, GLLogStatus status);
+        void LogGL(int code);
 
-    void Log(const std::string& message, GLLogStatus status);
-    void LogGL(const GLErrorCode code);
+    private:
+        std::vector<GLOut*> gLogOutputs;
+    };
 
-private:
-    std::vector<GLOut*> gLogOutputs;
-};
-
+}
 #endif
