@@ -1,17 +1,14 @@
 
 #include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <vector>
 #include <math.h>
 
-#include "shared_graphics.h"
-#include "gllib.h"
-#include "texture.h"
+#include <Glaze/gllib.h>
+#include <Glaze/std_graphics.h>
+
 #include "map.h"
 #include "viewmap.h"
 #include "camera.h"
-#include "std_graphics.h"
 #include "geom.h"
 #include "bsp_tree.h"
 #include "wall_node.h"
@@ -22,12 +19,12 @@ ViewMap view_map;
 
 GLLib* gl;
 
-StdGraphicsHandler* stdGraphicsHandler;
+Glaze::GlazeRenderer* glazeRenderer;
 
 // Initialization code, just in case we end up needing to initialize things other than gl_lib
-void ConfigureDraw(Camera& camera, StdGraphicsHandler& newStdGraphicsHandler, GLLib& newGlLib) {
+void ConfigureDraw(Camera& camera, Glaze::GlazeRenderer& newGlazeRenderer, GLLib& newGlLib) {
 
-    stdGraphicsHandler = &newStdGraphicsHandler;
+    glazeRenderer = &newGlazeRenderer;
 
     // Initialize a new gllib instance
     gl = &newGlLib;
@@ -78,7 +75,7 @@ void DrawWall(Wall& wall, bool* column_drawn_status) {
             int cur_wallheight = (int)(vert1_height + (wallheight_stepsize * (col - screencol_1)));
             int cur_screenrow = (int)(vert1_bottom_y + (screenrow_stepsize * (col - screencol_1)));
 
-            stdGraphicsHandler->DrawLineVert(col, cur_screenrow, cur_screenrow + cur_wallheight, wall.color);
+            glazeRenderer->DrawLineVert(col, cur_screenrow, cur_screenrow + cur_wallheight, wall.color);
         }
 }
 
@@ -157,7 +154,7 @@ void DrawWalls(Map& map) {
 void Render(Map map, Camera& camera) {
 
     // Display a gray background
-    stdGraphicsHandler->FillScreen(100, 100, 100);
+    glazeRenderer->FillScreen(100, 100, 100);
 
     // TOOD: Maybe get rid of view_map?
     view_map.LoadMap(map);

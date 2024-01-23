@@ -2,18 +2,16 @@
 #define DRAW_H
 
 #include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <vector>
 
-#include "gllib.h"
-#include "texture.h"
+#include <Glaze/gllib.h>
+#include <Glaze/std_graphics.h>
+
 #include "map.h"
 #include "camera.h"
 #include "callback.h"
-#include "std_graphics.h"
 
-void ConfigureDraw(Camera& camera, StdGraphicsHandler& newStdGraphicsHandler, GLLib& newGlLib);
+void ConfigureDraw(Camera& camera, Glaze::GlazeRenderer& newGlazeRenderer, GLLib& newGlLib);
 
 void Render(Map map, Camera& camera);
 

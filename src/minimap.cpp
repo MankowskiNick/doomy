@@ -1,9 +1,9 @@
 #include "minimap.h"
 
-MinimapHandler::MinimapHandler(Camera& newCamera, Map& newMap, StdGraphicsHandler& newStdGraphicsHandler) {
+MinimapHandler::MinimapHandler(Camera& newCamera, Map& newMap, Glaze::GlazeRenderer& newGlazeRenderer) {
     camera = &newCamera;
     map = &newMap;
-    stdGraphicsHandler = &newStdGraphicsHandler;
+    glazeRenderer = &newGlazeRenderer;
 }
 
 MinimapHandler::~MinimapHandler() { }
@@ -23,8 +23,8 @@ void MinimapHandler::DrawPlayer() {
     int dx = MINIMAP_ANGLE_INDICATOR_SIZE * cos(camera->angle + (M_PI / 2)); // TODO: abstract away "magic value"
     int dy = MINIMAP_ANGLE_INDICATOR_SIZE * sin(camera->angle + (M_PI / 2));
 
-    stdGraphicsHandler->DrawLine(center_x, center_y, center_x + dx, center_y + dy, BLACK);
-    stdGraphicsHandler->DrawCircle(center_x, center_y, MINIMAP_CAMERA_RADIUS, WHITE);
+    glazeRenderer->DrawLine(center_x, center_y, center_x + dx, center_y + dy, BLACK);
+    glazeRenderer->DrawCircle(center_x, center_y, MINIMAP_CAMERA_RADIUS, WHITE);
 }
 
 // Draw the minimap
@@ -36,13 +36,13 @@ void MinimapHandler::Draw() {
         int x2 = MapToScreenX(map->walls[i].line.v2.x);
         int y2 = MapToScreenY(map->walls[i].line.v2.y);
 
-        stdGraphicsHandler->DrawLine(x1, y1, x2, y2, map->walls[i].color[0], map->walls[i].color[1], map->walls[i].color[2]);
+        glazeRenderer->DrawLine(x1, y1, x2, y2, map->walls[i].color[0], map->walls[i].color[1], map->walls[i].color[2]);
     }
 
     for (int i = 0; i < map->vertices.size(); i++) {
         int x = MapToScreenX(map->vertices[i].x);
         int y = MapToScreenY(map->vertices[i].y);
-        stdGraphicsHandler->DrawCircle(x, y, MINIMAP_VERTEX_RADIUS, BLACK);
+        glazeRenderer->DrawCircle(x, y, MINIMAP_VERTEX_RADIUS, BLACK);
     }
 
     DrawPlayer();

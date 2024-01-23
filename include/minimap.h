@@ -1,5 +1,6 @@
+#include <Glaze/std_graphics.h>
+
 #include "constants.h"
-#include "std_graphics.h"
 #include "map.h"
 #include "camera.h"
 
@@ -20,14 +21,14 @@
 
 class MinimapHandler {
     public:
-        MinimapHandler(Camera& newCamera, Map& newMap, StdGraphicsHandler& newStdGraphicsHandler);
+        MinimapHandler(Camera& newCamera, Map& newMap, Glaze::GlazeRenderer& newGlazeRenderer);
 
         ~MinimapHandler();
 
         void Draw();
 
     private:
-        StdGraphicsHandler* stdGraphicsHandler;
+        Glaze::GlazeRenderer* glazeRenderer;
         Camera* camera;
         Map* map;
 

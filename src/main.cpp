@@ -5,11 +5,11 @@
 #include <Glimpse/status.h>
 #include <Glimpse/glerrorcode.h>
 
-#include "shared_graphics.h"
-#include "gllib.h"
+#include <Glaze/gllib.h>
+#include <Glaze/std_graphics.h>
+
 #include "callback.h"
 #include "input.h"
-#include "std_graphics.h"
 #include "draw.h"
 #include "camera.h"
 #include "map.h"
@@ -30,15 +30,16 @@ int main() {
     map.LoadFile(LEVEL);
 
     Camera camera(0.0f, 0.0f, 0.5f, 0.0f);
-    GLLib glHandler(&logger);
-    StdGraphicsHandler stdGraphicsHandler(glHandler);
+    GLLib glHandler("doomy", 1000, 750, logger);
+
+    Glaze::GlazeRenderer glazeRenderer(glHandler);
 
     // Configure drawing and store a pointer to the window
-    ConfigureDraw(camera, stdGraphicsHandler, glHandler);
+    ConfigureDraw(camera, glazeRenderer, glHandler);
 
     CallbackHandler callbackHandler(camera, glHandler);
     InputHandler inputHandler(camera, callbackHandler);
-    MinimapHandler minimapHandler(camera, map, stdGraphicsHandler);
+    MinimapHandler minimapHandler(camera, map, glazeRenderer);
 
     // Main loop
     while (!glHandler.WindowShouldClose()) {
@@ -53,7 +54,8 @@ int main() {
         minimapHandler.Draw();
 
         // Update the display
-        stdGraphicsHandler.UpdateDisplay();
+        glazeRenderer.UpdateDisplay();
     }
-    exit(EXIT_SUCCESS);
+
+    glHandler.Quit();
 }

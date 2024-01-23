@@ -4,6 +4,8 @@
 #include "constants.h"
 #include "camera.h"
 
+#include <Glaze/gllib.h>
+
 #define NO_KEY -1
 
 class GLLib; // TODO: Sort this out? Maybe?

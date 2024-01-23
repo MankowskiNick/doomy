@@ -1,20 +1,10 @@
+#include <std_graphics.h>
+#include <gllib.h>
 
-#include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <vector>
-#include <math.h>
-
-#include "constants.h"
-#include "std_graphics.h"
-#include "gllib.h"
-#include "texture.h"
-#include "map.h"
-#include "camera.h"
-#include "shared_graphics.h"
+using namespace Glaze;
 
 // Buffer view coords to GPU
-StdGraphicsHandler::StdGraphicsHandler(GLLib& newGL) {
+GlazeRenderer::GlazeRenderer(GLLib& newGL) {
     float view[] = {
         -1.0f, -1.0f, 0.0f,      0.0f, 0.0f,
         1.0f, -1.0f, 0.0f,       1.0f, 0.0f,
@@ -31,14 +21,14 @@ StdGraphicsHandler::StdGraphicsHandler(GLLib& newGL) {
     gl->BufferVerticesWithTextureCoords(view, sizeof(view));
 }
 
-StdGraphicsHandler::~StdGraphicsHandler() {
+GlazeRenderer::~GlazeRenderer() {
     glfwDestroyWindow(gl->GetWindow());
     glfwTerminate();
  }
 
 // Display function
 // Send what we have drawn to the screen
-void StdGraphicsHandler::UpdateDisplay() {
+void GlazeRenderer::UpdateDisplay() {
 
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -60,7 +50,7 @@ void StdGraphicsHandler::UpdateDisplay() {
     glfwSwapBuffers(gl->GetWindow());
 }
 
-void StdGraphicsHandler::DrawPixel(int x, int y, int r, int g, int b) {
+void GlazeRenderer::DrawPixel(int x, int y, int r, int g, int b) {
     if (x < WIDTH && x >= 0 && y < HEIGHT && y >= 0) {
         pixelData[y][x][0] = r;
         pixelData[y][x][1] = g;
@@ -69,7 +59,7 @@ void StdGraphicsHandler::DrawPixel(int x, int y, int r, int g, int b) {
 }
 
 // Draw a single vertical line
-void StdGraphicsHandler::DrawLineVert(int col, int bot_row, int top_row, int color[3]) {
+void GlazeRenderer::DrawLineVert(int col, int bot_row, int top_row, int color[3]) {
     if (bot_row < 0)
         bot_row = 0;
     if (bot_row >= WIDTH)
@@ -83,7 +73,7 @@ void StdGraphicsHandler::DrawLineVert(int col, int bot_row, int top_row, int col
     }
 }
 
-void StdGraphicsHandler::DrawLine(int x1, int y1, int x2, int y2, int r, int g, int b) {
+void GlazeRenderer::DrawLine(int x1, int y1, int x2, int y2, int r, int g, int b) {
     float dx = (float)(x2 - x1) / 300;
     float dy = (float)(y2 - y1) / 300;
     float cur_x = x1;
@@ -96,7 +86,7 @@ void StdGraphicsHandler::DrawLine(int x1, int y1, int x2, int y2, int r, int g, 
 }
 
 
-void StdGraphicsHandler::FillScreen(int r, int g, int b) {
+void GlazeRenderer::FillScreen(int r, int g, int b) {
     for (int i = 0; i < WIDTH; i++) {
         for (int j = 0; j < HEIGHT; j++) {
             DrawPixel(i, j, r, g, b);
@@ -105,7 +95,7 @@ void StdGraphicsHandler::FillScreen(int r, int g, int b) {
 }
 
 
-void StdGraphicsHandler::DrawCircle(int x, int y, int radius, int r, int g, int b) {
+void GlazeRenderer::DrawCircle(int x, int y, int radius, int r, int g, int b) {
     for (int i = x - radius; i <= x + radius; i++) {
         for (int j = y - radius; j <= y + radius; j++) {
             int dx = i - x;

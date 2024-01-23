@@ -1,6 +1,7 @@
 
+#include <Glaze/std_graphics.h>
+
 #include "screen_space_mapper.h"
-#include "std_graphics.h"
 #include "common_struct.h"
 
 // Calculate what column the vertex will be at

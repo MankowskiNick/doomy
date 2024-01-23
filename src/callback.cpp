@@ -1,8 +1,9 @@
 
 #include "constants.h"
-#include "gllib.h"
 #include "callback.h"
 #include "camera.h"
+
+#include <Glaze/gllib.h>
 
 #include <iostream>
 #include <GLFW/glfw3.h>
