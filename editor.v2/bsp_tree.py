@@ -54,25 +54,27 @@ class BSP_Tree:
             # Inspecting the output for the map, it appears to work.  But still getting some overdraw issues.
             else:
                 # Add the intersection as a vertex
-                new_vert_id = self.ref_map.GetNewVertexId()
-                new_vert = Vertex(new_vert_id, intersection.x, intersection.y, intersection.z)
+                new_vert = self.ref_map.AddVertex(intersection.x, intersection.y)
                 new_vert.set_temp()
-                self.ref_map.AddExistingVertex(new_vert)
 
                 # Only set a wall as ancestral if it isn't temporary
                 if not wall.is_temp:
                     wall.set_ancestral()
 
                 # Add the new wall and update v2 of the wall we are modifying
-                new_line1 = Line(new_vert, wall.line.v2)
-                new_wall1 = Wall(self.ref_map.GetNewWallId(), new_line1, wall.height, wall.color)
+                new_wall1 = self.ref_map.AddWall(new_vert.id, 
+                                                wall.line.v2.id, 
+                                                wall.color, 
+                                                wall.min_height, wall.max_height, 
+                                                wall.floor_height, wall.ceiling_height)
                 new_wall1.set_temp()
-                self.ref_map.AddExistingWall(new_wall1)
 
-                new_line2 = Line(wall.line.v1, new_vert)
-                new_wall2 = Wall(self.ref_map.GetNewWallId(), new_line2, wall.height, wall.color)
+                new_wall2 = self.ref_map.AddWall(wall.line.v1.id, 
+                                                new_vert.id, 
+                                                wall.color, 
+                                                wall.min_height, wall.max_height, 
+                                                wall.floor_height, wall.ceiling_height)
                 new_wall2.set_temp()
-                self.ref_map.AddExistingWall(new_wall2)
 
                 if editor_math.is_front_walls(new_wall1, partition_wall):
                     front_walls.append(new_wall1)

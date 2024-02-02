@@ -1,22 +1,51 @@
+from math import *
 from map import *
 
 ERROR_MARGIN = 1e-6
+
+def map_coords_to_file(width, height, mapping_scalar, x, y):
+    x = (x - (width / 2)) * mapping_scalar
+    y = (y - (height / 2)) * mapping_scalar
+    return x, y
+
+def map_coords_from_file(width, height, mapping_scalar, x, y):
+    x = (x / mapping_scalar) + (width / 2)
+    y = (y / mapping_scalar) + (height / 2)
+    return x, y
+
+
+def dist(x1, y1, x2, y2):
+    return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
+
+def is_near_wall(x, y, wall):
+    # Calculate the distance between the click coordinates and the wall line segment
+    x1, y1 = wall.line.v1.x, wall.line.v1.y
+    x2, y2 = wall.line.v2.x, wall.line.v2.y
+
+    threshhold = 5
+
+    # Create a line that is perpendicular to the line we are checking that has a length of threshold * 2
+    angle = atan2(x1 - x2, y2 - y1)
+    check_v1 = Vertex(-1, x - threshhold * cos(angle), y - (threshhold * sin(angle)))
+    check_v2 = Vertex(-1, x + threshhold * cos(angle), y + (threshhold * sin(angle)))
+    perp_line = Line(check_v1, check_v2)
+
+    # Return true if this intersects with wall, otherwise return false
+    return intersect(perp_line, wall.line)
 
 def extend_line(line, scalar=100):
     # Calculate the direction vector between the two vertices
     direction_vector = Vertex(line.v2.id,
                               line.v2.x - line.v1.x,
-                              line.v2.y - line.v1.y,
-                              line.v2.z - line.v1.z)
+                              line.v2.y - line.v1.y)
 
     # Calculate the extension for each vertex
     ext_x = direction_vector.x * scalar
     ext_y = direction_vector.y * scalar
-    ext_z = direction_vector.z * scalar
 
     # Create the new extended vertices
-    ext_v1 = Vertex(line.v1.id, line.v1.x - ext_x, line.v1.y - ext_y, line.v1.z - ext_z)
-    ext_v2 = Vertex(line.v2.id, line.v2.x + ext_x, line.v2.y + ext_y, line.v2.z + ext_z)
+    ext_v1 = Vertex(line.v1.id, line.v1.x - ext_x, line.v1.y - ext_y)
+    ext_v2 = Vertex(line.v2.id, line.v2.x + ext_x, line.v2.y + ext_y)
 
     # Create and return the extended line
     extended_line = Line(ext_v1, ext_v2)
@@ -24,21 +53,20 @@ def extend_line(line, scalar=100):
 
 def get_midpoint(wall):
     return Vertex(-1, (wall.line.v1.x + wall.line.v2.x) / 2, 
-                    (wall.line.v1.y + wall.line.v2.y) / 2, 
-                    (wall.line.v1.z + wall.line.v2.z) / 2)
+                    (wall.line.v1.y + wall.line.v2.y) / 2)
 
 def vertex_equals(v1, v2):
     if (v1 is None or v2 is None):
         return False
-    return abs(v1.x - v2.x) < ERROR_MARGIN and abs(v1.y - v2.y) < ERROR_MARGIN and abs(v1.z - v2.z) < ERROR_MARGIN
+    return abs(v1.x - v2.x) < ERROR_MARGIN and abs(v1.y - v2.y) < ERROR_MARGIN
 
 def is_front(vertex, wall):
-    line_vect = Vect3(wall.line.v2.x - wall.line.v1.x, wall.line.v2.y - wall.line.v1.y, wall.line.v2.z - wall.line.v1.z)
-    v1_to_vert_vect = Vect3(vertex.x - wall.line.v1.x, vertex.y - wall.line.v1.y, vertex.z - wall.line.v1.z)
+    line_vect = Vect2(wall.line.v2.x - wall.line.v1.x, wall.line.v2.y - wall.line.v1.y)
+    v1_to_vert_vect = Vect2(vertex.x - wall.line.v1.x, vertex.y - wall.line.v1.y)
 
-    cross_product = CrossProduct(line_vect, v1_to_vert_vect)
+    cross_product_z = CrossProductZ(line_vect, v1_to_vert_vect)
 
-    return cross_product.c > 0
+    return cross_product_z > 0
 
 def is_front_walls(wall1, wall2):
     midpoint = get_midpoint(wall1)
@@ -53,9 +81,7 @@ def ccw(v1, v2, v3):
 # NOTE: This solution does not produce correct results when the two lines are colinear.
 # TODO: Find a more general case?
 def intersect(l1, l2):
-    if abs(l1.v1.z - l2.v1.z) < ERROR_MARGIN:
-        return ccw(l1.v1, l2.v1, l2.v2) != ccw(l1.v2, l2.v1, l2.v2) and ccw(l1.v1, l1.v2, l2.v1) != ccw(l1.v1, l1.v2, l2.v2);
-    return False
+    return ccw(l1.v1, l2.v1, l2.v2) != ccw(l1.v2, l2.v1, l2.v2) and ccw(l1.v1, l1.v2, l2.v1) != ccw(l1.v1, l1.v2, l2.v2);
 
 # Return the intersection of 2 lines
 def find_intersection(l1, l2):
@@ -75,7 +101,7 @@ def find_intersection(l1, l2):
 
     result = Add(A, Scale(AB, t.a))
 
-    intersection = Vertex(-1, result.a, result.b, l1.v1.z)
+    intersection = Vertex(-1, result.a, result.b)
     return intersection
 
 def Midpoint(wall):
@@ -153,18 +179,10 @@ def MultMatrix(mat1, mat2):
 def Add(v1, v2):
     return Vect2(v1.a + v2.a, v1.b + v2.b)
 
-def CrossProduct(v1, v2):
-    A = Matrix2x2(v1.b, v1.c, v2.b, v2.c)
-    B = Matrix2x2(v1.a, v1.c, v2.a, v2.c)
-    C = Matrix2x2(v1.a, v1.b, v2.a, v2.b)
-
-    return Vect3(Det(A), Det(B), Det(C))
+def CrossProductZ(v1, v2):
+    return v1.a * v2.b - v1.b * v2.a
 
 def VectsParallel(v1, v2):
-    cross_product = CrossProduct(v1, v2)
+    cross_product = CrossProductZ(v1, v2)
 
-    return (
-        abs(cross_product.a) < ERROR_MARGIN and
-        abs(cross_product.b) < ERROR_MARGIN and
-        abs(cross_product.c) < ERROR_MARGIN
-    )
+    return abs(cross_product.c) < ERROR_MARGIN
