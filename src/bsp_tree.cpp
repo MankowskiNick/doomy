@@ -7,23 +7,20 @@
 #include "map.h"
 
 bool is_front(const Vertex& vertex, const Wall* wall) {
-
     // Look at z component of cross product of wall and vertex
-    Vect3<float> line_vect = {
+    Vect2<float> line_vect = {
         .a = wall->line.v2.x - wall->line.v1.x,
         .b = wall->line.v2.y - wall->line.v1.y,
-        .c = wall->line.v2.z - wall->line.v1.z,
     };    
     
-    Vect3<float> v1_to_vert_vect = {
+    Vect2<float> v1_to_vert_vect = {
         .a = vertex.x - wall->line.v1.x,
         .b = vertex.y - wall->line.v1.y,
-        .c = vertex.z - wall->line.v1.z,
     };
 
-    Vect3<float> cross_product = CrossProduct(line_vect, v1_to_vert_vect);
+    float cross_product_z = CrossProductZ(line_vect, v1_to_vert_vect);
 
-    return cross_product.c > 0;
+    return cross_product_z > 0;
 }
 
 bool is_front(Wall& test_wall, Wall* divider_ptr) {

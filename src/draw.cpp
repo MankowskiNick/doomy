@@ -6,6 +6,7 @@
 #include <Glaze/gllib.h>
 #include <Glaze/std_graphics.h>
 
+#include "draw.h"
 #include "map.h"
 #include "viewmap.h"
 #include "camera.h"
@@ -15,26 +16,44 @@
 #include "input.h"
 #include "screen_space_mapper.h"
 
-ViewMap view_map;
-
-GLLib* gl;
-
-Glaze::GlazeRenderer* glazeRenderer;
+#define min(a, b) (a < b) ? a : b
+#define max(a, b) (a > b) ? a : b
 
 // Initialization code, just in case we end up needing to initialize things other than gl_lib
-void ConfigureDraw(Camera& camera, Glaze::GlazeRenderer& newGlazeRenderer, GLLib& newGlLib) {
+RenderHandler::RenderHandler(Camera& camera, Glaze::GlazeRenderer& newGlazeRenderer, GLLib& newGlLib) {
 
     glazeRenderer = &newGlazeRenderer;
 
     // Initialize a new gllib instance
     gl = &newGlLib;
 
-    // Initialize a view_map, this is a "worker" class that will translate the map
-    view_map = ViewMap(camera);
+    // Initialize a viewMap, this is a "worker" class that will translate the map
+    viewMap = ViewMap(camera);
+
+    occlusionMap = new OcclusionMapVert[gl->GetWidth()];
+    ResetOcclusionMap();
+}
+
+RenderHandler::~RenderHandler() { }
+
+void RenderHandler::ResetOcclusionMap() {
+    for (int i = 0; i < gl->GetWidth(); i++) {
+        occlusionMap[i].topY = gl->GetHeight() - 1;
+        occlusionMap[i].bottomY = 0;
+        OcclusionMapVert cur = occlusionMap[i];
+    }
+}
+
+bool RenderHandler::IsFrameDone() {
+    for (int i = 0; i < gl->GetWidth(); i++) {
+        if (occlusionMap[i].topY != -1 && occlusionMap[i].bottomY != -1)
+            return false;
+    }
+    return true;
 }
 
 // Draw an individual wall
-void DrawWall(Wall& wall, bool* column_drawn_status) {
+void RenderHandler::DrawWall(Wall& wall) {
         // Don't draw walls that are too close
         if (abs(wall.line.v1.y) < ERROR_MARGIN || abs(wall.line.v2.y) < ERROR_MARGIN)
             return;
@@ -49,14 +68,33 @@ void DrawWall(Wall& wall, bool* column_drawn_status) {
         int screencol_1 = MapToScreenX(wall.line.v1);
         int screencol_2 = MapToScreenX(wall.line.v2);
 
-        int vert1_bottom_y = MapToScreenY(wall.line.v1);
-        int vert2_bottom_y = MapToScreenY(wall.line.v2); 
+        Point v1_top = MapVertToPoint(wall.line.v1, wall.max_height);
+        Point v1_bot = MapVertToPoint(wall.line.v1, wall.min_height);
+        Point v2_top = MapVertToPoint(wall.line.v2, wall.max_height);
+        Point v2_bot = MapVertToPoint(wall.line.v2, wall.min_height);
 
-        int vert1_height = MapToScreenHeight(wall.line.v1, wall.height);
-        int vert2_height = MapToScreenHeight(wall.line.v2, wall.height);
+        Point v1_floor = MapVertToPoint(wall.line.v1, wall.floor_height);
+        Point v1_ceil = MapVertToPoint(wall.line.v1, wall.ceiling_height);
+        Point v2_floor = MapVertToPoint(wall.line.v2, wall.floor_height);
+        Point v2_ceil = MapVertToPoint(wall.line.v2, wall.ceiling_height);
 
-        float wallheight_stepsize = (float)(vert2_height - vert1_height) / (float)(screencol_2 - screencol_1);
-        float screenrow_stepsize = (float)(vert2_bottom_y - vert1_bottom_y) / (float)(screencol_2 - screencol_1);
+        int vert1_bot_y = MapToScreenY(v1_bot);
+        int vert2_bot_y = MapToScreenY(v2_bot); 
+
+        int vert1_top_y = MapToScreenY(v1_top);
+        int vert2_top_y = MapToScreenY(v2_top);
+
+        int vert1_floor_y = MapToScreenY(v1_floor);
+        int vert2_floor_y = MapToScreenY(v2_floor);
+
+        int vert1_ceil_y = MapToScreenY(v1_ceil);
+        int vert2_ceil_y = MapToScreenY(v2_ceil);
+
+        float screenrow_top_stepsize = (float)(vert2_top_y - vert1_top_y) / (float)(screencol_2 - screencol_1);
+        float screenrow_bot_stepsize = (float)(vert2_bot_y - vert1_bot_y) / (float)(screencol_2 - screencol_1);
+
+        float screenrow_floor_stepsize = (float)(vert2_floor_y - vert1_floor_y) / (float)(screencol_2 - screencol_1);
+        float screenrow_ceil_stepsize = (float)(vert2_ceil_y - vert1_ceil_y) / (float)(screencol_2 - screencol_1); 
 
         int step = screencol_1 < screencol_2 ? 1 : -1;
 
@@ -65,66 +103,70 @@ void DrawWall(Wall& wall, bool* column_drawn_status) {
         int end_col = (screencol_2 < 0) ? 0 : ((screencol_2 > WIDTH - 1) ? WIDTH - 1 : screencol_2);
 
         for (int col = start_col; col != end_col; col += step) {
-            // if (*(column_drawn_status + (col * sizeof(bool))))
-            //   continue;
-            *(column_drawn_status + (col * sizeof(bool))) = true;
+            // Skip if we have already finished drawing this column
+            if (occlusionMap[col].bottomY == -1 || occlusionMap[col].topY == -1)
+                continue;
+
+            // Make sure we aren't taking extra steps that aren't needed
             if (col < 0)
                 col = 0;
             if (col >= WIDTH)
                 col = WIDTH - 1;
-            int cur_wallheight = (int)(vert1_height + (wallheight_stepsize * (col - screencol_1)));
-            int cur_screenrow = (int)(vert1_bottom_y + (screenrow_stepsize * (col - screencol_1)));
 
-            glazeRenderer->DrawLineVert(col, cur_screenrow, cur_screenrow + cur_wallheight, wall.color);
+            if (wall.is_portal) {
+                // Render 2 portal segments
+                int cur_screenrow_top = (int)(vert1_top_y + (screenrow_top_stepsize * (col - screencol_1)));
+                int cur_screenrow_bot = (int)(vert1_bot_y + (screenrow_bot_stepsize * (col - screencol_1)));
+
+                int cur_screenrow_ceil =  (int)(vert1_ceil_y + (screenrow_ceil_stepsize * (col - screencol_1)));
+                int cur_screenrow_floor = (int)(vert1_floor_y + (screenrow_floor_stepsize * (col - screencol_1)));
+
+                glazeRenderer->DrawLineVert(col, 
+                    cur_screenrow_bot, 
+                    max(cur_screenrow_floor, occlusionMap[col].bottomY), 
+                    wall.color);
+                glazeRenderer->DrawLineVert(col, 
+                    cur_screenrow_ceil, 
+                    min(cur_screenrow_top, occlusionMap[col].topY), 
+                    wall.color);
+
+                // Mark occlusion map
+                occlusionMap[col].topY = cur_screenrow_ceil;
+                occlusionMap[col].bottomY = cur_screenrow_floor;
+            }
+            else {
+
+                // Render wall
+                int cur_screenrow_top = (int)(vert1_top_y + (screenrow_top_stepsize * (col - screencol_1)));
+                int cur_screenrow_bot = (int)(vert1_bot_y + (screenrow_bot_stepsize * (col - screencol_1)));
+                glazeRenderer->DrawLineVert(col, 
+                    max(cur_screenrow_bot, occlusionMap[col].bottomY), 
+                    min(cur_screenrow_top, occlusionMap[col].topY), 
+                    wall.color);
+
+                // Mark occlusion map
+                occlusionMap[col].topY = -1;
+                occlusionMap[col].bottomY = -1;
+            }
         }
 }
 
-void InitializeColumnStatus(bool* column_drawn_status) {
-    for (int i = 0; i < WIDTH; i++)
-        *(column_drawn_status + (i * sizeof(bool))) = false;
-}
-
-bool IsFinishedDrawing(bool* column_drawn_status) {
-    for (int i = 0; i < WIDTH; i++)
-        if (*(column_drawn_status + (i * sizeof(bool))) == false)
-            return false;
-    return true;
-}
-
-// temp debug
-void DrawBackToFront(Wall_Node* tail, Map& map, bool* column_drawn_status) {
-
-    // We have reached the end of the linked list
-    if (tail  == NULL)
-        return;
-
-    // Draw the current wall
-    Wall* cur_wall = map.GetWallByID(tail->id);
-    DrawWall(*cur_wall, column_drawn_status);
-
-
-    // Recursively call the next
-    DrawBackToFront(tail->previous, map, column_drawn_status);
-
-    // Memory management
-    if (tail->previous != NULL) {
-        tail->previous->next = NULL;
-    }
-    delete tail;
-}
-
-void DrawOrder(Wall_Node* head, Map& map, bool* column_drawn_status) {
+void RenderHandler::DrawOrder(Wall_Node* head) {
 
     // We have reached the end of the linked list
     if (head == NULL)
         return;
 
+    // The frame is fully rendered, stop drawing
+    if (IsFrameDone())
+        return;
+
     // Draw the current wall
-    Wall* cur_wall = map.GetWallByID(head->id);
-    DrawWall(*cur_wall, column_drawn_status);
+    Wall* cur_wall = viewMap.GetMap()->GetWallByID(head->id);
+    DrawWall(*cur_wall);
 
     // Recursively call the next DrawOrder
-    DrawOrder(head->next, map, column_drawn_status);
+    DrawOrder(head->next);
 
     // Memory management
     if (head->previous != NULL) {
@@ -135,29 +177,23 @@ void DrawOrder(Wall_Node* head, Map& map, bool* column_drawn_status) {
 }
 
 // Draw all walls
-void DrawWalls(Map& map) {
-    bool column_drawn_status[WIDTH];
-    InitializeColumnStatus(column_drawn_status);
-
-    Wall_Node* render_head = FindOrder(&map.bsp_tree, map);
+void RenderHandler::DrawWalls() {
+    Wall_Node* render_head = FindOrder(&(viewMap.GetMap())->bsp_tree, *viewMap.GetMap());
     
     Wall_Node* tail = render_head;
 
-    while(tail->next != NULL)
-       tail = tail->next;
-    DrawBackToFront(tail, map, column_drawn_status);
-
-    //DrawOrder(render_head, map, column_drawn_status);
+    ResetOcclusionMap();
+    DrawOrder(render_head);
 }
 
 // Render code
-void Render(Map map, Camera& camera) {
+void RenderHandler::Render(Map map, Camera& camera) {
 
     // Display a gray background
     glazeRenderer->FillScreen(100, 100, 100);
 
-    // TOOD: Maybe get rid of view_map?
-    view_map.LoadMap(map);
-    view_map.TranslateMap();
-    DrawWalls(map);
+    // TOOD: Rework how we handle this
+    viewMap.LoadMap(map);
+    viewMap.TranslateMap();
+    DrawWalls();
 }

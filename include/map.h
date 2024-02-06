@@ -37,50 +37,60 @@ class Map {
         
         ~Map() {}
 
-        void AddVertex(int id, float x, float y, float z) {
+        void AddVertex(int id, float x, float y) {
             Vertex vert = {
                 .id = id,
                 .x = x,
-                .y = y,
-                .z = z
+                .y = y
             };
 
             vertices.push_back(vert);
         }
 
         void AddVertex(const Vertex& vert) {
-            AddVertex(vert.id, vert.x, vert.y, vert.z);
+            AddVertex(vert.id, vert.x, vert.y);
         }
 
-        void AddWall(int wall_id, int id1, int id2, float wall_height, int r, int g, int b) {
+        void AddWall(int wall_id, 
+            int id1, int id2, 
+            float wall_min, float wall_max, 
+            float floor_height, float ceiling_height, 
+            int r, int g, int b) {
             Wall wall;
             for (int i = 0; i < vertices.size(); i++) {
                 if (vertices[i].id == id1) wall.line.v1 = vertices[i];
                 if (vertices[i].id == id2) wall.line.v2 = vertices[i];
             }
             wall.id = wall_id;
-            wall.height = wall_height;
+            wall.min_height = wall_min;
+            wall.max_height = wall_max;
+            wall.floor_height = floor_height;
+            wall.ceiling_height = ceiling_height;
             wall.color[0] = r;
             wall.color[1] = g;
             wall.color[2] = b;
+            wall.is_portal = floor_height != -1 && ceiling_height != -1;
             walls.push_back(wall);
         }
 
         void AddWall(const Wall& wall) {
-            AddWall(wall.id, wall.line.v1.id, wall.line.v2.id, wall.height, wall.color[0], wall.color[1], wall.color[2]);
+            AddWall(wall.id, 
+                    wall.line.v1.id, wall.line.v2.id, 
+                    wall.min_height, wall.max_height, 
+                    wall.floor_height, wall.ceiling_height, 
+                    wall.color[0], wall.color[1], wall.color[2]);
         }
 
         void LoadFile(std::string file_name) {
-
             // File format: 
             //     [verts]
-            //     v1.id v1.x v1.y v1.z is_temp
+            //     v1.id v1.x v1.y is_temp
             //     ...
             //     [walls]
-            //     v1.id v2.id height r g b is_temp is_ancestral
+            //     id v1.id v2.id wall_min wall_max floor_min floor_max r g b is_temp is_ancestral
             //     ...
             //     [bsp]
-            //     bsp_string
+            //     bsp string
             //     [end]
             try {
                 std::ifstream file_stream;
@@ -112,17 +122,16 @@ class Map {
 
                     // Declare variables needed
                     int id, is_temp;
-                    float x, y, z;
+                    float x, y;
 
                     // Input data values
                     file_stream >> id;
                     file_stream >> x;
                     file_stream >> y;
-                    file_stream >> z;
                     file_stream >> is_temp;
 
                     // Add the vertex to the map
-                    AddVertex(id, x, y, z);
+                    AddVertex(id, x, y);
 
                     file_stream >> cur_line_header;
                 }
@@ -133,14 +142,18 @@ class Map {
 
                     // Declare variables needed
                     int wall_id, id1, id2, is_temp, is_ancestral; 
-                    float height;
+                    float wall_min, wall_max;
+                    float floor_height, ceiling_height;
                     int r, g, b;;
 
                     // Input the data values
                     file_stream >> wall_id;
                     file_stream >> id1;
                     file_stream >> id2;
-                    file_stream >> height;
+                    file_stream >> wall_min;
+                    file_stream >> wall_max;
+                    file_stream >> floor_height;
+                    file_stream >> ceiling_height;
                     file_stream >> r;
                     file_stream >> g;
                     file_stream >> b;
@@ -149,7 +162,11 @@ class Map {
 
                     // Add the wall to the map
                     if (is_ancestral == 0)
-                        AddWall(wall_id, id1, id2, height, r, g, b);
+                        AddWall(wall_id, 
+                                id1, id2, 
+                                wall_min, wall_max, 
+                                floor_height, ceiling_height, 
+                                r, g, b);
 
                     file_stream >> cur_line_header;
                 }

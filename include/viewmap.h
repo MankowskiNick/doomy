@@ -5,6 +5,7 @@
 #include "map.h"
 #include "camera.h"
 #include "geom.h"
+#include "vectmath.h"
 
 
 // TODO: work out some errors here(maybe)
@@ -21,13 +22,16 @@ class ViewMap {
             for (int i = 0; i < _map->walls.size(); i++) {
                 Vertex camera_pos = {
                     .x = _camera->x,
-                    .y = _camera->y,
-                    .z = _camera->z
+                    .y = _camera->y
                 };
 
                 Translate(_map->walls[i].line.v1, camera_pos, -1.0f);
                 Translate(_map->walls[i].line.v2, camera_pos, -1.0f);
                 
+                _map->walls[i].max_height -= _camera->z;
+                _map->walls[i].min_height -= _camera->z;
+                _map->walls[i].floor_height -= _camera->z;
+                _map->walls[i].ceiling_height -= _camera->z;
             }
         }
 
@@ -47,6 +51,10 @@ class ViewMap {
         void TranslateMap() {
             ShiftWalls();
             RotateWalls();
+        }
+
+        Map* GetMap() {
+            return _map;
         }
 
     private:

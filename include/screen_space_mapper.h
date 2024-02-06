@@ -9,13 +9,13 @@
 // TODO: Do we want to make this a class?
 
 // Calculate what column the vertex will be at
-int MapToScreenX(const Vertex& vert);
+int MapToScreenX(const Vertex& point);
 
 // Calculate what row the vertex will be at
-int MapToScreenY(const Vertex& vert);
-
-int MapToScreenHeight(const Vertex& vert, float wall_height);
+int MapToScreenY(const Point& point);
 
 void ClipWall(Vertex& neg_y_vert, const Vertex& other);
+
+Point MapVertToPoint(Vertex& vert, float z);
 
 #endif

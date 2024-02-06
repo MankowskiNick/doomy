@@ -15,8 +15,7 @@ bool VertexEquals(const Vertex& v1, const Vertex& v2) {
     if (&v1 == NULL || &v2 == NULL) 
         return false; 
     return (abs(v1.x - v2.x) < ERROR_MARGIN
-        && abs(v1.y - v2.y) < ERROR_MARGIN
-        && abs(v1.z - v2.z) < ERROR_MARGIN);
+        && abs(v1.y - v2.y) < ERROR_MARGIN);
 }
 
 // Are the vertices in counter clockwise order?  That is, is the slope of v1->v2 < v1->v3?
@@ -38,7 +37,7 @@ float Dist(const Vertex& v1, const Vertex& v2) {
 }
 
 float DistFromOrigin(const Vertex& v) {
-    Vertex origin = { .x = 0.0f, .y = 0.0f, .z = 0.0f };
+    Vertex origin = { .x = 0.0f, .y = 0.0f };
     return Dist(origin, v);
 }
 
@@ -46,7 +45,6 @@ float DistFromOrigin(const Vertex& v) {
 void Translate(Vertex& source, const Vertex& translation, float scalar) {
     source.x += translation.x * scalar;
     source.y += translation.y * scalar;
-    source.z += translation.z * scalar;
 }
 
 // Rotate a vertex around the origin by rads radians on the xy plane

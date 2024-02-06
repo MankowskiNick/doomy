@@ -8,6 +8,10 @@ class Map;
 
 struct Vertex {
     int id;
+    float x, y;
+};
+
+struct Point {
     float x, y, z;
 };
 
@@ -19,8 +23,12 @@ struct Line {
 struct Wall {
     int id;
     struct Line line;
-    float height;
+    float min_height;
+    float max_height;
+    float floor_height;
+    float ceiling_height;
     int color[3];
+    bool is_portal;
 };
 
 #endif

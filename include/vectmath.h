@@ -1,6 +1,8 @@
 #ifndef VECTMATH_H
 #define VECTMATH_H
 
+#include <math.h>
+
 #include "constants.h"
 
 // Formatted like
@@ -115,6 +117,11 @@ Vect3<T> CrossProduct(const Vect3<T>& v1, const Vect3<T>& v2) {
         .b = Det(B),
         .c = Det(C)
     };
+}
+
+template <typename T>
+T CrossProductZ(const Vect2<T>& v1, const Vect2<T>& v2) {
+    return v1.a * v2.b - v1.b * v2.a;
 }
 
 template <typename T>
