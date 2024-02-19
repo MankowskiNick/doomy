@@ -16,9 +16,9 @@
 #include "minimap.h"
 
 #ifdef __APPLE__
-    #define LEVEL "lvl/lvldata_old.dat"
+    #define LEVEL "lvl/lvldata.dat"
 #else
-    #define LEVEL "level\\lvldata_old.dat"
+    #define LEVEL "level\\lvldata.dat"
 #endif
 
 int main() {
@@ -35,9 +35,6 @@ int main() {
     Glaze::GlazeRenderer glazeRenderer(glHandler);
 
     RenderHandler renderHandler(camera, glazeRenderer, glHandler);
-
-    // Configure drawing and store a pointer to the window
-    // ConfigureDraw(camera, glazeRenderer, glHandler);
 
     CallbackHandler callbackHandler(camera, glHandler);
     InputHandler inputHandler(camera, callbackHandler);

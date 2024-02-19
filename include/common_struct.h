@@ -4,6 +4,8 @@
 #include "constants.h"
 #include "vectmath.h"
 
+#include <vector>
+
 class Map;
 
 struct Vertex {
@@ -29,6 +31,11 @@ struct Wall {
     float ceiling_height;
     int color[3];
     bool is_portal;
+};
+
+struct Subsector {
+    int id;
+    std::vector<Wall*> walls;
 };
 
 #endif

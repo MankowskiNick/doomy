@@ -1,5 +1,5 @@
 import pygame
-from uielement import *
+from ui.uielement import *
 
 class Button(UIElement):
     def __init__(self, text, action, x, y, width, height, parent=None):

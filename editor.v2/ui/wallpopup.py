@@ -1,4 +1,4 @@
-from popup import *
+from ui.popup import *
 
 class WallData:
     def __init__(self, color, wallMin, wallMax, floorHeight, ceilingHeight):

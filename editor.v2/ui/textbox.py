@@ -1,7 +1,7 @@
 
 import pygame
 from pygame.locals import *
-from uielement import *
+from ui.uielement import *
 
 class TextBox(UIElement):
     def __init__(self, text, x, y, width, height, defaultValue = "", parent = None):        

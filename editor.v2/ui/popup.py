@@ -1,8 +1,8 @@
 import pygame
 from pygame.locals import *
-from uielement import *
-from textbox import *
-from button import *
+from ui.uielement import *
+from ui.textbox import *
+from ui.button import *
 
 class Popup(UIElement):
     def __init__(self, x, y, width, height, screen, buttons, textboxes):

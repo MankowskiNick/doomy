@@ -11,10 +11,14 @@
 #include "camera.h"
 #include "viewmap.h"
 
-#include "wall_node.h"
+#define MAX_WALLCOUNT 32
 
 struct OcclusionMapVert {
     int topY,bottomY;
+};
+
+struct OcclusionMapHoriz {
+    int left, right;
 };
 
 class RenderHandler {
@@ -25,18 +29,16 @@ class RenderHandler {
         void Render(Map map, Camera& camera);
 
     private:
-        OcclusionMapVert* occlusionMap;
+        int walls_drawn = 0;
+        OcclusionMapVert* occlusionMapVert;
+        OcclusionMapHoriz* occlusionMapHoriz;
         ViewMap viewMap;
         GLLib* gl;
         Glaze::GlazeRenderer* glazeRenderer;
 
-        void DrawWall(Wall& wall);
-        void DrawBackToFront(Wall_Node* tail);
-        void DrawOrder(Wall_Node* head);
-        void DrawWalls();
-
         void ResetOcclusionMap();
-        bool IsFrameDone();
+        void RenderBSPNode(BSP_Tree* bsp_tree);
+        void DrawWall(Wall& wall);
 };
 
 #endif

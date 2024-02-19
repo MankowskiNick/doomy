@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <sstream>
 
 #include <Glimpse/glimpse.h>
 #include <Glimpse/consoleout.h>
@@ -16,7 +17,8 @@
 
 #define MAX_LINE_COUNT 10000
 
-// TODO: Add more error handling here
+// TODO: 
+//      -Add more error handling here
 
 class Map {
     public:
@@ -55,12 +57,14 @@ class Map {
             int id1, int id2, 
             float wall_min, float wall_max, 
             float floor_height, float ceiling_height, 
-            int r, int g, int b) {
+            int r, int g, int b
+        ) {
             Wall wall;
             for (int i = 0; i < vertices.size(); i++) {
                 if (vertices[i].id == id1) wall.line.v1 = vertices[i];
                 if (vertices[i].id == id2) wall.line.v2 = vertices[i];
             }
+
             wall.id = wall_id;
             wall.min_height = wall_min;
             wall.max_height = wall_max;
@@ -82,117 +86,135 @@ class Map {
         }
 
         void LoadFile(std::string file_name) {
-            // File format: 
-            //     [verts]
-            //     v1.id v1.x v1.y is_temp
-            //     ...
-            //     [walls]
-            //     id v1.id v2.id wall_min wall_max floor_min floor_max r g b is_temp is_ancestral
-            //     ...
-            //     [bsp]
-            //     bsp string
-            //     [end]
-            try {
-                std::ifstream file_stream;
-
-                file_stream.open(file_name);
-
-                if (!file_stream.is_open()) {
-                    logger->Log("Unable to open file '" + file_name + "'. Check file path and permissions.", Glimpse::FATAL);
-                    return;
-                }
-
-                if (!file_stream.good()) {
-                    logger->Log("File stream is not good after opening file '" + file_name + "'. Check the file contents and encoding.", Glimpse::FATAL);
-                    return;
-                }
-
-                std::string cur_line_header = "";
-
-                int skiplines = 0;
-                while (cur_line_header != "[verts]") {
-                    skiplines++;
-                    if (skiplines > MAX_LINE_COUNT) 
-                        logger->Log("Invalid level file(" + file_name + ").", Glimpse::FATAL);
-                    file_stream >> cur_line_header;
-                }
-                file_stream >> cur_line_header;
-
-                while (cur_line_header != "[walls]") {
-
-                    // Declare variables needed
-                    int id, is_temp;
-                    float x, y;
-
-                    // Input data values
-                    file_stream >> id;
-                    file_stream >> x;
-                    file_stream >> y;
-                    file_stream >> is_temp;
-
-                    // Add the vertex to the map
-                    AddVertex(id, x, y);
-
-                    file_stream >> cur_line_header;
-                }
-
-                file_stream >> cur_line_header;
-
-                while (cur_line_header != "[bsp]") {
-
-                    // Declare variables needed
-                    int wall_id, id1, id2, is_temp, is_ancestral; 
-                    float wall_min, wall_max;
-                    float floor_height, ceiling_height;
-                    int r, g, b;;
-
-                    // Input the data values
-                    file_stream >> wall_id;
-                    file_stream >> id1;
-                    file_stream >> id2;
-                    file_stream >> wall_min;
-                    file_stream >> wall_max;
-                    file_stream >> floor_height;
-                    file_stream >> ceiling_height;
-                    file_stream >> r;
-                    file_stream >> g;
-                    file_stream >> b;
-                    file_stream >> is_temp;
-                    file_stream >> is_ancestral;
-
-                    // Add the wall to the map
-                    if (is_ancestral == 0)
-                        AddWall(wall_id, 
-                                id1, id2, 
-                                wall_min, wall_max, 
-                                floor_height, ceiling_height, 
-                                r, g, b);
-
-                    file_stream >> cur_line_header;
-                }
-
-                std::string bsp_string = "";
-                file_stream >> bsp_string;
-                bsp_tree = DeseralizeBSP(bsp_string);
+            std::ifstream file;
+            file.open(file_name);
+            if (!file.is_open()) {
+                logger->Log("Unable to open file '" + file_name + "'. Check file path and permissions.", Glimpse::FATAL);
+                return;
             }
-            catch(...) {
-                logger->Log("FATAL ERROR: Unable to load file '" + file_name + "'(Incorrect format?)", Glimpse::FATAL);
+            if (!file.good()) {
+                logger->Log("File stream is not good after opening file '" + file_name + "'. Check the file contents and encoding.", Glimpse::FATAL);
+                return;
+            }
+            std::string line, section;
+            while (getline(file, line)) {
+                //trim(line); // You'll need to implement this function or use a library that does it
+                if (line == "[verts]")
+                    section = "verts";
+                else if (line == "[walls]")
+                    section = "walls";
+                else if (line == "[sectors]")
+                    section = "sectors";
+                else if (line == "[bsp]")
+                    section = "bsp";
+                else if (line == "[end]")
+                    return;
+                else
+                    HandleLine(section, line);
             }
         }
 
 
-        Wall* GetWallByID(int wall_id) {
+        Wall* GetWallById(int wall_id) {
             for (int i = 0; i < walls.size(); i++)
                 if (walls[i].id == wall_id) 
                     return &walls[i];
             return NULL;
         }
 
+        Subsector* GetSectorById(int id) {
+            for (int i = 0; i < sectors.size(); i++)
+                if (sectors[i].id == id) 
+                    return &sectors[i];
+            return NULL;
+        }
+
+        // TODO: Are these private?
         BSP_Tree bsp_tree;
         std::vector<Wall> walls;
         std::vector<Vertex> vertices;
+        std::vector<Subsector> sectors;
 
         Glimpse::GlimpseLogger* logger;
+    private:
+
+    void HandleLine(const std::string& section, const std::string& text) {
+        if (section == "verts") // TODO: switch statement
+            ParseVertex(text);
+        else if (section == "walls")
+            ParseWall(text);
+        else if (section == "sectors")
+            ParseSector(text);
+        else if (section == "bsp")
+            ParseBSPString(text);
+    }
+
+    void ParseVertex(const std::string& text) {
+        if (text.rfind("vert:", 0) == 0) { // Check if the string starts with "vert:"
+            std::istringstream iss(text);
+            std::string token;
+            int id, is_temp;
+            float x, y;
+            iss >> token >> id >> x >> y >> is_temp; // Parse the line
+            if (iss) { // Check if parsing was successful
+                this->AddVertex(id, x, y);
+            } 
+            else {
+                logger->Log("FATAL ERROR: Error parsing map vertex file.(Incorrect format?)", Glimpse::FATAL);
+            }
+        }
+    }
+
+    void ParseWall(const std::string& text) {
+        if (text.rfind("wall:", 0) == 0) { // Check if the string starts with "wall:"
+            std::istringstream iss(text);
+            std::string token;
+            int wall_id, v1_id, v2_id, is_temp;
+            float wall_min, wall_max, floor_height, ceiling_height;
+            int r, g, b;
+            iss >> token >> wall_id >> v1_id >> v2_id >> wall_min >> wall_max >> floor_height >> ceiling_height >> r >> g >> b >> is_temp;
+            if (iss) { // Check if parsing was successful
+                this->AddWall(wall_id, 
+                    v1_id, v2_id,  
+                    wall_min, wall_max, 
+                    floor_height, ceiling_height, 
+                    r, g, b);
+            } 
+            else {
+                logger->Log("FATAL ERROR: Error parsing wall in map file.(Incorrect format?)", Glimpse::FATAL);
+            }
+        }
+    }
+
+    void ParseSector(const std::string& text) {
+        if (text.rfind("sector:", 0) == 0) {
+            std::istringstream iss(text);
+
+            std::string token;
+            int id, wall_id;
+
+            Subsector subsect;
+
+            iss >> token >> id;
+            subsect.id = id;
+
+            while (iss >> wall_id) {
+                Wall* cur_wall = this->GetWallById(wall_id);
+                subsect.walls.push_back(cur_wall);
+            }
+
+            // add subsector to map
+            sectors.push_back(subsect);
+        }
+        else {
+            logger->Log("FATAL ERROR: Error parsing sector in map file.(Incorrect format?)", Glimpse::FATAL);
+        }
+    }
+
+    void ParseBSPString(const std::string& text) {
+        bsp_tree = DeseralizeBSP(text);
+    }
+
 };
 
 #endif

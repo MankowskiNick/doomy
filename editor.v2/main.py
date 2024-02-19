@@ -1,8 +1,8 @@
 import pygame, sys
 from pygame.locals import *
 from map_builder import *
-from button import *
-from textbox import *
+from ui.button import *
+from ui.textbox import *
 from map_file_handler import *
 
 # TODO:

@@ -7,13 +7,6 @@
 #include <Glaze/std_graphics.h>
 
 #include "draw.h"
-#include "map.h"
-#include "viewmap.h"
-#include "camera.h"
-#include "geom.h"
-#include "bsp_tree.h"
-#include "wall_node.h"
-#include "input.h"
 #include "screen_space_mapper.h"
 
 #define min(a, b) (a < b) ? a : b
@@ -30,31 +23,31 @@ RenderHandler::RenderHandler(Camera& camera, Glaze::GlazeRenderer& newGlazeRende
     // Initialize a viewMap, this is a "worker" class that will translate the map
     viewMap = ViewMap(camera);
 
-    occlusionMap = new OcclusionMapVert[gl->GetWidth()];
+    occlusionMapVert = new OcclusionMapVert[gl->GetWidth()];
+    occlusionMapHoriz = new OcclusionMapHoriz[MAX_WALLCOUNT];
     ResetOcclusionMap();
 }
 
-RenderHandler::~RenderHandler() { }
-
-void RenderHandler::ResetOcclusionMap() {
-    for (int i = 0; i < gl->GetWidth(); i++) {
-        occlusionMap[i].topY = gl->GetHeight() - 1;
-        occlusionMap[i].bottomY = 0;
-        OcclusionMapVert cur = occlusionMap[i];
-    }
+RenderHandler::~RenderHandler() { 
+    // TODO: Delete occlusion maps
 }
 
-bool RenderHandler::IsFrameDone() {
-    for (int i = 0; i < gl->GetWidth(); i++) {
-        if (occlusionMap[i].topY != -1 && occlusionMap[i].bottomY != -1)
-            return false;
+void RenderHandler::ResetOcclusionMap() {
+    for (int i = 0; i < MAX_WALLCOUNT; i++) {
+        occlusionMapHoriz[i].left = -1;
+        occlusionMapHoriz[i].right = -1;
     }
-    return true;
+    for (int i = 0; i < gl->GetWidth(); i++) {
+        occlusionMapVert[i].topY = gl->GetHeight() - 1;
+        occlusionMapVert[i].bottomY = 0;
+        OcclusionMapVert cur = occlusionMapVert[i];
+    }
 }
 
 // Draw an individual wall
+// TODO: Refactor this, it's pretty ugly.
 void RenderHandler::DrawWall(Wall& wall) {
-        // Don't draw walls that are too close
+        // Don't draw walls that are too close -- this will cause errors
         if (abs(wall.line.v1.y) < ERROR_MARGIN || abs(wall.line.v2.y) < ERROR_MARGIN)
             return;
 
@@ -104,7 +97,7 @@ void RenderHandler::DrawWall(Wall& wall) {
 
         for (int col = start_col; col != end_col; col += step) {
             // Skip if we have already finished drawing this column
-            if (occlusionMap[col].bottomY == -1 || occlusionMap[col].topY == -1)
+            if (occlusionMapVert[col].bottomY == -1 || occlusionMapVert[col].topY == -1)
                 continue;
 
             // Make sure we aren't taking extra steps that aren't needed
@@ -123,16 +116,16 @@ void RenderHandler::DrawWall(Wall& wall) {
 
                 glazeRenderer->DrawLineVert(col, 
                     cur_screenrow_bot, 
-                    max(cur_screenrow_floor, occlusionMap[col].bottomY), 
+                    max(cur_screenrow_floor, occlusionMapVert[col].bottomY), 
                     wall.color);
                 glazeRenderer->DrawLineVert(col, 
                     cur_screenrow_ceil, 
-                    min(cur_screenrow_top, occlusionMap[col].topY), 
+                    min(cur_screenrow_top, occlusionMapVert[col].topY), 
                     wall.color);
 
                 // Mark occlusion map
-                occlusionMap[col].topY = cur_screenrow_ceil;
-                occlusionMap[col].bottomY = cur_screenrow_floor;
+                occlusionMapVert[col].topY = cur_screenrow_ceil;
+                occlusionMapVert[col].bottomY = cur_screenrow_floor;
             }
             else {
 
@@ -140,60 +133,58 @@ void RenderHandler::DrawWall(Wall& wall) {
                 int cur_screenrow_top = (int)(vert1_top_y + (screenrow_top_stepsize * (col - screencol_1)));
                 int cur_screenrow_bot = (int)(vert1_bot_y + (screenrow_bot_stepsize * (col - screencol_1)));
                 glazeRenderer->DrawLineVert(col, 
-                    max(cur_screenrow_bot, occlusionMap[col].bottomY), 
-                    min(cur_screenrow_top, occlusionMap[col].topY), 
+                    max(cur_screenrow_bot, occlusionMapVert[col].bottomY), 
+                    min(cur_screenrow_top, occlusionMapVert[col].topY), 
                     wall.color);
 
                 // Mark occlusion map
-                occlusionMap[col].topY = -1;
-                occlusionMap[col].bottomY = -1;
+                occlusionMapVert[col].topY = -1;
+                occlusionMapVert[col].bottomY = -1;
             }
         }
 }
 
-void RenderHandler::DrawOrder(Wall_Node* head) {
-
-    // We have reached the end of the linked list
-    if (head == NULL)
+void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
+    if (bsp_tree == NULL)
         return;
-
-    // The frame is fully rendered, stop drawing
-    if (IsFrameDone())
-        return;
-
-    // Draw the current wall
-    Wall* cur_wall = viewMap.GetMap()->GetWallByID(head->id);
-    DrawWall(*cur_wall);
-
-    // Recursively call the next DrawOrder
-    DrawOrder(head->next);
-
-    // Memory management
-    if (head->previous != NULL) {
-        head->previous->next = NULL;
-    }
-    delete head;
-
-}
-
-// Draw all walls
-void RenderHandler::DrawWalls() {
-    Wall_Node* render_head = FindOrder(&(viewMap.GetMap())->bsp_tree, *viewMap.GetMap());
     
-    Wall_Node* tail = render_head;
+    Subsector* sect = viewMap.GetMap()->GetSectorById(bsp_tree->id);
+    
+    if (bsp_tree->front == NULL && bsp_tree->back == NULL) {// If this bsp_tree node is a subsector(this may not be necessary)
+        for (int i = 0; i < sect->walls.size(); i++) {
+            Wall* cur_wall = viewMap.GetMap()->GetWallById(sect->walls[i]->id);
+            this->DrawWall(*cur_wall);
+        }
+        return;
+    }
 
-    ResetOcclusionMap();
-    DrawOrder(render_head);
+    // Vertex to refer to camera position
+    Vertex camera_vertex = {
+        .id = -1,
+        .x = 0.0f,
+        .y = 0.0f
+    };
+
+    Wall* cur_wall = viewMap.GetMap()->GetWallById(sect->walls[0]->id);
+    bool is_front_retval = is_front(camera_vertex, cur_wall);
+    this->RenderBSPNode(is_front_retval ? bsp_tree->front : bsp_tree->back);
+    this->DrawWall(*cur_wall);
+    this->RenderBSPNode(is_front_retval ? bsp_tree->back : bsp_tree->front);
 }
 
 // Render code
 void RenderHandler::Render(Map map, Camera& camera) {
 
-    // Display a gray background
+    // Display a gray background - Eventually, I don't think this is needed.
     glazeRenderer->FillScreen(100, 100, 100);
 
     // TOOD: Rework how we handle this
     viewMap.LoadMap(map);
     viewMap.TranslateMap();
-    DrawWalls();
+
+    // Reset occlusion map
+    this->ResetOcclusionMap();
+
+    // Render walls
+    this->RenderBSPNode(&(map.bsp_tree));
 }

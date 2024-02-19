@@ -11,6 +11,8 @@ class MapFileHandler:
         #   [walls]
         #   id v1.id v2.id wall_min wall_max floor_min floor_max r g b is_temp is_ancestral
         #   ...
+        #   [sectors]   # sectors are bsp nodes, not necessarily all subsectors.  subsectors are convex sectors and leaves in the tree
+        #   id wall1.id wall2.id ...
         #   [bsp]
         #   bsp string
         #   [end]
@@ -22,7 +24,7 @@ class MapFileHandler:
 
     def SaveMap(self, map, filename="lvldata.dat"):
         # Process the bsp for the map and reassign self.map to be this
-        bsp = BSP_Tree(self.Map)
+        bsp = BSP_Tree(map)
         self.Map = bsp.get_map()
 
         contents = ""
@@ -32,6 +34,9 @@ class MapFileHandler:
                 
         # Add walls to file
         contents += self._GetWallString()
+
+        # Add sectors(bsp nodes) to file
+        contents += self._GetSectorsString(bsp)
                 
         # Add BSP string to file
         contents += "[bsp]\n"
@@ -54,7 +59,7 @@ class MapFileHandler:
                     section = 'verts'
                 elif line == '[walls]':
                     section = 'walls'
-                elif line == '[end]':
+                elif line == '[sectors]':
                     section = None
                 else:
                     self._HandleLine(section, line)
@@ -102,6 +107,9 @@ class MapFileHandler:
             else:
                 print("Error parsing file.")
 
+    #   [verts]
+    #   v1.id v1.x v1.y is_temp
+    #   ...
     def _GetVertexString(self):
         contents = "[verts]\n"
         for v in self.Map.Vertices:
@@ -109,6 +117,9 @@ class MapFileHandler:
             contents += "vert: " + str(v.id) + " " + str(x) + " " + str(y) + " " + str(v.is_temp) + "\n"
         return contents
 
+    #   [walls]
+    #   id v1.id v2.id wall_min wall_max floor_min floor_max r g b is_temp is_ancestral
+    #   ...
     def _GetWallString(self):
         contents = "[walls]\n"
         for w in self.Map.Walls:
@@ -116,4 +127,17 @@ class MapFileHandler:
             vert2_id = str(w.line.v2.id)
 
             contents += "wall: "  + str(w.id) + " " + vert1_id + " " + vert2_id + " " + str(w.min_height) + " " + str(w.max_height) + " " + str(w.floor_height) + " " + str(w.ceiling_height) + " " + str(w.color[0]) + " " + str(w.color[1]) + " " + str(w.color[2]) +  " " + str(w.is_temp) + " " + str(w.is_ancestral) + "\n"
+        return contents
+    
+    #   [sectors]   # sectors are bsp nodes, not necessarily all subsectors.  subsectors are convex sectors and leaves in the tree
+    #   id wall1.id wall2.id ...
+    #   ...
+    def _GetSectorsString(self, bsp):
+        contents = "[sectors]\n"
+        sectors = bsp.get_sectors()
+        for s in sectors:
+            # Get the wall ids as a string
+            wall_ids_string = ' '.join([str(wall_id) for wall_id in s.walls])
+            # [wall_ids_string]
+            contents += "sector: " + str(s.id) + " " + wall_ids_string + "\n"
         return contents

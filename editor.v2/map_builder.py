@@ -1,6 +1,6 @@
 import pygame, easygui, sys
 from editor_math import *
-from wallpopup import *
+from ui.wallpopup import *
 
 LOOKDIST = 15
 
