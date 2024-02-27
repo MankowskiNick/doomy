@@ -1,11 +1,19 @@
 from editor_math import *
 from map import *
 
+SUBSECTOR = 0x8000
+
 class BSP_Node:
-    def __init__(self, id, front, back, walls):
+    def __init__(self, id, front, back, wall_id, is_subsector=False):
         self.id = id
         self.front = front
         self.back = back
+        self.wall_id = wall_id
+        self.is_subsector = is_subsector
+
+class Subsector:
+    def __init__(self, node_id, walls):
+        self.node_id = node_id
         self.walls = walls
 
 
@@ -20,118 +28,95 @@ class BSP_Tree:
 
     def generate_bsp_tree(self):
         # Set bsp_head to the 
-        self.bsp_head = self.generate_bsp_subtree(self.ref_map.Walls)
+        self.subsectors = []
+        self.bsp_head = self.generate_subtree(self.ref_map.Walls, True)
 
-    def generate_bsp_subtree(self, walls):
+    def cut_wall(self, intersection, wall):
+        new_vert = self.ref_map.AddVertex(intersection.x, intersection.y)
+        new_vert.set_temp()
 
-        # Check if walls forms a convex subsector, if so, we are done. 
-        # Return a new leaf node that indicates it is a subsector
-        if (self.is_subsector(walls)):
-            return BSP_Node(self._get_node_id(), None, None, [w.id for w in walls])
+        wall1 = self.ref_map.AddWall(
+            wall.line.v1.id, new_vert.id, 
+            wall.color,
+            wall.min_height, wall.max_height, 
+            wall.floor_height, wall.ceiling_height)
+        wall1.set_temp()
 
-        # Define a list of front and back walls
+        wall2 = self.ref_map.AddWall(
+            new_vert.id, wall.line.v2.id, 
+            wall.color, 
+            wall.min_height, wall.max_height, 
+            wall.floor_height, wall.ceiling_height)
+        wall2.set_temp()
+        return wall1, wall2
+
+    def generate_subtree(self, walls, possible_subsector = True):
+        # Base case, no walls to partition.  Return a leaf
+        if len(walls) == 0:
+            return None
+
+        split_wall = walls[int(len(walls) / 2)]
+        split_line = extend_line(split_wall.line)
+
         front_walls = []
         back_walls = []
 
-        # Pick a partition wall
-        partition_wall = walls[int(len(walls) / 2)]
-        partition_line = extend_line(partition_wall.line)
-
-        for wall in walls:
-            if wall.id == partition_wall.id or wall.is_ancestral == 1:
+        # Partition walls
+        for w in walls:
+            if w.id == split_wall.id or w in front_walls or w in back_walls or w.is_ancestral:
                 continue
 
-            intersection = find_intersection(wall.line, partition_line)
+            intersection = find_intersection(split_line, w.line)
+            v1_equals = vertex_equals(w.line.v1, intersection)
+            v2_equals = vertex_equals(w.line.v2, intersection)
 
-            v1_equal = vertex_equals(intersection, wall.line.v1)
-            v2_equal = vertex_equals(intersection, wall.line.v2)
+            # Split the wall into a front half and a back half
+            if intersection is not None and not v1_equals and not v2_equals:
+                w.set_ancestral()
+                wall1, wall2 = self.cut_wall(intersection, w)
 
-            # Easy case, the wall is wholely either in front or behind the current partition wall
-            if (intersection is None or v1_equal or v2_equal):
-                if is_front_walls(wall, partition_wall):
-                    front_walls.append(wall)
+                if is_front_walls(wall1, split_wall):
+                    front_walls.append(wall1)
+                    back_walls.append(wall2)
                 else:
-                    back_walls.append(wall)
-
-            # We need to split the wall into a front and back portion - this still seems to not work entirely.  
-            # Inspecting the output for the map, it appears to work.  But still getting some overdraw issues.
+                    back_walls.append(wall1)
+                    front_walls.append(wall2)
             else:
-                # Add the intersection as a vertex
-                new_vert = self.ref_map.AddVertex(intersection.x, intersection.y)
-                new_vert.set_temp()
-
-                # Only set a wall as ancestral if it isn't temporary
-                if not wall.is_temp:
-                    wall.set_ancestral()
-
-                # Add the new wall and update v2 of the wall we are modifying
-                new_wall1 = self.ref_map.AddWall(new_vert.id, 
-                                                wall.line.v2.id, 
-                                                wall.color, 
-                                                wall.min_height, wall.max_height, 
-                                                wall.floor_height, wall.ceiling_height)
-                new_wall1.set_temp()
-
-                new_wall2 = self.ref_map.AddWall(wall.line.v1.id, 
-                                                new_vert.id, 
-                                                wall.color, 
-                                                wall.min_height, wall.max_height, 
-                                                wall.floor_height, wall.ceiling_height)
-                new_wall2.set_temp()
-
-                if is_front_walls(new_wall1, partition_wall):
-                    front_walls.append(new_wall1)
-                    back_walls.append(new_wall2)
+                if is_front_walls(w, split_wall):
+                    front_walls.append(w)
                 else:
-                    back_walls.append(new_wall1)
-                    front_walls.append(new_wall2)
-                
-        
-        front_subtree = self.generate_bsp_subtree(front_walls)
-        back_subtree = self.generate_bsp_subtree(back_walls)
-        return_tree = BSP_Node(self._get_node_id(), front_subtree, back_subtree, [partition_wall.id]) # This went from using partition_wall.id to new node id
+                    back_walls.append(w)
 
+        front_tree = None
+        back_tree = None
+
+        if not possible_subsector:
+            front_tree = self.generate_subtree(front_walls, False)
+            back_tree = self.generate_subtree(back_walls, False)
+        else:
+            front_subsector = self.is_subsector([split_wall] + front_walls)
+            back_subsector = self.is_subsector([split_wall] + back_walls)
+            if front_subsector:
+                self.subsectors.append(Subsector(self._get_node_id(), [split_wall] + front_walls))
+            if back_subsector:
+                self.subsectors.append(Subsector(self._get_node_id(), [split_wall] + back_walls))
+
+            front_tree = self.generate_subtree(front_walls, not front_subsector)
+            back_tree = self.generate_subtree(back_walls, not back_subsector)
+
+        return_tree = BSP_Node(self._get_node_id(), front_tree, back_tree, split_wall.id, self.is_subsector(walls)) # last parameter may be cap
+                
         return return_tree
 
-    def is_subsector(self, walls): # Check if walls is []?
-        if len(walls) == 0:
-            return True
-            
+    def is_subsector(self, walls):
         # Get the list of vertices
         vertices_unfiltered = [wall.line.v1 for wall in walls] + [wall.line.v2 for wall in walls]
 
         # Filter to unique vertices
         vertices = []
         [vertices.append(v) for v in vertices_unfiltered if v not in vertices]
-
-        check_vertex = vertices[0]
-
-        # Get the lines in the sector
-        lines = [wall.line for wall in walls]
-        for v in vertices:
-            edge_count = 0
-            for line in lines:
-                if line.v1 == v or line.v2 == v:
-                    edge_count += 1
-            
-        adjacent_lines = [line for line in lines if line.v1 == check_vertex or line.v2 == check_vertex]
-
-        # If there are more than 2 walls containing the check vertex, we cannot have a convex sector.
-        if len(adjacent_lines) < len(walls) - 2:
-            return False
-
-        # Check if drawing a line from v to check vertex intersects with another line.  If it does, the sector is not convex.
-        for v in vertices:
-            if v == check_vertex:
-                continue
-            
-            check_line = Line(check_vertex, v)
-            if check_line not in adjacent_lines:
-                for l in lines:
-                    if intersect(check_line, l):
-                        return False
-
-        return True
+        
+        return is_convex_polygon(vertices)
 
     # Return structure:
     # (id=int, front=(), back=()), # is a special character denoting an empty child
@@ -145,7 +130,7 @@ class BSP_Tree:
         front_string = self._to_string_helper(cur_head.front)
         back_string = self._to_string_helper(cur_head.back)
 
-        return "(id=" + str(cur_head.id) + ",front=" + front_string + ",back=" + back_string + ")"
+        return "(id=" + str(cur_head.id + (SUBSECTOR if cur_head.is_subsector else 0)) + ",wall_id=" + str(cur_head.wall_id) + ",front=" + front_string + ",back=" + back_string + ")"
 
     def get_map(self):
         return self.ref_map
@@ -156,13 +141,4 @@ class BSP_Tree:
 
     # Return a list of sectors in the bsp tree
     def get_sectors(self):
-        return self._get_sectors_helper(self.bsp_head)
-
-    # Return a list of sectors in cur_head
-    def _get_sectors_helper(self, cur_head):
-        # If cur_head is none, there aren't any sectors in cur_head
-        if cur_head is None:
-            return []
-        
-        # Otherwise, return a list of the sectors in front of cur_head, behind cur_head, and cur_head
-        return [cur_head] + self._get_sectors_helper(cur_head.front) + self._get_sectors_helper(cur_head.back)
+        return self.subsectors

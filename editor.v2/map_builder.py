@@ -1,13 +1,22 @@
-import pygame, easygui, sys
+import pygame, easygui, sys, random
 from editor_math import *
 from ui.wallpopup import *
 
 LOOKDIST = 15
 
+def get_random_color():
+    """Returns a random color as an (R, G, B) tuple."""
+    red = random.randint(0, 255)
+    green = random.randint(0, 255)
+    blue = random.randint(0, 255)
+    return (red, green, blue)
+
+
 # Map Editor should handle inputs & provide buttons to render
 class Canvas:
     def __init__(self, new_map, x, y, width, height):
         self.Map = Map()
+        self.BSP = None
 
         self.Surface = pygame.Surface((width, height))
         self.SurfaceRect = self.Surface.get_rect(topleft=(x, y))
@@ -126,6 +135,25 @@ class Canvas:
         # Fill the Canvas with white
         self.Surface.fill((255,255,255))
         
+        # Draw sectors
+        if self.BSP is not None:
+            for sector in self.BSP.get_sectors():
+                walls = [self.Map.GetWallById(w.id) for w in sector.walls]
+                lines = [w.line for w in walls]
+                vertices = []
+                for line in lines:
+                    v1, v2 = line.v1, line.v2
+                    if v1 not in vertices:
+                        vertices.append(v1)
+                    if v2 not in vertices:
+                        vertices.append(v2)
+                if len(vertices) > 0:
+                    vertices = sort_vertices(vertices)
+                    points = [(v.x, v.y) for v in vertices]
+                    if len(points) > 3:
+                        pygame.draw.polygon(self.Surface, (150,150,150), points)
+                        pygame.draw.polygon(self.Surface, (200,200,200), points, 5)
+        
         # Draw vertices
         for vert in self.Map.Vertices:
             pygame.draw.circle(self.Surface, (0, 0, 0), (vert.x, vert.y), 3)
@@ -134,8 +162,20 @@ class Canvas:
                 pygame.draw.circle(self.Surface, (255, 0, 0), (vert.x, vert.y), 5, 1)
         
         # Draw walls
+        # Initialize a font object
+        myfont = pygame.font.SysFont('Arial', 14)
+    
         for wall in self.Map.Walls:
             if self._SelectedWall is not None and self._SelectedWall.id == wall.id:
                 pygame.draw.line(self.Surface, wall.color, (wall.line.v1.x, wall.line.v1.y), (wall.line.v2.x, wall.line.v2.y), width=3)
             else:
                 pygame.draw.line(self.Surface, wall.color, (wall.line.v1.x, wall.line.v1.y), (wall.line.v2.x, wall.line.v2.y), width=1)
+            # Calculate the midpoint of the wall to place the ID text
+            mid_x = (wall.line.v1.x + wall.line.v2.x) / 2
+            mid_y = (wall.line.v1.y + wall.line.v2.y) / 2
+
+            # Render the wall ID text
+            id_text = myfont.render(str(wall.id), True, (0, 0, 0))  # Black color text
+
+            # Blit the text onto the surface at the midpoint of the wall
+            self.Surface.blit(id_text, (mid_x, mid_y))

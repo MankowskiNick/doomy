@@ -3,6 +3,48 @@ from map import *
 
 ERROR_MARGIN = 1e-6
 
+
+def compute_centroid(vertices):
+    x_sum = 0
+    y_sum = 0
+    for v in vertices:
+        x_sum += v.x
+        y_sum += v.y
+    return x_sum / len(vertices), y_sum / len(vertices)
+
+def angle_from_centroid(v, centroid):
+    return atan2(v.y - centroid[1], v.x - centroid[0])
+
+def sort_vertices(vertices):
+    centroid = compute_centroid(vertices)
+    return sorted(vertices, key=lambda v: angle_from_centroid(v, centroid))
+
+def cross_product(v1, v2, v3):
+    return (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x)
+
+def extract_vertices_from_lines(lines):
+    vertices_unfiltered = [l.v1 for l in lines] + [l.v2 for l in lines]
+    vertices = []
+    vertices.append(v for v in vertices_unfiltered if v not in vertices)
+    return vertices
+
+def is_convex_polygon(vertices):
+    # Get a list of sorted vertices to build a polygon hull
+    sorted_vertices = sort_vertices(vertices)
+    if len(vertices) < 4:
+        return True # changed from True, but I don't really think this matters.=
+    sorted_vertices.append(sorted_vertices[0])  # Append first vertex at the end to close the polygon
+    cross_product_sign = 0
+    for i in range(1, len(sorted_vertices) - 1):
+        cp = cross_product(sorted_vertices[i-1], sorted_vertices[i], sorted_vertices[i+1])
+        if cp == 0:
+            return False # Colinear points: implies a line goes through the center of the polygon, so not convex
+        if cross_product_sign == 0:
+            cross_product_sign = 1 if cp > 0 else -1
+        elif (cp > 0 and cross_product_sign < 0) or (cp < 0 and cross_product_sign > 0):
+            return False
+    return True
+
 def map_coords_to_file(width, height, mapping_scalar, x, y):
     x = (x - (width / 2)) * mapping_scalar
     y = (y - (height / 2)) * mapping_scalar

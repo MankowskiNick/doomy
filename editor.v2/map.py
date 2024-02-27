@@ -92,8 +92,20 @@ class Map:
         ids = [v.id for v in self.Vertices]
         return self._GetNewId(ids)
 
+    def GetWallById(self, id):
+        for w in self.Walls:
+            if w.id == id:
+                return w
+        return None
+
     def _GetNewId(self, ids):
         new_id = 0
         while new_id in ids:
             new_id += 1
         return new_id
+
+    def GetFilteredMap(self):
+        new_map = Map()
+        new_map.Walls = [w for w in self.Walls if not w.is_temp]
+        new_map.Vertices = [v for v in self.Vertices if not v.is_temp]
+        return new_map

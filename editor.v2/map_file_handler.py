@@ -22,9 +22,12 @@ class MapFileHandler:
         self.Map = Map()
         return
 
-    def SaveMap(self, map, filename="lvldata.dat"):
-        # Process the bsp for the map and reassign self.map to be this
-        bsp = BSP_Tree(map)
+    def SaveMap(self, bsp, filename="lvldata.dat"):
+        
+        if bsp is None:
+            print("Failed to save map, you must process sectors before saving.")
+            return
+
         self.Map = bsp.get_map()
 
         contents = ""
@@ -137,7 +140,7 @@ class MapFileHandler:
         sectors = bsp.get_sectors()
         for s in sectors:
             # Get the wall ids as a string
-            wall_ids_string = ' '.join([str(wall_id) for wall_id in s.walls])
+            wall_ids_string = ' '.join([str(wall.id) for wall in s.walls])
             # [wall_ids_string]
-            contents += "sector: " + str(s.id) + " " + wall_ids_string + "\n"
+            contents += "sector: " + str(s.node_id) + " " + wall_ids_string + "\n"
         return contents

@@ -12,10 +12,9 @@ vert: 9 6.15 -1.9500000000000002 0
 vert: 10 6.15 -5.5 0
 vert: 11 -7.65 -5.5 0
 vert: 12 -2.7 6.95 1
-vert: 13 -2.7 -5.5 1
-vert: 14 6.15 -2.046039603960395 1
-vert: 15 4.483333333333303 6.95 1
-vert: 16 4.483333333333303 6.95 1
+vert: 13 -2.7 -5.499999999999955 1
+vert: 14 4.483333333333326 6.95 1
+vert: 15 -1.326666666666688 -5.500000000000046 1
 [walls]
 wall: 0 3 2 0.0 1.0 -1.0 -1.0 255 0 0 0 1
 wall: 1 2 1 0.0 1.0 -1.0 -1.0 255 0 0 0 0
@@ -28,39 +27,25 @@ wall: 7 4 7 0.0 1.0 -1.0 -1.0 255 0 0 0 0
 wall: 8 8 7 0.0 1.0 0.33 0.67 0 0 255 0 0
 wall: 9 6 7 0.0 1.0 -1.0 -1.0 0 255 0 0 0
 wall: 10 9 8 0.0 1.0 -1.0 -1.0 0 255 0 0 0
-wall: 11 9 10 0.0 1.0 -1.0 -1.0 0 255 0 0 1
+wall: 11 9 10 0.0 1.0 -1.0 -1.0 0 255 0 0 0
 wall: 12 10 11 0.0 1.0 -1.0 -1.0 0 255 0 0 1
 wall: 13 11 6 0.0 1.0 -1.0 -1.0 0 255 0 0 0
-wall: 14 12 2 0.0 1.0 -1.0 -1.0 255 0 0 1 0
-wall: 15 3 12 0.0 1.0 -1.0 -1.0 255 0 0 1 0
-wall: 16 13 11 0.0 1.0 -1.0 -1.0 0 255 0 1 0
-wall: 17 10 13 0.0 1.0 -1.0 -1.0 0 255 0 1 0
-wall: 18 14 10 0.0 1.0 -1.0 -1.0 0 255 0 1 0
-wall: 19 9 14 0.0 1.0 -1.0 -1.0 0 255 0 1 0
-wall: 20 15 2 0.0 1.0 -1.0 -1.0 255 0 0 1 0
-wall: 21 12 15 0.0 1.0 -1.0 -1.0 255 0 0 1 0
-wall: 22 16 2 0.0 1.0 -1.0 -1.0 255 0 0 1 0
-wall: 23 12 16 0.0 1.0 -1.0 -1.0 255 0 0 1 0
+wall: 14 3 12 0.0 1.0 -1.0 -1.0 255 0 0 1 0
+wall: 15 12 2 0.0 1.0 -1.0 -1.0 255 0 0 1 1
+wall: 16 10 13 0.0 1.0 -1.0 -1.0 0 255 0 1 1
+wall: 17 13 11 0.0 1.0 -1.0 -1.0 0 255 0 1 0
+wall: 18 12 14 0.0 1.0 -1.0 -1.0 255 0 0 1 0
+wall: 19 14 2 0.0 1.0 -1.0 -1.0 255 0 0 1 0
+wall: 20 10 15 0.0 1.0 -1.0 -1.0 0 255 0 1 0
+wall: 21 15 13 0.0 1.0 -1.0 -1.0 0 255 0 1 0
 [sectors]
-sector: 19 7
-sector: 11 8
-sector: 1 18 17 17
-sector: 10 6
-sector: 6 10
-sector: 2 19
-sector: 5 5
-sector: 3 20 1 22
-sector: 4 
-sector: 9 4
-sector: 7 21 23
-sector: 8 
-sector: 18 16
-sector: 12 
-sector: 17 9
-sector: 15 3
-sector: 13 15 2 15
-sector: 14 
-sector: 16 13
+sector: 1 10 11 20
+sector: 2 10 19 1 5
+sector: 9 8 21
+sector: 10 8 18 4
+sector: 16 9 17 13
+sector: 17 2 14 3
+sector: 18 2
 [bsp]
-(id=19,front=(id=11,front=(id=1,front=#,back=#),back=(id=10,front=(id=6,front=(id=2,front=#,back=#),back=(id=5,front=(id=3,front=#,back=#),back=(id=4,front=#,back=#))),back=(id=9,front=(id=7,front=#,back=#),back=(id=8,front=#,back=#)))),back=(id=18,front=(id=12,front=#,back=#),back=(id=17,front=(id=15,front=(id=13,front=#,back=#),back=(id=14,front=#,back=#)),back=(id=16,front=#,back=#))))
+(id=25,wall_id=7,front=(id=15,wall_id=6,front=(id=8,wall_id=10,front=(id=32772,wall_id=20,front=#,back=(id=32771,wall_id=11,front=#,back=#)),back=(id=32775,wall_id=1,front=#,back=(id=32774,wall_id=5,front=(id=32773,wall_id=19,front=#,back=#),back=#))),back=(id=14,wall_id=8,front=(id=32779,wall_id=21,front=#,back=#),back=(id=32781,wall_id=4,front=(id=32780,wall_id=18,front=#,back=#),back=#))),back=(id=24,wall_id=9,front=(id=32789,wall_id=2,front=(id=32788,wall_id=3,front=(id=32787,wall_id=14,front=#,back=#),back=#),back=#),back=(id=32791,wall_id=13,front=#,back=(id=32790,wall_id=17,front=#,back=#))))
 [end]

@@ -8,10 +8,14 @@
 
 class Map;
 
+#define	SUBSECTOR 0x8000
+
 #define DIVISION_LINE_SCALAR 1000.0f
 
 struct BSP_Tree {
     int id;
+    int wall_id;
+    bool is_subsector;
     BSP_Tree* root;
     BSP_Tree* front;
     BSP_Tree* back;

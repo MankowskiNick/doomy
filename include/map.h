@@ -169,16 +169,17 @@ class Map {
         if (text.rfind("wall:", 0) == 0) { // Check if the string starts with "wall:"
             std::istringstream iss(text);
             std::string token;
-            int wall_id, v1_id, v2_id, is_temp;
+            int wall_id, v1_id, v2_id, is_temp, is_ancestral;
             float wall_min, wall_max, floor_height, ceiling_height;
             int r, g, b;
-            iss >> token >> wall_id >> v1_id >> v2_id >> wall_min >> wall_max >> floor_height >> ceiling_height >> r >> g >> b >> is_temp;
+            iss >> token >> wall_id >> v1_id >> v2_id >> wall_min >> wall_max >> floor_height >> ceiling_height >> r >> g >> b >> is_temp >> is_ancestral;
             if (iss) { // Check if parsing was successful
-                this->AddWall(wall_id, 
-                    v1_id, v2_id,  
-                    wall_min, wall_max, 
-                    floor_height, ceiling_height, 
-                    r, g, b);
+                if (is_ancestral == 0)
+                    this->AddWall(wall_id, 
+                        v1_id, v2_id,  
+                        wall_min, wall_max, 
+                        floor_height, ceiling_height, 
+                        r, g, b);
             } 
             else {
                 logger->Log("FATAL ERROR: Error parsing wall in map file.(Incorrect format?)", Glimpse::FATAL);

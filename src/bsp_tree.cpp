@@ -43,6 +43,18 @@ BSP_Tree* _DeserializeBSPHelper(const std::string& bsp_string, int& pos) {
         id_str += bsp_string[pos++];
     int id = std::stoi(id_str);
 
+    // Read the wall id
+    pos += 9; // Skip past ,wall_id=
+    std::string wall_id_str = "";
+    while (bsp_string[pos] != ',')
+        wall_id_str += bsp_string[pos++];
+    int wall_id = std::stoi(wall_id_str);
+
+    // Is this a subsector? If so, remove the tag and indicate it is
+    bool is_subsector = wall_id >= SUBSECTOR;
+    if (is_subsector)
+        wall_id -= SUBSECTOR;
+
     // Read the front node
     pos += 7; // Skip past ,front=
     BSP_Tree* front_subtree = _DeserializeBSPHelper(bsp_string, pos);
@@ -57,8 +69,10 @@ BSP_Tree* _DeserializeBSPHelper(const std::string& bsp_string, int& pos) {
     // Assemble the root node
     BSP_Tree* root_tree = new BSP_Tree;
     root_tree->id = id;
+    root_tree->wall_id = wall_id;
     root_tree->front = front_subtree;
     root_tree->back = back_subtree;
+    root_tree->is_subsector = is_subsector;
 
     // Return it
     return root_tree;

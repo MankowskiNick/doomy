@@ -148,14 +148,8 @@ void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
     if (bsp_tree == NULL)
         return;
     
-    Subsector* sect = viewMap.GetMap()->GetSectorById(bsp_tree->id);
-    
-    if (bsp_tree->front == NULL && bsp_tree->back == NULL) {// If this bsp_tree node is a subsector(this may not be necessary)
-        for (int i = 0; i < sect->walls.size(); i++) {
-            Wall* cur_wall = viewMap.GetMap()->GetWallById(sect->walls[i]->id);
-            this->DrawWall(*cur_wall);
-        }
-        return;
+    if (bsp_tree->is_subsector) {
+        // Process subsector -- floors, sprites, NPCs, etc.
     }
 
     // Vertex to refer to camera position
@@ -165,7 +159,7 @@ void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
         .y = 0.0f
     };
 
-    Wall* cur_wall = viewMap.GetMap()->GetWallById(sect->walls[0]->id);
+    Wall* cur_wall = viewMap.GetMap()->GetWallById(bsp_tree->wall_id);
     bool is_front_retval = is_front(camera_vertex, cur_wall);
     this->RenderBSPNode(is_front_retval ? bsp_tree->front : bsp_tree->back);
     this->DrawWall(*cur_wall);

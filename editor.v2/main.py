@@ -21,11 +21,13 @@ class Editor():
 
         self.Canvas = Canvas(Map(), 0, 0, SCREENWIDTH, SCREENHEIGHT - 100)
         self.Buttons = [
-            Button("Add wall", self.Canvas.ToggleEditMode, (SCREENWIDTH * 1 // 6), SCREENHEIGHT - 50, 100, 50),
-            Button("Drag", self._ToggleDragMode, (SCREENWIDTH * 2 // 6), SCREENHEIGHT - 50, 100, 50),
-            Button("New Map", self._CreateNewMap, (SCREENWIDTH * 3 // 6), SCREENHEIGHT - 50, 100, 50),
-            Button("Save Map", self.SaveMap, (SCREENWIDTH * 4 // 6), SCREENHEIGHT - 50, 100, 50),
-            Button("Load Map", self.LoadMap, (SCREENWIDTH * 5 // 6), SCREENHEIGHT - 50, 100, 50),
+            Button("Add wall", self.Canvas.ToggleEditMode,      (SCREENWIDTH * 1 // 8),     SCREENHEIGHT - 50,  80, 50),
+            Button("Drag", self._ToggleDragMode,                (SCREENWIDTH * 2 // 8),     SCREENHEIGHT - 50,  80, 50),
+            Button("New Map", self._CreateNewMap,               (SCREENWIDTH * 3 // 8),     SCREENHEIGHT - 50,  80, 50),
+            Button("Process Sectors", self._ProcessSectors,     (SCREENWIDTH * 4 // 8),     SCREENHEIGHT - 50,  80, 50),
+            Button("Clear Sectors", self._ClearSectors,         (SCREENWIDTH * 5 // 8),     SCREENHEIGHT - 50,  80, 50),
+            Button("Save Map", self.SaveMap,                    (SCREENWIDTH * 6 // 8),     SCREENHEIGHT - 50,  80, 50),
+            Button("Load Map", self.LoadMap,                    (SCREENWIDTH * 7 // 8),     SCREENHEIGHT - 50,  80, 50),
         ]
 
     def _ToggleDragMode(self):
@@ -35,12 +37,22 @@ class Editor():
     def _CreateNewMap(self):
         self.Canvas.Map = Map()
 
+    def _ProcessSectors(self): # TODO: Fix bug with this button(can't press it twice)
+        # Process the bsp for the map and reassign self.map to be this
+        bsp = BSP_Tree(self.Canvas.Map.GetFilteredMap())
+        self.Canvas.Map = bsp.get_map()
+        self.Canvas.BSP = bsp
+
+    def _ClearSectors(self):
+        self.Canvas.BSP = None
+
     def SaveMap(self):
         fileHandler = MapFileHandler(self.Canvas.Width, self.Canvas.Height, 0.05)
-        fileHandler.SaveMap(self.Canvas.Map, "lvldata.dat")
+        fileHandler.SaveMap(self.Canvas.BSP, "lvldata.dat")
         return
     
     def LoadMap(self):
+        self.Canvas.Map = None
         fileHandler = MapFileHandler(self.Canvas.Width, self.Canvas.Height, 0.05)
         self.Canvas.Map = fileHandler.LoadMap("lvldata.dat")
 
