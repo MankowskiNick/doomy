@@ -132,13 +132,18 @@ class Canvas:
             self.VertexMode = True
 
     def Render(self):
+        
+        # Draw walls
+        # Initialize a font object
+        myfont = pygame.font.SysFont('Arial', 10)
+
         # Fill the Canvas with white
         self.Surface.fill((255,255,255))
         
         # Draw sectors
         if self.BSP is not None:
             for sector in self.BSP.get_sectors():
-                walls = [self.Map.GetWallById(w.id) for w in sector.walls]
+                walls = [self.Map.GetWallById(w.id) for w in sector.walls if w is not None]
                 lines = [w.line for w in walls]
                 vertices = []
                 for line in lines:
@@ -160,10 +165,9 @@ class Canvas:
             # If we have selected this vertex, draw a red circle around it
             if self._SelectedVertex is not None and self._SelectedVertex.id == vert.id:
                 pygame.draw.circle(self.Surface, (255, 0, 0), (vert.x, vert.y), 5, 1)
-        
-        # Draw walls
-        # Initialize a font object
-        myfont = pygame.font.SysFont('Arial', 14)
+            # Render vertex id
+            id_text = myfont.render("v_id:" + str(vert.id), True, (0,0,0))
+            self.Surface.blit(id_text, (vert.x + 5, vert.y + 5))
     
         for wall in self.Map.Walls:
             if self._SelectedWall is not None and self._SelectedWall.id == wall.id:

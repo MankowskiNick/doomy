@@ -26,6 +26,8 @@ class Wall:
         self.is_temp = 0
         self.is_ancestral = 0
 
+        self.split_wall = False
+
     def edit_wall(self, v1, v2, color, min_height, max_height, floor_height = -1, ceiling_height = -1):
         self.line = Line(v1, v2)
         self.color = color

@@ -39,13 +39,12 @@ wall: 19 14 2 0.0 1.0 -1.0 -1.0 255 0 0 1 0
 wall: 20 10 15 0.0 1.0 -1.0 -1.0 0 255 0 1 0
 wall: 21 15 13 0.0 1.0 -1.0 -1.0 0 255 0 1 0
 [sectors]
-sector: 1 10 11 20
-sector: 2 10 19 1 5
+sector: 1 20 11
+sector: 4 5 19
 sector: 9 8 21
-sector: 10 8 18 4
+sector: 11 4 18
 sector: 16 9 17 13
-sector: 17 2 14 3
-sector: 18 2
+sector: 17 3 14
 [bsp]
-(id=25,wall_id=7,front=(id=15,wall_id=6,front=(id=8,wall_id=10,front=(id=32772,wall_id=20,front=#,back=(id=32771,wall_id=11,front=#,back=#)),back=(id=32775,wall_id=1,front=#,back=(id=32774,wall_id=5,front=(id=32773,wall_id=19,front=#,back=#),back=#))),back=(id=14,wall_id=8,front=(id=32779,wall_id=21,front=#,back=#),back=(id=32781,wall_id=4,front=(id=32780,wall_id=18,front=#,back=#),back=#))),back=(id=24,wall_id=9,front=(id=32789,wall_id=2,front=(id=32788,wall_id=3,front=(id=32787,wall_id=14,front=#,back=#),back=#),back=#),back=(id=32791,wall_id=13,front=#,back=(id=32790,wall_id=17,front=#,back=#))))
+(id=24,wall_id=7,front=(id=15,wall_id=6,front=(id=8,wall_id=10,front=(id=32771,wall_id=20,front=#,back=(id=2,wall_id=11,front=#,back=#)),back=(id=7,wall_id=1,front=#,back=(id=6,wall_id=5,front=(id=5,wall_id=19,front=#,back=#),back=#))),back=(id=14,wall_id=8,front=(id=10,wall_id=21,front=#,back=#),back=(id=13,wall_id=4,front=(id=12,wall_id=18,front=#,back=#),back=#))),back=(id=23,wall_id=9,front=(id=20,wall_id=2,front=(id=19,wall_id=3,front=(id=18,wall_id=14,front=#,back=#),back=#),back=#),back=(id=32790,wall_id=13,front=#,back=(id=21,wall_id=17,front=#,back=#))))
 [end]
