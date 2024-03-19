@@ -30,6 +30,8 @@ class Editor():
             Button("Load Map", self.LoadMap,                    (SCREENWIDTH * 7 // 8),     SCREENHEIGHT - 50,  80, 50),
         ]
 
+        self.FileHandler = MapFileHandler(self.Canvas.Width, self.Canvas.Height, 0.05)
+
     def _ToggleDragMode(self):
         self.Canvas.ToggleDragMode()
         self.Buttons[1].Text = "Stop Dragging" if self.Canvas.DraggingMode else "Drag"
@@ -39,22 +41,21 @@ class Editor():
 
     def _ProcessSectors(self): # TODO: Fix bug with this button(can't press it twice)
         # Process the bsp for the map and reassign self.map to be this
-        bsp = BSP_Tree(self.Canvas.Map.GetFilteredMap())
+        bsp = BSP_Tree(self.Canvas.Map)
         self.Canvas.Map = bsp.get_map()
         self.Canvas.BSP = bsp
+        self.FileHandler.SaveMapBsp(bsp, "lvldata.bsp")
 
     def _ClearSectors(self):
         self.Canvas.BSP = None
 
     def SaveMap(self):
-        fileHandler = MapFileHandler(self.Canvas.Width, self.Canvas.Height, 0.05)
-        fileHandler.SaveMap(self.Canvas.BSP, "lvldata.dat")
+        self.FileHandler.SaveMapRaw(self.Canvas.Map, "lvldata.dat")
         return
     
     def LoadMap(self):
-        self.Canvas.Map = None
-        fileHandler = MapFileHandler(self.Canvas.Width, self.Canvas.Height, 0.05)
-        self.Canvas.Map = fileHandler.LoadMap("lvldata.dat")
+        self.Canvas.Map = Map() # TODO: Fix bug where maps do not properly clear before reloading
+        self.Canvas.Map = self.FileHandler.LoadMap("lvldata.dat")
 
     def ShouldRun(self):
         return self.Running

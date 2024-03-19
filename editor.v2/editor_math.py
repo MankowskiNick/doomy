@@ -3,7 +3,6 @@ from map import *
 
 ERROR_MARGIN = 1e-6
 
-
 def compute_centroid(vertices):
     x_sum = 0
     y_sum = 0
@@ -22,82 +21,8 @@ def sort_vertices(vertices):
 def cross_product(v1, v2, v3):
     return (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x)
 
-def extract_vertices_from_lines(lines):
-    vertices_unfiltered = [l.v1 for l in lines] + [l.v2 for l in lines]
-    vertices = []
-    [vertices.append(v) for v in vertices_unfiltered if v not in vertices]
-    return vertices
-
-# This approach is problematic, for example, there almost certainly exists shapes that defy this.
-# For example, an empty vertex will almost certainly break this. Similarly, if you have a wall that 
-# exists inside a non convex polygon, there is a strong likelihood that this will break.
-def has_intersecting_lines(lines): 
-    vertices = extract_vertices_from_lines(lines)
-    line_counts = []
-    # Get the number of connection points of each vertices
-    for v in vertices:
-        cur_count = 0
-        for l in lines:
-            if l.v1.id == v.id or l.v2.id == v.id:
-                cur_count += 1
-
-        # We can't possibly have a vertex with more than 3 lines connecting to it in a convex polygon
-        if cur_count > 2:
-            return False
-        line_counts.append((v, cur_count))
-
-    # Sort vertices by the number of lines they meet
-    sorted_vertices = [l[0] for l in sorted(line_counts, key=lambda entry: entry[1])]
-
-    check_vert = sorted_vertices[0]
-    for v in vertices:
-        check_line = Line(check_vert, v)
-
-        skip_check_line = False
-        # Is check_line an existing wall?
-        for l in lines:
-            if line_equals(l, check_line):
-                skip_check_line = True
-        # If so, skip it
-        if skip_check_line:
-            continue
-
-        # Otherwise, look and see if it intersects with any lines
-        for l in lines:
-            if intersect(l, check_line):
-                return False
-
-    return True
-
 def line_equals(l1, l2):
     return (l1.v1 == l2.v1 or l1.v1 == l2.v2) and (l1.v2 == l2.v1 or l1.v2 == l2.v2)
-
-def is_convex_polygon(lines):
-    if len(lines) < 3:
-        return True
-    # Get a list of sorted vertices to build a polygon hull
-    sorted_vertices = sort_vertices(extract_vertices_from_lines(lines))
-
-    sorted_vertices.append(sorted_vertices[0])  # Append first vertex at the end to close the polygon
-    cross_product_sign = 0
-    # Make sure the hull is convex
-    for i in range(1, len(sorted_vertices) - 1):
-
-        # Get the cross product of the two lines
-        cp = cross_product(sorted_vertices[i-1], sorted_vertices[i], sorted_vertices[i+1])
-
-        # Colinear points: implies a line goes through the center of the polygon, so not convex
-        if cp == 0:
-            return False 
-
-        # Get the sign of the cross product
-        if cross_product_sign == 0:
-            cross_product_sign = 1 if cp > 0 else -1
-
-        # If there is an angle > 180 degreees, return false
-        elif (cp > 0 and cross_product_sign < 0) or (cp < 0 and cross_product_sign > 0):
-            return False
-    return has_intersecting_lines(lines)
 
 def map_coords_to_file(width, height, mapping_scalar, x, y):
     x = (x - (width / 2)) * mapping_scalar
@@ -147,26 +72,22 @@ def extend_line(line, scalar=100):
     extended_line = Line(ext_v1, ext_v2)
     return extended_line
 
-def get_midpoint(wall):
-    return Vertex(-1, (wall.line.v1.x + wall.line.v2.x) / 2, 
-                    (wall.line.v1.y + wall.line.v2.y) / 2)
+def get_midpoint(line):
+    return Vertex(-1, (line.v1.x + line.v2.x) / 2, 
+                    (line.v1.y + line.v2.y) / 2)
 
 def vertex_equals(v1, v2):
     if (v1 is None or v2 is None):
         return False
     return abs(v1.x - v2.x) < ERROR_MARGIN and abs(v1.y - v2.y) < ERROR_MARGIN
 
-def is_front(vertex, wall):
-    line_vect = Vect2(wall.line.v2.x - wall.line.v1.x, wall.line.v2.y - wall.line.v1.y)
-    v1_to_vert_vect = Vect2(vertex.x - wall.line.v1.x, vertex.y - wall.line.v1.y)
+def is_front(vertex, line):
+    line_vect = Vect2(line.v2.x - line.v1.x, line.v2.y - line.v1.y)
+    v1_to_vert_vect = Vect2(vertex.x - line.v1.x, vertex.y - line.v1.y)
 
     cross_product_z = CrossProductZ(line_vect, v1_to_vert_vect)
 
     return cross_product_z > 0
-
-def is_front_walls(wall1, wall2):
-    midpoint = get_midpoint(wall1)
-    return is_front(midpoint, wall2)
 
 # Are the vertices in counter clockwise order?  That is, is the slope of v1->v2 < v1->v3?
 def ccw(v1, v2, v3):
@@ -201,13 +122,6 @@ def find_intersection(l1, l2):
 
     intersection = Vertex(-1, result.a, result.b)
     return intersection
-
-def Midpoint(wall):
-    return Vertex(
-        id=0,
-        x=(wall.line.v1.x + wall.line.v2.x) / 2.0,
-        y=(wall.line.v1.y + wall.line.v2.y) / 2.0
-    )
 
 
 class Matrix2x2:

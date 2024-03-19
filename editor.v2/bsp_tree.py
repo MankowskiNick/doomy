@@ -2,20 +2,26 @@ from editor_math import *
 from map import *
 
 SUBSECTOR = 0x8000
+MAX_INT = 2 ** 32
+
+class DivLine:
+    def __init__(self, vert, dx, dy):
+        self.vert = vert
+        self.dx = dx
+        self.dy = dy
 
 class BSP_Node:
-    def __init__(self, id, front, back, wall_id, is_subsector=False):
-        self.id = id
+    def __init__(self, id, wall_id, front, back,  walls):
+        #self.id = id # Commented out for debugging -- may not be necessary eventually
         self.front = front
         self.back = back
-        self.wall_id = wall_id
-        self.is_subsector = is_subsector
+        self.id = wall_id # wall_id is just for visualization/debugging, will eventually go back to id
+        self.walls = walls
 
 class Subsector:
     def __init__(self, node_id, walls):
         self.node_id = node_id
         self.walls = walls
-
 
 class BSP_Tree:
     def __init__(self, map):
@@ -29,114 +35,178 @@ class BSP_Tree:
     def generate_bsp_tree(self):
         # Set bsp_head to the 
         self.subsectors = []
-        self.bsp_head = self.generate_subtree(self.ref_map.Walls, True)
+        self.bsp_head = self.build_bsp_node(self.ref_map.Walls)
 
-    def cut_wall(self, intersection, wall):
+    def split_wall(self, div_line, wall):
+        intersection = self.get_intersection(div_line, wall.line)
+
         new_vert = self.ref_map.AddVertex(intersection.x, intersection.y)
-        new_vert.set_temp()
 
-        wall1 = self.ref_map.AddWall(
-            wall.line.v1.id, new_vert.id, 
-            wall.color,
-            wall.min_height, wall.max_height, 
-            wall.floor_height, wall.ceiling_height)
-        wall1.set_temp()
+        # v_id = 8 & v_id = 12 are still causing problems
+
+        v2_id = wall.line.v2.id
+        wall.line.v2 = new_vert
 
         wall2 = self.ref_map.AddWall(
-            new_vert.id, wall.line.v2.id, 
+            new_vert.id, v2_id, 
             wall.color, 
             wall.min_height, wall.max_height, 
             wall.floor_height, wall.ceiling_height)
-        wall2.set_temp()
 
-        if wall.split_wall:
-            wall1.split_wall = True
-            wall2.split_wall = True
-        return wall1, wall2
+        # Return in front, back order
+        if self.line_on_side(div_line, wall.line) == 0:
+            return wall, wall2
+        else:
+            return wall2, wall
 
-        # lines = [w.line for w in walls]
-        # center = compute_centroid(extract_vertices_from_lines(lines))
-        # midpoints = [[get_midpoint(w), w.id] for w in walls]
-        # midpoints_sorted = sorted(midpoints, key= lambda obj: dist(center.x, center.y, obj[0].x, obj[0].y))
-        # return
+    def evaluate_split(self, split_wall, walls, best_grade):
+        split_line = self.get_div_line_from_line(split_wall.line)
 
-    def generate_subtree(self, walls, possible_subsector = True, parent_splitter = None):
-        # Base case, no walls to partition.  Return a leaf
-        if len(walls) == 0:
-            return None
-        
-        all_split_walls = True
+        front_count, back_count = 0,0
+
         for w in walls:
-            if not w.split_wall:
-                all_split_walls = False
+            if w.id == split_wall.id:
+                continue
+            else:
+                side = self.line_on_side(split_line, w.line)
+            
+            if side == 0:
+                front_count += 1
+            elif side == 1:
+                back_count += 1
+            else:
+                front_count += 1
+                back_count += 1
 
-        if all_split_walls:
-            return None
+            max_count = max(front_count, back_count)
+            new_count = front_count + back_count - len(walls)
+            grade = max_count + new_count * 8 # ??? This comes from DoomBSP, why the 8?
 
-        # self.pick_split_wall(walls)
-        split_wall = self.pick_split_wall(walls)#walls[int(len(walls) / 2)]
-        split_wall.split_wall = True
-        split_line = extend_line(split_wall.line)
+            # Get out early, no point in continuing
+            if grade > best_grade:
+                return grade
+        if front_count == 0 or back_count == 0:
+            return MAX_INT
+        
+        return grade
+
+    def pick_split_wall(self, walls):
+        best_score = MAX_INT
+        best_wall = None
+
+        for w in walls:
+            score = self.evaluate_split(w, walls, best_score)
+            if score < best_score:
+                best_score = score
+                best_wall = w
+        return best_wall, best_score
+
+    def execute_split(self, split_wall, walls):
+        split_line = DivLine(split_wall.line.v1, 
+                                split_wall.line.v1.x - split_wall.line.v2.x, 
+                                split_wall.line.v1.y - split_wall.line.v2.y)
 
         front_walls = []
         back_walls = []
 
-        # Partition walls
-        for w in walls:
-            if w.id == split_wall.id or w in front_walls or w in back_walls or w.is_ancestral:
-                continue
-
-            intersection = find_intersection(split_line, w.line)
-            v1_equals = vertex_equals(w.line.v1, intersection)
-            v2_equals = vertex_equals(w.line.v2, intersection)
-
-            # Split the wall into a front half and a back half
-            if intersection is not None and not v1_equals and not v2_equals:
-                w.set_ancestral()
-                wall1, wall2 = self.cut_wall(intersection, w)
-
-                if is_front_walls(wall1, split_wall):
-                    front_walls.append(wall1)
-                    back_walls.append(wall2)
-                else:
-                    back_walls.append(wall1)
-                    front_walls.append(wall2)
+        for i, w in enumerate(walls):
+            if w.id == split_wall.id:
+                side = 0
             else:
-                if is_front_walls(w, split_wall):
-                    front_walls.append(w)
-                else:
-                    back_walls.append(w)
+                side = self.line_on_side(split_line, w.line)
 
-        front_tree = None
-        back_tree = None
-
-        if not possible_subsector:
-            front_tree = self.generate_subtree(front_walls, False, split_wall)
-            back_tree = self.generate_subtree(back_walls, False, split_wall)
-        else:
-            is_front_subsector = self.is_subsector(front_walls)
-            is_back_subsector = self.is_subsector(back_walls)
-            if is_front_subsector:
-                self.subsectors.append(Subsector(self._get_node_id(), front_walls))
-            if is_back_subsector:
-                self.subsectors.append(Subsector(self._get_node_id(), back_walls))
-
-            front_tree = self.generate_subtree(front_walls, not is_front_subsector, split_wall)
-            back_tree = self.generate_subtree(back_walls, not is_back_subsector, split_wall)
-
-            #if front_tree is None or back_tree is None:
-            #    self.subsectors.append(Subsector(self._get_node_id(), [split_wall, parent]))
-
-        return_tree = BSP_Node(self._get_node_id(), front_tree, back_tree, split_wall.id, self.is_subsector(walls)) # last parameter may be cap
+            if side == 0 or side == -1:
+                front_walls.append(w)
+            elif side == 1:
+                back_walls.append(w)
+            else:
+                wall1, wall2 = self.split_wall(split_line, w)
+                front_walls.append(wall1)
+                back_walls.append(wall2)
         
-        split_wall.split_wall = False
-        return return_tree
+        return front_walls, back_walls
+        
+    def line_on_side(self, div_line, line):
+        v1_side = self.vert_on_side(div_line, line.v1)
+        v2_side = self.vert_on_side(div_line, line.v2)
 
-    def is_subsector(self, walls):
-        # Get the list of lines
-        lines = [w.line for w in walls if w is not None]
-        return is_convex_polygon(lines)
-        # return has_intersecting_lines(lines)
+        # Coincident
+        if v1_side == -2 and v2_side == -2:
+            return -1
+        
+        # Both on same side
+        elif v1_side == v2_side:
+            return v1_side
+        
+        # Intersecting at an edge
+        elif v1_side == -2:
+            return v2_side
+        elif v2_side == -2:
+            return v1_side
+
+        # Intersecting in the center
+        else:
+            return -2
+
+    def vert_on_side(self, div_line, v):
+        # Get normal vector of div_line
+        n_dx, n_dy = -1 * div_line.dy, div_line.dx
+
+        # Get vector from div_line.vert to v
+        dv_dx, dv_dy = div_line.vert.x - v.x, div_line.vert.y - v.y
+
+        dot = dv_dx * n_dx + dv_dy * n_dy
+
+        if dot == 0:
+            return -2
+        elif dot > 0:
+            return 1
+        else:
+            return 0
+
+    def get_intersection(self, div_line, line):
+        # Solving Ax = B for x => x = A^-1 B
+        A = Matrix2x2(  -1 * div_line.dx, line.v2.x - line.v1.x,
+                        -1 * div_line.dy, line.v2.y - line.v1.y)
+        
+        B = Vect2(  div_line.vert.x - line.v1.x,
+                    div_line.vert.y - line.v1.y)
+
+        # If det(A) == 0, lines are coincident, so just return v1
+        if Det(A) == 0:
+            return line.v1 
+
+        x = Mult(Inverse(A), B) # This x vector contains our [t, s]
+        t = x.a
+
+        # Calculate intersection based on parameterized line
+        intersect = Vertex(-1,  div_line.vert.x + (div_line.dx * t), 
+                                div_line.vert.y + (div_line.dy * t))
+
+        return intersect
+
+    def get_div_line_from_line(self, line):
+        return DivLine(line.v1, 
+                        line.v2.x - line.v1.x, 
+                        line.v2.y - line.v1.y)
+
+    def build_bsp_node(self, walls):
+
+        # Get the split wall
+        split_wall, wall_score = self.pick_split_wall(walls)
+
+        # Base case: wall_score is MAX_INT => no wall is suitable for partitioning => set of walls is convex
+        if wall_score == MAX_INT:
+            self.subsectors.append(Subsector(self._get_node_id(), walls))
+            return BSP_Node(self.subsectors[-1].node_id, None, None, None, walls)
+
+        front_walls, back_walls = self.execute_split(split_wall, walls)
+
+        return_node = BSP_Node(self._get_node_id(), split_wall.id, None, None, [])
+        return_node.front = self.build_bsp_node(front_walls)
+        return_node.back = self.build_bsp_node(back_walls)
+
+        return return_node
 
     # Return structure:
     # (id=int, front=(), back=()), # is a special character denoting an empty child
@@ -150,7 +220,7 @@ class BSP_Tree:
         front_string = self._to_string_helper(cur_head.front)
         back_string = self._to_string_helper(cur_head.back)
 
-        return "(id=" + str(cur_head.id + (SUBSECTOR if cur_head.is_subsector else 0)) + ",wall_id=" + str(cur_head.wall_id) + ",front=" + front_string + ",back=" + back_string + ")"
+        return "(id=" + str(cur_head.id) + ",front=" + front_string + ",back=" + back_string + ")"
 
     def get_map(self):
         return self.ref_map

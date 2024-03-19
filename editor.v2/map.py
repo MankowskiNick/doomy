@@ -3,9 +3,6 @@ class Vertex:
         self.id = id
         self.x = x
         self.y = y
-        self.is_temp = 0
-    def set_temp(self):
-        self.is_temp = 1
 
 class Line:
     def __init__(self, v1, v2):
@@ -23,11 +20,6 @@ class Wall:
         self.floor_height = floor_height
         self.ceiling_height = ceiling_height
 
-        self.is_temp = 0
-        self.is_ancestral = 0
-
-        self.split_wall = False
-
     def edit_wall(self, v1, v2, color, min_height, max_height, floor_height = -1, ceiling_height = -1):
         self.line = Line(v1, v2)
         self.color = color
@@ -36,11 +28,6 @@ class Wall:
         self.max_height = max_height
         self.floor_height = floor_height
         self.ceiling_height = ceiling_height
-
-    def set_temp(self):
-        self.is_temp = 1
-    def set_ancestral(self):
-        self.is_ancestral = 1
     
 class Map:
     def __init__(self):
@@ -105,9 +92,3 @@ class Map:
         while new_id in ids:
             new_id += 1
         return new_id
-
-    def GetFilteredMap(self):
-        new_map = Map()
-        new_map.Walls = [w for w in self.Walls if not w.is_temp]
-        new_map.Vertices = [v for v in self.Vertices if not v.is_temp]
-        return new_map
