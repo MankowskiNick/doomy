@@ -42,8 +42,6 @@ class BSP_Tree:
 
         new_vert = self.ref_map.AddVertex(intersection.x, intersection.y)
 
-        # v_id = 8 & v_id = 12 are still causing problems
-
         v2_id = wall.line.v2.id
         wall.line.v2 = new_vert
 
@@ -74,7 +72,7 @@ class BSP_Tree:
                 front_count += 1
             elif side == 1:
                 back_count += 1
-            else:
+            elif side != -1:
                 front_count += 1
                 back_count += 1
 
@@ -111,11 +109,14 @@ class BSP_Tree:
 
         for i, w in enumerate(walls):
             if w.id == split_wall.id:
-                side = 0
+                side = -1
             else:
                 side = self.line_on_side(split_line, w.line)
 
-            if side == 0 or side == -1:
+            if side == -1:  # Coincident walls should probably go in both front and back
+                front_walls.append(w)
+                back_walls.append(w)
+            elif side == 0:
                 front_walls.append(w)
             elif side == 1:
                 back_walls.append(w)
@@ -126,6 +127,10 @@ class BSP_Tree:
         
         return front_walls, back_walls
         
+    # -1 => Coincident
+    # -2 => Intersecting
+    #  0 => Front
+    #  1 => Behind
     def line_on_side(self, div_line, line):
         v1_side = self.vert_on_side(div_line, line.v1)
         v2_side = self.vert_on_side(div_line, line.v2)
@@ -148,6 +153,9 @@ class BSP_Tree:
         else:
             return -2
 
+    # -2 => Point lies on line
+    #  0 => Point is in front of line
+    #  1 => Point lies behind line
     def vert_on_side(self, div_line, v):
         # Get normal vector of div_line
         n_dx, n_dy = -1 * div_line.dy, div_line.dx

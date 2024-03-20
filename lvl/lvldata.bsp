@@ -26,4 +26,12 @@ wall: 10 9 8 0.0 1.0 -1.0 -1.0 0 255 0
 wall: 11 9 10 0.0 1.0 -1.0 -1.0 0 255 0
 wall: 12 10 11 0.0 1.0 -1.0 -1.0 0 255 0
 wall: 13 11 6 0.0 1.0 -1.0 -1.0 0 255 0
+[sectors]
+sector: 4 3 7 9
+sector: 6 4 6 7 8
+sector: 7 6 10
+sector: 8 0 1 2 3 4 5
+sector: 9 8 9 10 11 12 13
+[bsp]
+(id=8,front=(id=3,front=(id=7,front=(id=None,front=#,back=#),back=(id=6,front=(id=None,front=#,back=#),back=(id=None,front=#,back=#))),back=(id=None,front=#,back=#)),back=(id=None,front=#,back=#))
 [end]
