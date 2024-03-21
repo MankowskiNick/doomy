@@ -22,6 +22,14 @@ class Camera {
 
         ~Camera() {}
 
+        void TurnLeft() {
+            angle -= M_PI / 60;
+        }
+
+        void TurnRight() {
+            angle += M_PI / 60;
+        }
+
         void MoveForward() {
             x += SPEED * cos(angle + (M_PI / 2.0f));
             y += SPEED * sin(angle + (M_PI / 2.0f));

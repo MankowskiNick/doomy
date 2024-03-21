@@ -88,6 +88,8 @@ class Map {
         void LoadFile(std::string file_name) {
             std::ifstream file;
             file.open(file_name);
+
+            // Handle errors
             if (!file.is_open()) {
                 logger->Log("Unable to open file '" + file_name + "'. Check file path and permissions.", Glimpse::FATAL);
                 return;
@@ -96,9 +98,11 @@ class Map {
                 logger->Log("File stream is not good after opening file '" + file_name + "'. Check the file contents and encoding.", Glimpse::FATAL);
                 return;
             }
+
+            // Parse the file by section
             std::string line, section;
             while (getline(file, line)) {
-                //trim(line); // You'll need to implement this function or use a library that does it
+                // Get the section if a new section is present
                 if (line == "[verts]")
                     section = "verts";
                 else if (line == "[walls]")
@@ -109,6 +113,8 @@ class Map {
                     section = "bsp";
                 else if (line == "[end]")
                     return;
+
+                // Handle line if it is parsing data
                 else
                     HandleLine(section, line);
             }
@@ -136,10 +142,10 @@ class Map {
         std::vector<Subsector> sectors;
 
         Glimpse::GlimpseLogger* logger;
-    private:
-
+private:
+    // Parse data coming from a file based on the section
     void HandleLine(const std::string& section, const std::string& text) {
-        if (section == "verts") // TODO: switch statement
+        if (section == "verts")
             ParseVertex(text);
         else if (section == "walls")
             ParseWall(text);
@@ -147,15 +153,19 @@ class Map {
             ParseSector(text);
         else if (section == "bsp")
             ParseBSPString(text);
+        else
+            logger->Log("FATAL ERROR: Invalid BSP file section.", Glimpse::FATAL);
     }
 
+    // Parse vertex line
     void ParseVertex(const std::string& text) {
+        // TODO: Handle errors better, maybe use try/catch
         if (text.rfind("vert:", 0) == 0) { // Check if the string starts with "vert:"
             std::istringstream iss(text);
             std::string token;
-            int id, is_temp;
+            int id;
             float x, y;
-            iss >> token >> id >> x >> y >> is_temp; // Parse the line
+            iss >> token >> id >> x >> y; // Parse the line
             if (iss) { // Check if parsing was successful
                 this->AddVertex(id, x, y);
             } 
@@ -169,17 +179,16 @@ class Map {
         if (text.rfind("wall:", 0) == 0) { // Check if the string starts with "wall:"
             std::istringstream iss(text);
             std::string token;
-            int wall_id, v1_id, v2_id, is_temp, is_ancestral;
+            int wall_id, v1_id, v2_id;
             float wall_min, wall_max, floor_height, ceiling_height;
             int r, g, b;
-            iss >> token >> wall_id >> v1_id >> v2_id >> wall_min >> wall_max >> floor_height >> ceiling_height >> r >> g >> b >> is_temp >> is_ancestral;
+            iss >> token >> wall_id >> v1_id >> v2_id >> wall_min >> wall_max >> floor_height >> ceiling_height >> r >> g >> b;
             if (iss) { // Check if parsing was successful
-                if (is_ancestral == 0)
-                    this->AddWall(wall_id, 
-                        v1_id, v2_id,  
-                        wall_min, wall_max, 
-                        floor_height, ceiling_height, 
-                        r, g, b);
+                this->AddWall(wall_id, 
+                                v1_id, v2_id,  
+                                wall_min, wall_max, 
+                                floor_height, ceiling_height, 
+                                r, g, b);
             } 
             else {
                 logger->Log("FATAL ERROR: Error parsing wall in map file.(Incorrect format?)", Glimpse::FATAL);
@@ -188,7 +197,7 @@ class Map {
     }
 
     void ParseSector(const std::string& text) {
-        if (text.rfind("sector:", 0) == 0) {
+        if (text.rfind("sector:", 0) == 0) { // Check if the string starts with "sector:"
             std::istringstream iss(text);
 
             std::string token;

@@ -23,7 +23,10 @@ struct OcclusionMapHoriz {
 
 class RenderHandler {
     public:
-        RenderHandler(Camera& camera, Glaze::GlazeRenderer& newGlazeRenderer, GLLib& newGlLib);
+        RenderHandler(Camera& camera, 
+                        Glaze::GlazeRenderer& newGlazeRenderer, 
+                        GLLib& newGlLib,
+                        Glimpse::GlimpseLogger& newLogger);
         ~RenderHandler();
 
         void Render(Map map, Camera& camera);
@@ -31,14 +34,16 @@ class RenderHandler {
     private:
         int walls_drawn = 0;
         OcclusionMapVert* occlusionMapVert;
-        OcclusionMapHoriz* occlusionMapHoriz;
         ViewMap viewMap;
+        Map* worldMap;
         GLLib* gl;
         Glaze::GlazeRenderer* glazeRenderer;
+        Glimpse::GlimpseLogger* logger;
 
         void ResetOcclusionMap();
         void RenderBSPNode(BSP_Tree* bsp_tree);
         void DrawWall(Wall& wall);
+        void DrawSector(Subsector* sector);
 };
 
 #endif

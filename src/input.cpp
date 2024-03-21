@@ -22,6 +22,9 @@ void InputHandler::ConfigureInput(Camera& ref_camera) {
     action_map[GLFW_KEY_A] = [&ref_camera]() { ref_camera.MoveLeft(); };
     action_map[GLFW_KEY_D] = [&ref_camera]() { ref_camera.MoveRight(); };
 
+    action_map[GLFW_KEY_Q] = [&ref_camera]() { ref_camera.TurnLeft(); };
+    action_map[GLFW_KEY_E] = [&ref_camera]() { ref_camera.TurnRight(); };
+
     // Exit
     action_map[GLFW_KEY_ESCAPE] = []() { exit(0); };
 }

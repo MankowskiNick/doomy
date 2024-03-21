@@ -6,26 +6,36 @@
 #include "geom.h"
 #include "map.h"
 
-bool is_front(const Vertex& vertex, const Wall* wall) {
-    // Look at z component of cross product of wall and vertex
-    Vect2<float> line_vect = {
-        .a = wall->line.v2.x - wall->line.v1.x,
-        .b = wall->line.v2.y - wall->line.v1.y,
-    };    
-    
-    Vect2<float> v1_to_vert_vect = {
-        .a = vertex.x - wall->line.v1.x,
-        .b = vertex.y - wall->line.v1.y,
+DivLine GetDivLineFromWorldLine(Line& line) {
+    return {
+        .vert = line.v1,
+        .dx = line.v2.x - line.v1.x,
+        .dy = line.v2.y - line.v1.y
     };
-
-    float cross_product_z = CrossProductZ(line_vect, v1_to_vert_vect);
-
-    return cross_product_z > 0;
 }
 
-bool is_front(Wall& test_wall, Wall* divider_ptr) {
-    Vertex midpoint = Midpoint(test_wall);
-    return is_front(midpoint, divider_ptr);
+WallSide VertOnSide(DivLine& div_line, Vertex& v) {
+
+    // Calculate normal vector of div_line
+    float n_dx, n_dy;
+    n_dx = -1 * div_line.dy;
+    n_dy = div_line.dx;
+
+    // Get vector from div_line.vert to v
+    float dv_dx, dv_dy;
+    dv_dx = div_line.vert.x - v.x;
+    dv_dy = div_line.vert.y - v.y;
+
+    // Calculate dot product
+    float dp;
+    dp = dv_dx * n_dx + dv_dy * n_dy;
+
+    if (dp == 0)
+        return INTERSECT;
+    else if (dp > 0)
+        return FRONT;
+    else
+        return BACK;
 }
 
 BSP_Tree* _DeserializeBSPHelper(const std::string& bsp_string, int& pos) {
@@ -50,10 +60,6 @@ BSP_Tree* _DeserializeBSPHelper(const std::string& bsp_string, int& pos) {
         wall_id_str += bsp_string[pos++];
     int wall_id = std::stoi(wall_id_str);
 
-    // Is this a subsector? If so, remove the tag and indicate it is
-    bool is_subsector = wall_id >= SUBSECTOR;
-    if (is_subsector)
-        wall_id -= SUBSECTOR;
 
     // Read the front node
     pos += 7; // Skip past ,front=
@@ -69,10 +75,9 @@ BSP_Tree* _DeserializeBSPHelper(const std::string& bsp_string, int& pos) {
     // Assemble the root node
     BSP_Tree* root_tree = new BSP_Tree;
     root_tree->id = id;
-    root_tree->wall_id = wall_id;
+root_tree->wall_id = wall_id;
     root_tree->front = front_subtree;
     root_tree->back = back_subtree;
-    root_tree->is_subsector = is_subsector;
 
     // Return it
     return root_tree;

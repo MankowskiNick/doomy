@@ -13,7 +13,12 @@
 #define max(a, b) (a > b) ? a : b
 
 // Initialization code, just in case we end up needing to initialize things other than gl_lib
-RenderHandler::RenderHandler(Camera& camera, Glaze::GlazeRenderer& newGlazeRenderer, GLLib& newGlLib) {
+RenderHandler::RenderHandler(Camera& camera, 
+                                Glaze::GlazeRenderer& newGlazeRenderer, 
+                                GLLib& newGlLib,
+                                Glimpse::GlimpseLogger& newLogger
+) {
+    logger = &newLogger;
 
     glazeRenderer = &newGlazeRenderer;
 
@@ -24,7 +29,6 @@ RenderHandler::RenderHandler(Camera& camera, Glaze::GlazeRenderer& newGlazeRende
     viewMap = ViewMap(camera);
 
     occlusionMapVert = new OcclusionMapVert[gl->GetWidth()];
-    occlusionMapHoriz = new OcclusionMapHoriz[MAX_WALLCOUNT];
     ResetOcclusionMap();
 }
 
@@ -33,10 +37,6 @@ RenderHandler::~RenderHandler() {
 }
 
 void RenderHandler::ResetOcclusionMap() {
-    for (int i = 0; i < MAX_WALLCOUNT; i++) {
-        occlusionMapHoriz[i].left = -1;
-        occlusionMapHoriz[i].right = -1;
-    }
     for (int i = 0; i < gl->GetWidth(); i++) {
         occlusionMapVert[i].topY = gl->GetHeight() - 1;
         occlusionMapVert[i].bottomY = 0;
@@ -144,14 +144,26 @@ void RenderHandler::DrawWall(Wall& wall) {
         }
 }
 
-void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
-    if (bsp_tree == NULL)
-        return;
-    
-    if (bsp_tree->is_subsector) {
-        // Process subsector -- floors, sprites, NPCs, etc.
+void RenderHandler::DrawSector(Subsector* sector) {
+    for (int i = 0; i < sector->walls.size(); i++) {
+        Wall* draw_wall = worldMap->GetWallById(sector->walls[i]->id);
+        DrawWall(*draw_wall);
     }
+}
 
+void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
+
+    if (bsp_tree == NULL)
+        return; // may not need this case
+
+    if (bsp_tree->id >= SUBSECTOR) {
+        Subsector* sect = worldMap->GetSectorById(bsp_tree->id);
+        if (sect == NULL)
+            logger->Log("FATAL ERROR: Sector not found(SECT_ID=" + std::to_string(bsp_tree->id) + ").\n", Glimpse::FATAL);
+        this->DrawSector(sect);
+        return;
+    }    
+    
     // Vertex to refer to camera position
     Vertex camera_vertex = {
         .id = -1,
@@ -159,11 +171,19 @@ void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
         .y = 0.0f
     };
 
-    Wall* cur_wall = viewMap.GetMap()->GetWallById(bsp_tree->wall_id);
-    bool is_front_retval = is_front(camera_vertex, cur_wall);
-    this->RenderBSPNode(is_front_retval ? bsp_tree->front : bsp_tree->back);
-    this->DrawWall(*cur_wall);
-    this->RenderBSPNode(is_front_retval ? bsp_tree->back : bsp_tree->front);
+
+    Wall* div_wall = viewMap.GetMap()->GetWallById(bsp_tree->wall_id);
+    DivLine div_line = GetDivLineFromWorldLine(div_wall->line);
+    WallSide player_side = VertOnSide(div_line, camera_vertex);
+
+    if (player_side == FRONT) {
+        this->RenderBSPNode(bsp_tree->front);
+        this->RenderBSPNode(bsp_tree->back);
+    } 
+    else {
+        this->RenderBSPNode(bsp_tree->back);
+        this->RenderBSPNode(bsp_tree->front);
+    }
 }
 
 // Render code
@@ -175,6 +195,7 @@ void RenderHandler::Render(Map map, Camera& camera) {
     // TOOD: Rework how we handle this
     viewMap.LoadMap(map);
     viewMap.TranslateMap();
+    worldMap = viewMap.GetMap();
 
     // Reset occlusion map
     this->ResetOcclusionMap();

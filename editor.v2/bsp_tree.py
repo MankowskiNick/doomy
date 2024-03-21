@@ -12,10 +12,10 @@ class DivLine:
 
 class BSP_Node:
     def __init__(self, id, wall_id, front, back,  walls):
-        #self.id = id # Commented out for debugging -- may not be necessary eventually
+        self.id = id
         self.front = front
         self.back = back
-        self.id = wall_id # wall_id is just for visualization/debugging, will eventually go back to id
+        self.wall_id = wall_id if wall_id is not None else -1
         self.walls = walls
 
 class Subsector:
@@ -205,7 +205,7 @@ class BSP_Tree:
 
         # Base case: wall_score is MAX_INT => no wall is suitable for partitioning => set of walls is convex
         if wall_score == MAX_INT:
-            self.subsectors.append(Subsector(self._get_node_id(), walls))
+            self.subsectors.append(Subsector(self._get_node_id() + SUBSECTOR, walls))
             return BSP_Node(self.subsectors[-1].node_id, None, None, None, walls)
 
         front_walls, back_walls = self.execute_split(split_wall, walls)
@@ -228,7 +228,7 @@ class BSP_Tree:
         front_string = self._to_string_helper(cur_head.front)
         back_string = self._to_string_helper(cur_head.back)
 
-        return "(id=" + str(cur_head.id) + ",front=" + front_string + ",back=" + back_string + ")"
+        return "(id=" + str(cur_head.id) + ",wall_id=" + str(cur_head.wall_id) + ",front=" + front_string + ",back=" + back_string + ")"
 
     def get_map(self):
         return self.ref_map

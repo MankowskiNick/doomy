@@ -57,6 +57,6 @@ void ConfigureCallbacks(CallbackHandler* newCallbackHandler, GLLib& gl) {
     callbackHandler = newCallbackHandler;
 
     gl.BindKeyCallback(KeyCallback);
-    gl.BindMouseCallback(MouseCallback);
+    // gl.BindMouseCallback(MouseCallback);
     gl.BindErrorCallback(ErrorCallback);
 }
