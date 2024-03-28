@@ -4,6 +4,13 @@
 #include "screen_space_mapper.h"
 #include "common_struct.h"
 
+ScreenCoord MapToScreenSpace(const Vertex& vert, float z) {
+    return ScreenCoord {
+        .x = MapToScreenX(vert),
+        .y = MapToScreenY(vert, z)
+    };
+}
+
 // Calculate what column the vertex will be at
 int MapToScreenX(const Vertex& vert) {
     float y = (abs(vert.y) < ERROR_MARGIN) ? 10000.0f : vert.y; // Prevent division by 0
@@ -11,9 +18,9 @@ int MapToScreenX(const Vertex& vert) {
 }
 
 // Calculate what row the vertex will be at
-int MapToScreenY(const Point& point) {
-    float y = (abs(point.y) < ERROR_MARGIN) ? 10000.0f : point.y; // Prevent division by 0
-    return (HEIGHT_DRAW_SCALAR * point.z / y) + (HEIGHT / 2);
+int MapToScreenY(const Vertex& vert, float z) {
+    float y = (abs(vert.y) < ERROR_MARGIN) ? 10000.0f : vert.y; // Prevent division by 0
+    return (HEIGHT_DRAW_SCALAR * z / y) + (HEIGHT / 2);
 }
 
 void ClipWall(Vertex& neg_y_vert, const Vertex& other) {
@@ -30,10 +37,10 @@ void ClipWall(Vertex& neg_y_vert, const Vertex& other) {
     neg_y_vert.y = NEAREST_RENDER_DIST;
 } 
 
-Point MapVertToPoint(Vertex& vert, float z) {
-    return Point {
-        .x = vert.x,
-        .y = vert.y,
-        .z = z
-    };
-}
+// Point MapVertToPoint(Vertex& vert, float z) {
+//     return Point {
+//         .x = vert.x,
+//         .y = vert.y,
+//         .z = z
+//     };
+// }

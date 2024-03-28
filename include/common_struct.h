@@ -8,6 +8,18 @@
 
 class Map;
 
+enum WallType {
+    PORTAL,
+    WALL
+};
+
+enum WallSegment {
+    TOP,
+    BOTTOM,
+    FULL
+};
+
+
 struct Vertex {
     int id;
     float x, y;
@@ -30,7 +42,7 @@ struct Wall {
     float floor_height;
     float ceiling_height;
     int color[3];
-    bool is_portal;
+    WallType type;
 };
 
 struct Subsector {

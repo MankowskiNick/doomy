@@ -8,14 +8,20 @@
 
 // TODO: Do we want to make this a class?
 
+struct ScreenCoord {
+    int x, y;
+};
+
+ScreenCoord MapToScreenSpace(const Vertex& vert, float z);
+
 // Calculate what column the vertex will be at
-int MapToScreenX(const Vertex& point);
+int MapToScreenX(const Vertex& vert);
 
 // Calculate what row the vertex will be at
-int MapToScreenY(const Point& point);
+int MapToScreenY(const Vertex& vert, float z);
 
 void ClipWall(Vertex& neg_y_vert, const Vertex& other);
 
-Point MapVertToPoint(Vertex& vert, float z);
+// Point MapVertToPoint(Vertex& vert, float z);
 
 #endif

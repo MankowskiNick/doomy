@@ -7,7 +7,6 @@
 #include <Glaze/std_graphics.h>
 
 #include "draw.h"
-#include "screen_space_mapper.h"
 
 #define min(a, b) (a < b) ? a : b
 #define max(a, b) (a > b) ? a : b
@@ -28,7 +27,7 @@ RenderHandler::RenderHandler(Camera& camera,
     // Initialize a viewMap, this is a "worker" class that will translate the map
     viewMap = ViewMap(camera);
 
-    occlusionMapVert = new OcclusionMapVert[gl->GetWidth()];
+    occlusionMap = new OcclusionMap[gl->GetWidth()];
     ResetOcclusionMap();
 }
 
@@ -38,121 +37,166 @@ RenderHandler::~RenderHandler() {
 
 void RenderHandler::ResetOcclusionMap() {
     for (int i = 0; i < gl->GetWidth(); i++) {
-        occlusionMapVert[i].topY = gl->GetHeight() - 1;
-        occlusionMapVert[i].bottomY = 0;
-        OcclusionMapVert cur = occlusionMapVert[i];
+        occlusionMap[i].topY = gl->GetHeight() - 1;
+        occlusionMap[i].bottomY = 0;
     }
 }
 
-// Draw an individual wall
-// TODO: Refactor this, it's pretty ugly.
-void RenderHandler::DrawWall(Wall& wall) {
-        // Don't draw walls that are too close -- this will cause errors
-        if (abs(wall.line.v1.y) < ERROR_MARGIN || abs(wall.line.v2.y) < ERROR_MARGIN)
-            return;
+// Draw an individual wall/portal
+void RenderHandler::DrawVertSurface(Wall& wall) {
 
-        // Fix a graphical bug that occurs when one point is behind the player
-        if (wall.line.v1.y < NEAREST_RENDER_DIST)
-            ClipWall(wall.line.v1, wall.line.v2);
-        if (wall.line.v2.y < NEAREST_RENDER_DIST)
-            ClipWall(wall.line.v2, wall.line.v1);
+    // Don't draw walls that are too close -- this will cause errors
+    if (abs(wall.line.v1.y) < ERROR_MARGIN || abs(wall.line.v2.y) < ERROR_MARGIN)
+        return;
+    // Fix a graphical bug that occurs when one point is behind the player
+    if (wall.line.v1.y < NEAREST_RENDER_DIST)
+        ClipWall(wall.line.v1, wall.line.v2);
+    if (wall.line.v2.y < NEAREST_RENDER_DIST)
+        ClipWall(wall.line.v2, wall.line.v1);
+    
 
-        // Calculate info for each vertex in the wall
-        int screencol_1 = MapToScreenX(wall.line.v1);
-        int screencol_2 = MapToScreenX(wall.line.v2);
+    // Render the appropriate 
+    if (wall.type == PORTAL)
+        this->DrawPortal(wall);
+    else if (wall.type == WALL)
+        this->DrawSurface(wall);
+    else
+        logger->Log("FATAL ERROR: Wall is not of valid type(TYPE=" + std::to_string(wall.type) + ").\n", Glimpse::FATAL);
+}
 
-        Point v1_top = MapVertToPoint(wall.line.v1, wall.max_height);
-        Point v1_bot = MapVertToPoint(wall.line.v1, wall.min_height);
-        Point v2_top = MapVertToPoint(wall.line.v2, wall.max_height);
-        Point v2_bot = MapVertToPoint(wall.line.v2, wall.min_height);
+void RenderHandler::DrawPortal(Wall& wall) {
 
-        Point v1_floor = MapVertToPoint(wall.line.v1, wall.floor_height);
-        Point v1_ceil = MapVertToPoint(wall.line.v1, wall.ceiling_height);
-        Point v2_floor = MapVertToPoint(wall.line.v2, wall.floor_height);
-        Point v2_ceil = MapVertToPoint(wall.line.v2, wall.ceiling_height);
+    // Get screen space coords of the top quad
+    ScreenCoord top_quad[4] = {
+        MapToScreenSpace(wall.line.v1, wall.ceiling_height),    // Bottom left
+        MapToScreenSpace(wall.line.v1, wall.max_height),        // Top left
+        MapToScreenSpace(wall.line.v2, wall.ceiling_height),    // Bottom right
+        MapToScreenSpace(wall.line.v2, wall.max_height)         // Top right
+    };
+    
+    // Get screen space coords of bottom quad
+    ScreenCoord bot_quad[4] = {
+        MapToScreenSpace(wall.line.v1, wall.min_height),        // Bottom left
+        MapToScreenSpace(wall.line.v1, wall.floor_height),      // Top left
+        MapToScreenSpace(wall.line.v2, wall.min_height),        // Bottom right
+        MapToScreenSpace(wall.line.v2, wall.floor_height)       // Top right
+    };
 
-        int vert1_bot_y = MapToScreenY(v1_bot);
-        int vert2_bot_y = MapToScreenY(v2_bot); 
+    this->DrawQuad(top_quad, TOP, wall.color);
+    this->DrawQuad(bot_quad, BOTTOM, wall.color);
 
-        int vert1_top_y = MapToScreenY(v1_top);
-        int vert2_top_y = MapToScreenY(v2_top);
+}
 
-        int vert1_floor_y = MapToScreenY(v1_floor);
-        int vert2_floor_y = MapToScreenY(v2_floor);
+void RenderHandler::DrawSurface(Wall& wall) {
 
-        int vert1_ceil_y = MapToScreenY(v1_ceil);
-        int vert2_ceil_y = MapToScreenY(v2_ceil);
+    // Get screen space coords of the wall
+    ScreenCoord quad[4] = {
+        MapToScreenSpace(wall.line.v1, wall.min_height),    // Bottom left
+        MapToScreenSpace(wall.line.v1, wall.max_height),        // Top left
+        MapToScreenSpace(wall.line.v2, wall.min_height),    // Bottom right
+        MapToScreenSpace(wall.line.v2, wall.max_height)         // Top right
+    };
 
-        float screenrow_top_stepsize = (float)(vert2_top_y - vert1_top_y) / (float)(screencol_2 - screencol_1);
-        float screenrow_bot_stepsize = (float)(vert2_bot_y - vert1_bot_y) / (float)(screencol_2 - screencol_1);
+    this->DrawQuad(quad, FULL, wall.color);
+}
 
-        float screenrow_floor_stepsize = (float)(vert2_floor_y - vert1_floor_y) / (float)(screencol_2 - screencol_1);
-        float screenrow_ceil_stepsize = (float)(vert2_ceil_y - vert1_ceil_y) / (float)(screencol_2 - screencol_1); 
+// This is a bit problematic atm
+void RenderHandler::GetDrawRows(int col, int y_bounds[2], WallSegment segment, int& bot_row, int& top_row) {
+    int cur_top, cur_bot;
+    switch(segment) {
+        case TOP:
+            cur_top = occlusionMap[col].topY;
+            top_row = min(y_bounds[0], occlusionMap[col].topY);
+            bot_row = min(y_bounds[1], occlusionMap[col].topY);
 
-        int step = screencol_1 < screencol_2 ? 1 : -1;
+            // top_row = y_bounds[0];
+            // bot_row = y_bounds[1];
+            occlusionMap[col].topY = min(top_row, bot_row);
+            break;
+        case BOTTOM:
+            cur_bot = occlusionMap[col].bottomY;
+            top_row = max(y_bounds[0], occlusionMap[col].bottomY);
+            bot_row = max(y_bounds[1], occlusionMap[col].bottomY);
 
-        // Make sure we aren't drawing what isn't on the screen, even if it isn't drawn it will still take compute time to loop through.
-        int start_col = (screencol_1 < 0) ? 0 : ((screencol_1 > WIDTH - 1) ? WIDTH - 1 : screencol_1);
-        int end_col = (screencol_2 < 0) ? 0 : ((screencol_2 > WIDTH - 1) ? WIDTH - 1 : screencol_2);
+            // top_row = y_bounds[0];
+            // bot_row = y_bounds[1];
+            occlusionMap[col].bottomY = max(top_row, bot_row);
+            break;
+        case FULL:
+            top_row = min(y_bounds[0], occlusionMap[col].topY);
+            bot_row = max(y_bounds[1], occlusionMap[col].bottomY);
 
-        for (int col = start_col; col != end_col; col += step) {
-            // Skip if we have already finished drawing this column
-            if (occlusionMapVert[col].bottomY == -1 || occlusionMapVert[col].topY == -1)
-                continue;
+            occlusionMap[col].topY = -1;
+            occlusionMap[col].bottomY = -1;
+            break;
+        default:
+            logger->Log("FATAL ERROR: Unknown segment type(SEGMENT_TYPE=" + std::to_string(segment) + ")", Glimpse::FATAL);
+    }
+}
 
-            // Make sure we aren't taking extra steps that aren't needed
-            if (col < 0)
-                col = 0;
-            if (col >= WIDTH)
-                col = WIDTH - 1;
+void RenderHandler::DrawQuad(ScreenCoord quad[4], WallSegment segment, int color[3]) {
 
-            if (wall.is_portal) {
-                // Render 2 portal segments
-                int cur_screenrow_top = (int)(vert1_top_y + (screenrow_top_stepsize * (col - screencol_1)));
-                int cur_screenrow_bot = (int)(vert1_bot_y + (screenrow_bot_stepsize * (col - screencol_1)));
+    // Calculate change in dy for top and bottom edge
+    float dy[2] = {
+        (float)(quad[3].y - quad[1].y) / (float)(quad[3].x - quad[1].x),  // Top
+        (float)(quad[2].y - quad[0].y) / (float)(quad[2].x - quad[0].x),  // Bottom
+    };
 
-                int cur_screenrow_ceil =  (int)(vert1_ceil_y + (screenrow_ceil_stepsize * (col - screencol_1)));
-                int cur_screenrow_floor = (int)(vert1_floor_y + (screenrow_floor_stepsize * (col - screencol_1)));
+    // Get y bounds of the first column
+    int initial_y_bounds[2] = {
+        quad[1].y,     // Top
+        quad[0].y      // Bottom
+    };
 
-                glazeRenderer->DrawLineVert(col, 
-                    cur_screenrow_bot, 
-                    max(cur_screenrow_floor, occlusionMapVert[col].bottomY), 
-                    wall.color);
-                glazeRenderer->DrawLineVert(col, 
-                    cur_screenrow_ceil, 
-                    min(cur_screenrow_top, occlusionMapVert[col].topY), 
-                    wall.color);
+    // Make sure we are stepping the right directions
+    int step = (quad[2].x > quad[0].x) ? 1 : -1;
 
-                // Mark occlusion map
-                occlusionMapVert[col].topY = cur_screenrow_ceil;
-                occlusionMapVert[col].bottomY = cur_screenrow_floor;
-            }
-            else {
+    // Draw the correct bounds
+    int first_col = quad[0].x;
+    int last_col = quad[2].x;
 
-                // Render wall
-                int cur_screenrow_top = (int)(vert1_top_y + (screenrow_top_stepsize * (col - screencol_1)));
-                int cur_screenrow_bot = (int)(vert1_bot_y + (screenrow_bot_stepsize * (col - screencol_1)));
-                glazeRenderer->DrawLineVert(col, 
-                    max(cur_screenrow_bot, occlusionMapVert[col].bottomY), 
-                    min(cur_screenrow_top, occlusionMapVert[col].topY), 
-                    wall.color);
+    // Draw column by column
+    for (int col = first_col; col != last_col; col += step) {
 
-                // Mark occlusion map
-                occlusionMapVert[col].topY = -1;
-                occlusionMapVert[col].bottomY = -1;
-            }
-        }
+        // Don't draw out of screen bounds
+        // TODO: Skip these cases to cut out worthless iterations
+        if (col >= WIDTH || col < 0)
+            continue;
+
+        // Don't draw columns we have already drawn
+        if (occlusionMap[col].bottomY == -1 || occlusionMap[col].topY == -1)
+            continue;
+
+        // Calculate difference in x since starting
+        int dx = col - first_col;
+
+        // Calculate the bounds of the current row
+        int y_bounds[2] = {
+            (int)(initial_y_bounds[0] + (dy[0] * dx)),  // Top
+            (int)(initial_y_bounds[1] + (dy[1] * dx))   // Bottom
+        };
+
+        int top_row, bot_row;
+        this->GetDrawRows(col, y_bounds, segment, bot_row, top_row);
+
+        // Draw column
+        glazeRenderer->DrawLineVert(col,
+                                    top_row,
+                                    bot_row,
+                                    color);
+
+        glazeRenderer->DrawCircle(10, 10, 5, 255, 0, 0);
+    }
 }
 
 void RenderHandler::DrawSector(Subsector* sector) {
     for (int i = 0; i < sector->walls.size(); i++) {
         Wall* draw_wall = worldMap->GetWallById(sector->walls[i]->id);
-        DrawWall(*draw_wall);
+        DrawVertSurface(*draw_wall);
     }
 }
 
 void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
-
     if (bsp_tree == NULL)
         return; // may not need this case
 

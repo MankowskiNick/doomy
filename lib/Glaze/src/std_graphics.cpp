@@ -1,6 +1,9 @@
 #include <std_graphics.h>
 #include <gllib.h>
 
+#define min(a, b) (a < b) ? a : b
+#define max(a, b) (a > b) ? a : b
+
 using namespace Glaze;
 
 // Buffer view coords to GPU
@@ -59,16 +62,15 @@ void GlazeRenderer::DrawPixel(int x, int y, int r, int g, int b) {
 }
 
 // Draw a single vertical line
-void GlazeRenderer::DrawLineVert(int col, int bot_row, int top_row, int color[3]) {
-    if (bot_row < 0)
-        bot_row = 0;
-    if (bot_row >= WIDTH)
-        bot_row = WIDTH - 1;
-    if (top_row < 0)
-        top_row = 0;
-    if (top_row >= WIDTH)
-        top_row = WIDTH - 1;
-    for (int i = bot_row; i <= top_row; i++) {
+void GlazeRenderer::DrawLineVert(int col, int row1, int row2, int color[3]) {
+    int first, last;
+    first = min(row1, row2);
+    last = max(row1, row2);
+    if (first < 0)
+        first = 0;
+    if (last >= WIDTH)
+        last = WIDTH - 1;
+    for (int i = first; i <= last; i++) {
         DrawPixel(col, i, color[0], color[1], color[2]);
     }
 }

@@ -73,7 +73,10 @@ class Map {
             wall.color[0] = r;
             wall.color[1] = g;
             wall.color[2] = b;
-            wall.is_portal = floor_height != -1 && ceiling_height != -1;
+            if (floor_height == -1 || ceiling_height == -1)
+                wall.type = WALL;
+            else
+                wall.type = PORTAL;
             walls.push_back(wall);
         }
 

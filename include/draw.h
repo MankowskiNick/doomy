@@ -10,15 +10,12 @@
 #include "map.h"
 #include "camera.h"
 #include "viewmap.h"
+#include "screen_space_mapper.h"
 
 #define MAX_WALLCOUNT 32
 
-struct OcclusionMapVert {
+struct OcclusionMap {
     int topY,bottomY;
-};
-
-struct OcclusionMapHoriz {
-    int left, right;
 };
 
 class RenderHandler {
@@ -33,7 +30,7 @@ class RenderHandler {
 
     private:
         int walls_drawn = 0;
-        OcclusionMapVert* occlusionMapVert;
+        OcclusionMap* occlusionMap;
         ViewMap viewMap;
         Map* worldMap;
         GLLib* gl;
@@ -42,7 +39,20 @@ class RenderHandler {
 
         void ResetOcclusionMap();
         void RenderBSPNode(BSP_Tree* bsp_tree);
-        void DrawWall(Wall& wall);
+
+        void DrawVertSurface(Wall& wall);
+        void DrawPortal(Wall& wall);
+        void DrawSurface(Wall& wall);
+        void GetDrawRows(int col,
+                            int y_bounds[2], 
+                            WallSegment segment, 
+                            int& bot_row, 
+                            int& top_row);
+        void DrawQuad(ScreenCoord* quad, 
+                        WallSegment segment, 
+                        int color[3]);
+
+
         void DrawSector(Subsector* sector);
 };
 

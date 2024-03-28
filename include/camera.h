@@ -23,11 +23,11 @@ class Camera {
         ~Camera() {}
 
         void TurnLeft() {
-            angle -= M_PI / 60;
+            angle += M_PI / 60;
         }
 
         void TurnRight() {
-            angle += M_PI / 60;
+            angle -= M_PI / 60;
         }
 
         void MoveForward() {
