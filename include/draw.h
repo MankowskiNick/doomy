@@ -52,8 +52,9 @@ class RenderHandler {
                         WallSegment segment, 
                         int color[3]);
 
-
-        void DrawSector(Subsector* sector);
+        // Currently empty functions - just here to take notes.
+        void RenderSector(Subsector* sector);
+        void DrawPlanes();
 };
 
 #endif

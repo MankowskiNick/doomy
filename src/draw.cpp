@@ -7,6 +7,7 @@
 #include <Glaze/std_graphics.h>
 
 #include "draw.h"
+#include "standard.h"
 
 #define min(a, b) (a < b) ? a : b
 #define max(a, b) (a > b) ? a : b
@@ -136,6 +137,12 @@ void RenderHandler::GetDrawRows(int col, int y_bounds[2], WallSegment segment, i
 
 void RenderHandler::DrawQuad(ScreenCoord quad[4], WallSegment segment, int color[3]) {
 
+    // Ensure we are drawing from right to left
+    if (quad[0].x > quad[2].x) {
+        swap(quad[0], quad[2]);
+        swap(quad[1], quad[3]);
+    }
+
     // Calculate change in dy for top and bottom edge
     float dy[2] = {
         (float)(quad[3].y - quad[1].y) / (float)(quad[3].x - quad[1].x),  // Top
@@ -148,27 +155,20 @@ void RenderHandler::DrawQuad(ScreenCoord quad[4], WallSegment segment, int color
         quad[0].y      // Bottom
     };
 
-    // Make sure we are stepping the right directions
-    int step = (quad[2].x > quad[0].x) ? 1 : -1;
-
-    // Draw the correct bounds
-    int first_col = quad[0].x;
-    int last_col = quad[2].x;
+    // Don't draw outside of the screen
+    int left, right;
+    left = max(quad[0].x, 0);
+    right = min(quad[2].x, WIDTH);
 
     // Draw column by column
-    for (int col = first_col; col != last_col; col += step) {
-
-        // Don't draw out of screen bounds
-        // TODO: Skip these cases to cut out worthless iterations
-        if (col >= WIDTH || col < 0)
-            continue;
+    for (int col = left; col <= right; col++) {
 
         // Don't draw columns we have already drawn
         if (occlusionMap[col].bottomY == -1 || occlusionMap[col].topY == -1)
             continue;
 
         // Calculate difference in x since starting
-        int dx = col - first_col;
+        int dx = col - quad[0].x;
 
         // Calculate the bounds of the current row
         int y_bounds[2] = {
@@ -184,14 +184,21 @@ void RenderHandler::DrawQuad(ScreenCoord quad[4], WallSegment segment, int color
                                     top_row,
                                     bot_row,
                                     color);
-
-        glazeRenderer->DrawCircle(10, 10, 5, 255, 0, 0);
     }
 }
 
-void RenderHandler::DrawSector(Subsector* sector) {
+void RenderHandler::RenderSector(Subsector* sector) {
+
+    // TODO: Create or find a visplane corresponding to this sector.  This should contain a "default"
+    //          boundary that is updated as walls are drawn.
+
+    // Draw walls in sector
     for (int i = 0; i < sector->walls.size(); i++) {
+
+        // Get the wall we want to draw
         Wall* draw_wall = worldMap->GetWallById(sector->walls[i]->id);
+
+        // Draw wall
         DrawVertSurface(*draw_wall);
     }
 }
@@ -204,7 +211,8 @@ void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
         Subsector* sect = worldMap->GetSectorById(bsp_tree->id);
         if (sect == NULL)
             logger->Log("FATAL ERROR: Sector not found(SECT_ID=" + std::to_string(bsp_tree->id) + ").\n", Glimpse::FATAL);
-        this->DrawSector(sect);
+        
+        this->RenderSector(sect);
         return;
     }    
     
@@ -216,10 +224,16 @@ void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
     };
 
 
+    // Get dividing wall
     Wall* div_wall = viewMap.GetMap()->GetWallById(bsp_tree->wall_id);
+
+    // Get division line from world line
     DivLine div_line = GetDivLineFromWorldLine(div_wall->line);
+
+    // Which side of the wall is the player standing on?
     WallSide player_side = VertOnSide(div_line, camera_vertex);
 
+    // Render nodes in the proper order depending on player side
     if (player_side == FRONT) {
         this->RenderBSPNode(bsp_tree->front);
         this->RenderBSPNode(bsp_tree->back);
@@ -228,6 +242,15 @@ void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
         this->RenderBSPNode(bsp_tree->back);
         this->RenderBSPNode(bsp_tree->front);
     }
+}
+
+void RenderHandler::DrawPlanes() {
+
+    // TODO: Merge planes?
+
+    // TODO: Iterate through all planes, draw them.
+    //          By this point, all planes should have been properly been calculated, 
+    //          just need to turn them into spans rather than columns and draw them.
 }
 
 // Render code
@@ -246,4 +269,7 @@ void RenderHandler::Render(Map map, Camera& camera) {
 
     // Render walls
     this->RenderBSPNode(&(map.bsp_tree));
+
+    // Draw horizontal planes
+    this->DrawPlanes();
 }

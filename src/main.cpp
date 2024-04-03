@@ -45,7 +45,12 @@ int main() {
 
     // Main loop
     while (!glHandler.WindowShouldClose()) {
-        
+
+        // TODO: Update rendering backend so that it works on windows
+        // TODO: Work to get a framerate counter?  This could be a part of the above todo.
+        // TODO: Windows build -- try and isolate to one class and get more information to Sean about the exact error message without being
+        //          pointer-ified.  Try and put pointers in main as well?
+
         // Perform work on keyboard input and poll key events
         inputHandler.PerformKeyAction();
 
