@@ -114,6 +114,8 @@ class Map {
                     section = "sectors";
                 else if (line == "[bsp]")
                     section = "bsp";
+                else if (line == "[flats]")
+                    section = "flats";
                 else if (line == "[end]")
                     return;
 
@@ -122,7 +124,6 @@ class Map {
                     HandleLine(section, line);
             }
         }
-
 
         Wall* GetWallById(int wall_id) {
             for (int i = 0; i < walls.size(); i++)
@@ -138,11 +139,20 @@ class Map {
             return NULL;
         }
 
+        Flat* GetFlatById(int id) {
+            for (int i = 0; i < flats.size(); i++) {
+                if (flats[i].id == id) 
+                    return &flats[i];
+            }
+            return NULL;
+        }
+
         // TODO: Are these private?
         BSP_Tree bsp_tree;
         std::vector<Wall> walls;
         std::vector<Vertex> vertices;
         std::vector<Subsector> sectors;
+        std::vector<Flat> flats;
 
         Glimpse::GlimpseLogger* logger;
 private:
@@ -154,6 +164,8 @@ private:
             ParseWall(text);
         else if (section == "sectors")
             ParseSector(text);
+        else if (section == "flats")
+            ParseFlat(text);
         else if (section == "bsp")
             ParseBSPString(text);
         else
@@ -199,17 +211,20 @@ private:
         }
     }
 
+    // sector: id floor_id ceiling_id wall1_id wall2_id ...
     void ParseSector(const std::string& text) {
         if (text.rfind("sector:", 0) == 0) { // Check if the string starts with "sector:"
             std::istringstream iss(text);
 
             std::string token;
-            int id, wall_id;
+            int id, floor_id, ceiling_id, wall_id;
 
             Subsector subsect;
 
-            iss >> token >> id;
+            iss >> token >> id >> floor_id >> ceiling_id;
             subsect.id = id;
+            subsect.floor_id = floor_id;
+            subsect.ceiling_id = ceiling_id;
 
             while (iss >> wall_id) {
                 Wall* cur_wall = this->GetWallById(wall_id);
@@ -217,10 +232,38 @@ private:
             }
 
             // add subsector to map
-            sectors.push_back(subsect);
+            this->sectors.push_back(subsect);
         }
         else {
             logger->Log("FATAL ERROR: Error parsing sector in map file.(Incorrect format?)", Glimpse::FATAL);
+        }
+    }
+
+    // flat: id r g b height
+    //      -id is the identifier
+    //      -r g b is the color
+    //      -height is the height
+    void ParseFlat(const std::string& text) {
+        if (text.rfind("flat:", 0) == 0) { // Check if the string starts with "flat:"
+            std::istringstream iss(text);
+            std::string token;
+            int id, r, g, b;
+            float height;
+            iss >> token >> id >> r >> g >> b >> height;
+            if (iss) { // Check if parsing was successful
+                Flat flat = {
+                    .id = id,
+                    .color[0] = r,
+                    .color[1] = g,
+                    .color[2] = b,
+                    .height = height
+                };
+                this->flats.push_back(flat);
+
+            } 
+            else {
+                logger->Log("FATAL ERROR: Error parsing flat in map file.(Incorrect format?)", Glimpse::FATAL);
+            }
         }
     }
 

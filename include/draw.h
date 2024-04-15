@@ -16,6 +16,20 @@
 
 struct OcclusionMap {
     int topY,bottomY;
+    bool covered;
+};
+
+struct Visplane {
+    int id;
+    float height; // what is this for?
+    int minx, maxx;
+    int color[3];
+    int top[WIDTH], bottom[WIDTH];
+};
+
+struct SectorNode {
+    Visplane* floor;
+    Visplane* ceiling;
 };
 
 class RenderHandler {
@@ -37,7 +51,15 @@ class RenderHandler {
         Glaze::GlazeRenderer* glazeRenderer;
         Glimpse::GlimpseLogger* logger;
 
-        void ResetOcclusionMap();
+        std::vector<SectorNode> nodes;
+
+        std::vector<int> drawn_walls;
+        
+        // Current floor & ceiling planes being processed.
+        Visplane* floorPlane;
+        Visplane* ceilingPlane;
+
+        void ResetFrameData();
         void RenderBSPNode(BSP_Tree* bsp_tree);
 
         void DrawVertSurface(Wall& wall);
@@ -52,9 +74,11 @@ class RenderHandler {
                         WallSegment segment, 
                         int color[3]);
 
-        // Currently empty functions - just here to take notes.
         void RenderSector(Subsector* sector);
-        void DrawPlanes();
+        Visplane* BuildEmptyVisplane(int flat_id);
+        void FillSectors();
+        void RenderVisplane(Visplane* plane);
+        // void UpdatePlanesPostDraw();
 };
 
 #endif

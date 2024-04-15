@@ -29,19 +29,38 @@ RenderHandler::RenderHandler(Camera& camera,
     viewMap = ViewMap(camera);
 
     occlusionMap = new OcclusionMap[gl->GetWidth()];
-    ResetOcclusionMap();
+    ResetFrameData();
 }
 
 RenderHandler::~RenderHandler() { 
     // TODO: Delete occlusion maps
 }
 
-void RenderHandler::ResetOcclusionMap() {
+void RenderHandler::ResetFrameData() {
     for (int i = 0; i < gl->GetWidth(); i++) {
         occlusionMap[i].topY = gl->GetHeight() - 1;
         occlusionMap[i].bottomY = 0;
+        occlusionMap[i].covered = false;
     }
+
+    for (int i = 0; i < nodes.size(); i++) {
+        delete nodes[i].floor;
+        delete nodes[i].ceiling;
+    }
+    nodes.resize(0);
+
+    drawn_walls.resize(0);
 }
+
+// void RenderHandler::UpdatePlanesPostDraw() {
+//     for (int i = floorPlane->minx; i <= floorPlane->maxx; i++) {
+//         floorPlane->top[i] = occlusionMap[i].bottomY;
+//     }
+    
+//     for (int i = ceilingPlane->minx; i <= ceilingPlane->maxx; i++) {
+//         ceilingPlane->bottom[i] = occlusionMap[i].topY;
+//     }
+// }
 
 // Draw an individual wall/portal
 void RenderHandler::DrawVertSurface(Wall& wall) {
@@ -101,37 +120,31 @@ void RenderHandler::DrawSurface(Wall& wall) {
     this->DrawQuad(quad, FULL, wall.color);
 }
 
-// This is a bit problematic atm
 void RenderHandler::GetDrawRows(int col, int y_bounds[2], WallSegment segment, int& bot_row, int& top_row) {
     int cur_top, cur_bot;
     switch(segment) {
         case TOP:
-            cur_top = occlusionMap[col].topY;
             top_row = min(y_bounds[0], occlusionMap[col].topY);
             bot_row = min(y_bounds[1], occlusionMap[col].topY);
 
-            // top_row = y_bounds[0];
-            // bot_row = y_bounds[1];
             occlusionMap[col].topY = min(top_row, bot_row);
             break;
         case BOTTOM:
-            cur_bot = occlusionMap[col].bottomY;
             top_row = max(y_bounds[0], occlusionMap[col].bottomY);
             bot_row = max(y_bounds[1], occlusionMap[col].bottomY);
 
-            // top_row = y_bounds[0];
-            // bot_row = y_bounds[1];
             occlusionMap[col].bottomY = max(top_row, bot_row);
             break;
         case FULL:
             top_row = min(y_bounds[0], occlusionMap[col].topY);
             bot_row = max(y_bounds[1], occlusionMap[col].bottomY);
 
-            occlusionMap[col].topY = -1;
-            occlusionMap[col].bottomY = -1;
+            occlusionMap[col].topY = top_row;
+            occlusionMap[col].bottomY = bot_row;
+            occlusionMap[col].covered = true;
             break;
         default:
-            logger->Log("FATAL ERROR: Unknown segment type(SEGMENT_TYPE=" + std::to_string(segment) + ")", Glimpse::FATAL);
+            logger->Log("Unknown segment type(SEGMENT_TYPE=" + std::to_string(segment) + ")", Glimpse::FATAL);
     }
 }
 
@@ -160,11 +173,17 @@ void RenderHandler::DrawQuad(ScreenCoord quad[4], WallSegment segment, int color
     left = max(quad[0].x, 0);
     right = min(quad[2].x, WIDTH);
 
+    // Update minx and maxx of the floor and ceiling visplanes
+    floorPlane->minx = min(floorPlane->minx, left);
+    floorPlane->maxx = max(floorPlane->maxx, right);
+    ceilingPlane->minx = min(ceilingPlane->minx, left);
+    ceilingPlane->maxx = max(ceilingPlane->maxx, right);
+
     // Draw column by column
     for (int col = left; col <= right; col++) {
 
         // Don't draw columns we have already drawn
-        if (occlusionMap[col].bottomY == -1 || occlusionMap[col].topY == -1)
+        if (occlusionMap[col].covered)
             continue;
 
         // Calculate difference in x since starting
@@ -176,8 +195,40 @@ void RenderHandler::DrawQuad(ScreenCoord quad[4], WallSegment segment, int color
             (int)(initial_y_bounds[1] + (dy[1] * dx))   // Bottom
         };
 
+        // Update visplane vertical bounds
+        switch(segment) {
+            case(FULL):
+                if (floorPlane != NULL)
+                    floorPlane->bottom[col] = occlusionMap[col].bottomY;
+                if (ceilingPlane != NULL)
+                    ceilingPlane->top[col] = occlusionMap[col].topY;
+                break;
+            case(TOP):
+                if (ceilingPlane != NULL)
+                    ceilingPlane->top[col] = occlusionMap[col].topY;
+            case(BOTTOM):
+                if (floorPlane != NULL)
+                    floorPlane->bottom[col] = occlusionMap[col].bottomY;
+        }
+        
+        // Get the draw rows
         int top_row, bot_row;
         this->GetDrawRows(col, y_bounds, segment, bot_row, top_row);
+
+        switch(segment) {
+            case FULL:
+                floorPlane->top[col] = bot_row;
+                ceilingPlane->bottom[col] = top_row;
+                break;
+            case TOP:
+                ceilingPlane->bottom[col] = top_row;
+                break;
+            case BOTTOM:
+                floorPlane->top[col] = bot_row;
+                break;
+            default:
+                break;
+        }
 
         // Draw column
         glazeRenderer->DrawLineVert(col,
@@ -187,19 +238,58 @@ void RenderHandler::DrawQuad(ScreenCoord quad[4], WallSegment segment, int color
     }
 }
 
-void RenderHandler::RenderSector(Subsector* sector) {
 
-    // TODO: Create or find a visplane corresponding to this sector.  This should contain a "default"
-    //          boundary that is updated as walls are drawn.
+/**
+ * @brief Builds an empty visplane from the specified flat ID.
+ * 
+ * @param flat_id The ID of the flat.
+ * @return A pointer to the newly created visplane.
+ */
+Visplane* RenderHandler::BuildEmptyVisplane(int flat_id) {
+    Flat* flat = worldMap->GetFlatById(flat_id);
+    Visplane* plane = new Visplane;
+    plane->height = flat->height;
+    plane->color[0] = flat->color[0];
+    plane->color[1] = flat->color[1];
+    plane->color[2] = flat->color[2];
+    plane->minx = WIDTH;
+    plane->maxx = -1;
+    memset(plane->top, HEIGHT, sizeof(plane->top));
+    memset(plane->bottom, 0, sizeof(plane->bottom));
+
+    return plane;
+}
+
+void RenderHandler::RenderSector(Subsector* sector) {
+    floorPlane = this->BuildEmptyVisplane(sector->floor_id);
+    ceilingPlane = this->BuildEmptyVisplane(sector->ceiling_id);
+    
+    SectorNode node = {
+        .floor = floorPlane,
+        .ceiling = ceilingPlane,
+    };
+    nodes.push_back(node);
 
     // Draw walls in sector
     for (int i = 0; i < sector->walls.size(); i++) {
 
+        bool skip = false;
+        for (int j = 0; j < this->drawn_walls.size(); j++) {
+            if (drawn_walls[j] == sector->walls[i]->id) {
+                skip = true;
+                break;
+            }
+        }
+        if (skip)
+            continue;
+
         // Get the wall we want to draw
         Wall* draw_wall = worldMap->GetWallById(sector->walls[i]->id);
 
+        drawn_walls.push_back(sector->walls[i]->id);
+
         // Draw wall
-        DrawVertSurface(*draw_wall);
+        this->DrawVertSurface(*draw_wall);
     }
 }
 
@@ -244,13 +334,27 @@ void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
     }
 }
 
-void RenderHandler::DrawPlanes() {
+void RenderHandler::RenderVisplane(Visplane* plane) {
+
+    // Nothing to render
+    if (plane == NULL)
+        return;
+
+    for (int i = plane->minx - 1; i < plane->maxx + 1; i++)
+        glazeRenderer->DrawLineVert(i, plane->top[i], plane->bottom[i], plane->color);
+}
+
+void RenderHandler::FillSectors() {
 
     // TODO: Merge planes?
 
-    // TODO: Iterate through all planes, draw them.
-    //          By this point, all planes should have been properly been calculated, 
-    //          just need to turn them into spans rather than columns and draw them.
+    for (int i = 0; i < this->nodes.size(); i++) {
+        SectorNode node = this->nodes[i];
+
+        // Render visplanes
+        this->RenderVisplane(node.floor);
+        this->RenderVisplane(node.ceiling);
+    }
 }
 
 // Render code
@@ -265,11 +369,11 @@ void RenderHandler::Render(Map map, Camera& camera) {
     worldMap = viewMap.GetMap();
 
     // Reset occlusion map
-    this->ResetOcclusionMap();
+    this->ResetFrameData();
 
     // Render walls
     this->RenderBSPNode(&(map.bsp_tree));
 
     // Draw horizontal planes
-    this->DrawPlanes();
+    this->FillSectors();
 }

@@ -27,16 +27,11 @@ wall: 11 9 10 0.0 1.0 -1.0 -1.0 0 255 0
 wall: 12 10 11 0.0 1.0 -1.0 -1.0 0 255 0
 wall: 13 11 6 0.0 1.0 -1.0 -1.0 0 255 0
 [sectors]
-sector: 32772 1 2 3 7 9
-sector: 32774 4 3 4 6 7 8
-sector: 32775 1 2 6 10
-sector: 32776 1 2 0 1 2 3 4 5
-sector: 32777 1 2 8 9 10 11 12 13
-[flats]
-flat: 1 18 190 173 0.0
-flat: 2 157 26 214 1.0
-flat: 3 18 190 173 0.67
-flat: 4 157 26 214 0.33
+sector: 32772 3 7 9
+sector: 32774 4 6 7 8
+sector: 32775 6 10
+sector: 32776 0 1 2 3 4 5
+sector: 32777 8 9 10 11 12 13
 [bsp]
 (id=1,wall_id=8,front=(id=2,wall_id=3,front=(id=3,wall_id=7,front=(id=32772,wall_id=-1,front=#,back=#),back=(id=5,wall_id=6,front=(id=32774,wall_id=-1,front=#,back=#),back=(id=32775,wall_id=-1,front=#,back=#))),back=(id=32776,wall_id=-1,front=#,back=#)),back=(id=32777,wall_id=-1,front=#,back=#))
 [end]

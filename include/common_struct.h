@@ -19,6 +19,12 @@ enum WallSegment {
     FULL
 };
 
+struct Flat {
+    int id;
+    int color[3];
+    float height;
+};
+
 
 struct Vertex {
     int id;
@@ -47,6 +53,7 @@ struct Wall {
 
 struct Subsector {
     int id;
+    int floor_id, ceiling_id;
     std::vector<Wall*> walls;
 };
 
