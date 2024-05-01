@@ -34,7 +34,7 @@ struct SectorNode {
 
 class RenderHandler {
     public:
-        RenderHandler(Camera& camera, 
+        RenderHandler(Camera& newCamera, 
                         Glaze::GlazeRenderer& newGlazeRenderer, 
                         GLLib& newGlLib,
                         Glimpse::GlimpseLogger& newLogger);
@@ -50,6 +50,7 @@ class RenderHandler {
         GLLib* gl;
         Glaze::GlazeRenderer* glazeRenderer;
         Glimpse::GlimpseLogger* logger;
+        Camera* camera;
 
         std::vector<SectorNode> nodes;
 
@@ -70,15 +71,22 @@ class RenderHandler {
                             WallSegment segment, 
                             int& bot_row, 
                             int& top_row);
-        void DrawQuad(ScreenCoord* quad, 
+        void DrawQuad(ScreenCoord quad[4], 
                         WallSegment segment, 
-                        int color[3]);
+                        int color[3], 
+                        int floor_diff[2], 
+                        int ceiling_diff[2]);
 
         void RenderSector(Subsector* sector);
         Visplane* BuildEmptyVisplane(int flat_id);
         void FillSectors();
         void RenderVisplane(Visplane* plane);
+        // void BuildVisPlanes(ScreenCoord quad[4], 
+        //                             WallSegment segment, 
+        //                             Subsector& sector);
         // void UpdatePlanesPostDraw();
+        bool IsWallDrawn(int id);
+
 };
 
 #endif

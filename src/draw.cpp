@@ -6,14 +6,18 @@
 #include <Glaze/gllib.h>
 #include <Glaze/std_graphics.h>
 
+#include "debug.h"
 #include "draw.h"
 #include "standard.h"
 
 #define min(a, b) (a < b) ? a : b
 #define max(a, b) (a > b) ? a : b
 
+//#define GRAPHICS_DEBUG // enable debug view for rendering
+
+// Render methods
 // Initialization code, just in case we end up needing to initialize things other than gl_lib
-RenderHandler::RenderHandler(Camera& camera, 
+RenderHandler::RenderHandler(Camera& newCamera, 
                                 Glaze::GlazeRenderer& newGlazeRenderer, 
                                 GLLib& newGlLib,
                                 Glimpse::GlimpseLogger& newLogger
@@ -26,7 +30,9 @@ RenderHandler::RenderHandler(Camera& camera,
     gl = &newGlLib;
 
     // Initialize a viewMap, this is a "worker" class that will translate the map
-    viewMap = ViewMap(camera);
+    viewMap = ViewMap(newCamera);
+
+    camera = &newCamera;
 
     occlusionMap = new OcclusionMap[gl->GetWidth()];
     ResetFrameData();
@@ -44,23 +50,14 @@ void RenderHandler::ResetFrameData() {
     }
 
     for (int i = 0; i < nodes.size(); i++) {
-        delete nodes[i].floor;
-        delete nodes[i].ceiling;
+        delete this->nodes[i].floor;
+        delete this->nodes[i].ceiling;
     }
-    nodes.resize(0);
+    this->nodes.resize(0);
 
     drawn_walls.resize(0);
-}
 
-// void RenderHandler::UpdatePlanesPostDraw() {
-//     for (int i = floorPlane->minx; i <= floorPlane->maxx; i++) {
-//         floorPlane->top[i] = occlusionMap[i].bottomY;
-//     }
-    
-//     for (int i = ceilingPlane->minx; i <= ceilingPlane->maxx; i++) {
-//         ceilingPlane->bottom[i] = occlusionMap[i].topY;
-//     }
-// }
+}
 
 // Draw an individual wall/portal
 void RenderHandler::DrawVertSurface(Wall& wall) {
@@ -102,9 +99,18 @@ void RenderHandler::DrawPortal(Wall& wall) {
         MapToScreenSpace(wall.line.v2, wall.floor_height)       // Top right
     };
 
-    this->DrawQuad(top_quad, TOP, wall.color);
-    this->DrawQuad(bot_quad, BOTTOM, wall.color);
+    int floor_diff[2] = {
+        MapToScreenY(wall.line.v1, floorPlane->height - camera->z), // left
+        MapToScreenY(wall.line.v2, floorPlane->height - camera->z)  // right
+    };
 
+    int ceiling_diff[2] = {
+        MapToScreenY(wall.line.v1, ceilingPlane->height - camera->z), // left
+        MapToScreenY(wall.line.v2, ceilingPlane->height - camera->z)  // right
+    };
+
+    this->DrawQuad(top_quad, TOP, wall.color, floor_diff, ceiling_diff);
+    this->DrawQuad(bot_quad, BOTTOM, wall.color, floor_diff, ceiling_diff);
 }
 
 void RenderHandler::DrawSurface(Wall& wall) {
@@ -117,7 +123,17 @@ void RenderHandler::DrawSurface(Wall& wall) {
         MapToScreenSpace(wall.line.v2, wall.max_height)         // Top right
     };
 
-    this->DrawQuad(quad, FULL, wall.color);
+    int floor_diff[2] = {
+        MapToScreenY(wall.line.v1, floorPlane->height - camera->z),
+        MapToScreenY(wall.line.v2, floorPlane->height - camera->z)
+    };
+
+    int ceiling_diff[2] = {
+        MapToScreenY(wall.line.v1, ceilingPlane->height - camera->z),
+        MapToScreenY(wall.line.v2, ceilingPlane->height - camera->z)
+    };
+
+    this->DrawQuad(quad, FULL, wall.color, floor_diff, ceiling_diff);
 }
 
 void RenderHandler::GetDrawRows(int col, int y_bounds[2], WallSegment segment, int& bot_row, int& top_row) {
@@ -148,12 +164,23 @@ void RenderHandler::GetDrawRows(int col, int y_bounds[2], WallSegment segment, i
     }
 }
 
-void RenderHandler::DrawQuad(ScreenCoord quad[4], WallSegment segment, int color[3]) {
+void RenderHandler::DrawQuad(ScreenCoord quad[4], 
+                                WallSegment segment, 
+                                int color[3], 
+                                int floor_diff[2], 
+                                int ceiling_diff[2]) {
 
     // Ensure we are drawing from right to left
     if (quad[0].x > quad[2].x) {
         swap(quad[0], quad[2]);
         swap(quad[1], quad[3]);
+        
+        // Prevent bug that would flip the floor twice, so it renders in the wrong order.
+        // TODO: potentially move this in an upcoming refactor?
+        if (segment == TOP || segment == FULL)
+            swap(ceiling_diff[0], ceiling_diff[1]);
+        if (segment == BOTTOM || segment == FULL)
+            swap(floor_diff[0], floor_diff[1]);
     }
 
     // Calculate change in dy for top and bottom edge
@@ -166,6 +193,11 @@ void RenderHandler::DrawQuad(ScreenCoord quad[4], WallSegment segment, int color
     int initial_y_bounds[2] = {
         quad[1].y,     // Top
         quad[0].y      // Bottom
+    };
+
+    float plane_dy[2] = {
+        (float)(ceiling_diff[1] - ceiling_diff[0]) / (float)(quad[3].x - quad[1].x),    // Top
+        (float)(floor_diff[1] - floor_diff[0]) / (float)(quad[3].x - quad[1].x)         // Bottom
     };
 
     // Don't draw outside of the screen
@@ -217,14 +249,14 @@ void RenderHandler::DrawQuad(ScreenCoord quad[4], WallSegment segment, int color
 
         switch(segment) {
             case FULL:
-                floorPlane->top[col] = bot_row;
-                ceilingPlane->bottom[col] = top_row;
+                floorPlane->top[col] = floor_diff[0] + (plane_dy[1] * dx);
+                ceilingPlane->bottom[col] = ceiling_diff[0] + (plane_dy[0] * dx);
                 break;
             case TOP:
-                ceilingPlane->bottom[col] = top_row;
+                ceilingPlane->bottom[col] = min(ceiling_diff[0] + (plane_dy[0] * dx), top_row);
                 break;
             case BOTTOM:
-                floorPlane->top[col] = bot_row;
+                floorPlane->top[col] = max(floor_diff[0] + (plane_dy[1] * dx), bot_row);
                 break;
             default:
                 break;
@@ -236,8 +268,11 @@ void RenderHandler::DrawQuad(ScreenCoord quad[4], WallSegment segment, int color
                                     bot_row,
                                     color);
     }
+#ifdef GRAPHICS_DEBUG
+    // Render the quad frame for debugging
+    DrawQuadFrame(quad, glazeRenderer);
+#endif
 }
-
 
 /**
  * @brief Builds an empty visplane from the specified flat ID.
@@ -263,34 +298,39 @@ Visplane* RenderHandler::BuildEmptyVisplane(int flat_id) {
 void RenderHandler::RenderSector(Subsector* sector) {
     floorPlane = this->BuildEmptyVisplane(sector->floor_id);
     ceilingPlane = this->BuildEmptyVisplane(sector->ceiling_id);
+
+    // TODO: build vis planes, this needs a new method
     
     SectorNode node = {
         .floor = floorPlane,
         .ceiling = ceilingPlane,
     };
-    nodes.push_back(node);
+    this->nodes.push_back(node);
 
     // Draw walls in sector
     for (int i = 0; i < sector->walls.size(); i++) {
 
-        bool skip = false;
-        for (int j = 0; j < this->drawn_walls.size(); j++) {
-            if (drawn_walls[j] == sector->walls[i]->id) {
-                skip = true;
-                break;
-            }
-        }
-        if (skip)
+        int wall_id = sector->walls[i]->id;
+        if (this->IsWallDrawn(wall_id))
             continue;
 
         // Get the wall we want to draw
-        Wall* draw_wall = worldMap->GetWallById(sector->walls[i]->id);
+        Wall* draw_wall = worldMap->GetWallById(wall_id);
 
-        drawn_walls.push_back(sector->walls[i]->id);
+        drawn_walls.push_back(wall_id);
 
         // Draw wall
         this->DrawVertSurface(*draw_wall);
     }
+}
+
+bool RenderHandler::IsWallDrawn(int id) {
+    for (int j = 0; j < this->drawn_walls.size(); j++) {
+        if (drawn_walls[j] == id) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
@@ -335,20 +375,19 @@ void RenderHandler::RenderBSPNode(BSP_Tree* bsp_tree) {
 }
 
 void RenderHandler::RenderVisplane(Visplane* plane) {
-
     // Nothing to render
     if (plane == NULL)
         return;
 
-    for (int i = plane->minx - 1; i < plane->maxx + 1; i++)
+    // Otherwise, draw the plane
+    for (int i = plane->minx; i < plane->maxx; i++)
         glazeRenderer->DrawLineVert(i, plane->top[i], plane->bottom[i], plane->color);
 }
 
 void RenderHandler::FillSectors() {
 
-    // TODO: Merge planes?
-
-    for (int i = 0; i < this->nodes.size(); i++) {
+    // TODO: Merge planes? this should happen a bit later i think
+    for (int i = this->nodes.size() - 1; i >= 0 ; i--) {
         SectorNode node = this->nodes[i];
 
         // Render visplanes
@@ -360,8 +399,10 @@ void RenderHandler::FillSectors() {
 // Render code
 void RenderHandler::Render(Map map, Camera& camera) {
 
-    // Display a gray background - Eventually, I don't think this is needed.
+#ifdef GRAPHICS_DEBUG
+    // Display a gray background
     glazeRenderer->FillScreen(100, 100, 100);
+#endif
 
     // TOOD: Rework how we handle this
     viewMap.LoadMap(map);

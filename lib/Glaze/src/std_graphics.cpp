@@ -76,14 +76,22 @@ void GlazeRenderer::DrawLineVert(int col, int row1, int row2, int color[3]) {
 }
 
 void GlazeRenderer::DrawLine(int x1, int y1, int x2, int y2, int r, int g, int b) {
-    float dx = (float)(x2 - x1) / 300;
-    float dy = (float)(y2 - y1) / 300;
-    float cur_x = x1;
-    float cur_y = y1;
-    for (int i = 0; i < 300; i++) {
-        cur_x += dx;
-        cur_y += dy;
-        DrawPixel((int)cur_x, (int)cur_y, r, g, b);
+    int dx = abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
+    int dy = -abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
+    int err = dx + dy, e2; // error value e_xy
+
+    for (;;) { // the loop
+        DrawPixel(x1, y1, r, g, b);
+        if (x1 == x2 && y1 == y2) break;
+        e2 = 2 * err;
+        if (e2 >= dy) { // e_xy+e_x > 0
+            err += dy;
+            x1 += sx;
+        }
+        if (e2 <= dx) { // e_xy+e_y < 0
+            err += dx;
+            y1 += sy;
+        }
     }
 }
 
