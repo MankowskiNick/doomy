@@ -212,7 +212,7 @@ void RenderHandler::DrawQuad(ScreenCoord quad[4],
     ceilingPlane->maxx = max(ceilingPlane->maxx, right);
 
     // Draw column by column
-    for (int col = left; col <= right; col++) {
+    for (int col = left; col < right; col++) {
 
         // Don't draw columns we have already drawn
         if (occlusionMap[col].covered)
@@ -380,7 +380,7 @@ void RenderHandler::RenderVisplane(Visplane* plane) {
         return;
 
     // Otherwise, draw the plane
-    for (int i = plane->minx; i < plane->maxx; i++)
+    for (int i = plane->minx; i <= plane->maxx; i++)
         glazeRenderer->DrawLineVert(i, plane->top[i], plane->bottom[i], plane->color);
 }
 
