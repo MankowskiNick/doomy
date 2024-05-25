@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from typing import List, Any
 
 BORDER_RADIUS = 0
 
@@ -10,7 +11,7 @@ class UIElement:
                     parent = None, 
                     outlineColor: tuple = (0, 0, 0), 
                     elementColor: tuple =(255, 255, 255), 
-                    text: str = None, 
+                    text: str = None,
                     text_color: tuple = (0, 0, 0)
         ) -> None:
         self.x, self.y = x, y

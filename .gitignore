@@ -1,7 +1,9 @@
 .vscode/
 build/
-editor/bin
-editor/__pycache__
+editor/bin/
+editor/__pycache__/
+editor.v2/__pycache__/
+editor.v2/ui/__pycache__/
 napkin.txt
 .vs/
 out/

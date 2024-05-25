@@ -4,8 +4,8 @@ from map_builder import *
 from ui.button import *
 from ui.textbox import *
 from ui.toggleable import *
+from ui.tray import *
 from map_file_handler import *
-from tray import *
 
 class Editor():
     def __init__(self, SCREENWIDTH, SCREENHEIGHT, title):
@@ -101,9 +101,14 @@ class Editor():
 
     def SetAddMode(self):
         print("setting add mode...")
+        self.Canvas.VertexMode = True
+        self.Canvas.DraggingMode = False
+
         
     def SetEditMode(self):
         print("setting edit mode...")
+        self.Canvas.VertexMode = False
+        self.Canvas.DraggingMode = True
 
     def AddWall(self):
         print("adding wall...")
@@ -177,7 +182,7 @@ class Editor():
                         x = (editor_options._Width // 2) + 5, y = 25,
                         width = tools_tray._Width - 10, height = 20,
                         parent = editor_options)
-        mode_toggle.Options.append(
+        mode_toggle.Elements.append(
             Button(
                 text = "Edit", 
                 action = self.SetEditMode,  
@@ -185,10 +190,10 @@ class Editor():
                 width = 50, height = 15,
                 parent = mode_toggle)
         )
-        mode_toggle.Options.append(
+        mode_toggle.Elements.append(
             Button(
                 text = "Add", 
-                action = self.SetEditMode,  
+                action = self.SetAddMode,  
                 x = mode_toggle._Width * 5 // 6, y = 10, 
                 width = 50, height = 15,
                 parent = mode_toggle)
