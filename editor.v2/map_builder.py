@@ -1,4 +1,4 @@
-import pygame, easygui, sys, random
+import pygame, sys, random
 from editor_math import *
 from ui.wallpopup import *
 
