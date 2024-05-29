@@ -17,8 +17,6 @@ class Toggleable(StackableUIElement):
     ) -> None:
         options = [UIElement(width // 6, 10, width // 4, 15, self, color, color, text, (0, 0, 0))] + options
         super().__init__(x, y, width, height, parent, options, color, color)
-        # self.Label = UIElement(width // 6, 10, width // 4, 15, self, color, color, text, (0, 0, 0))
-        # self.Options = options
         self.SelectedOption = None
 
         self.DefaultColor = color

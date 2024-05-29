@@ -1,22 +1,29 @@
 import pygame
 from pygame.locals import *
-from ui.uielement import *
-from ui.textbox import *
-from ui.button import *
+from ui.uielement import UIElement
+from ui.stackableelement import StackableUIElement
+from ui.textbox import TextBox
+from ui.button import Button
+from typing import List
 
-class Popup(UIElement):
-    def __init__(self, x, y, width, height, screen, buttons, textboxes):
-        super().__init__(x, y, width, height, outlineColor=(0, 0, 0), elementColor=(200, 200, 200))
-
-        # self._TextBoxes = textboxes
-        # self._Buttons = buttons
-
-        self.Elements = textboxes + buttons
+class Popup(StackableUIElement):
+    def __init__(self, 
+                x, y, 
+                width, height, 
+                screen: pygame.Surface, 
+                parent: UIElement = None,
+                elements: List[UIElement] = []
+    ) -> None:
+        super().__init__(
+            x, y, 
+            width, height, 
+            parent=parent,
+            elements=elements,
+            outlineColor=(0, 0, 0), 
+            elementColor=(200, 200, 200))
 
         self.Screen = screen
         self.Active = False
-
-        self.OutData = None
 
     def Popup(self):
         self.Active = True
@@ -26,6 +33,9 @@ class Popup(UIElement):
                     mouseX, mouseY = event.pos
                     for element in self.Elements:
                         element.CheckPressed(mouseX, mouseY)
+                if event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        self.Destroy()
 
             self.Draw()
             super().Blit(self.Screen)
@@ -33,15 +43,14 @@ class Popup(UIElement):
 
 
     def Draw(self):
-        super().Draw()
-        for element in self.Elements:
-            # element.Draw(self.Surface)
-            element.Draw()
-            self.Surface.blit(element.Surface, element.SurfaceRect)
-        # super().Blit(self.Screen)
+        if self.Active:
+            super().Draw()
+            for element in self.Elements:
+                element.Draw()
+                self.Surface.blit(element.Surface, element.SurfaceRect)
         
-    def _Save(self):
+    def Save(self):
         self._Destroy()
 
-    def _Destroy(self):
+    def Destroy(self):
         self.Active = False
