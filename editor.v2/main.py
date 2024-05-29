@@ -1,10 +1,11 @@
 import pygame, sys
 from pygame.locals import *
-from map_builder import *
+# from map_builder import *
 from ui.button import *
 from ui.textbox import *
 from ui.toggleable import *
 from ui.tray import *
+from canvas import Canvas
 from map_file_handler import *
 
 class Editor():
@@ -21,14 +22,17 @@ class Editor():
         # Mark that the editor is running
         self.Running = True
 
-        # Create the canvas
-        self.Canvas = Canvas(Map(), 0, 0, SCREENWIDTH - 250, SCREENHEIGHT)
+        self.SidebarWidth = 250
 
         # Configure elements
         self.Elements = self.ConfigureElements()
 
+        self.Canvas = self.Elements[0]
+
+        self.MouseDown = False
+
         # Define file handler
-        self.FileHandler = MapFileHandler(self.Canvas.Width, self.Canvas.Height, 0.05)
+        # self.FileHandler = MapFileHandler(self.Canvas.Width, self.Canvas.Height, 0.05)
 
     def ShouldRun(self):
         return self.Running
@@ -40,24 +44,25 @@ class Editor():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouseX, mouseY = event.pos
-                if self.Canvas.SurfaceRect.collidepoint(event.pos): # Note -- doesn't care about right/left click
-                    self.Canvas.HandleClick(self.Screen, mouseX, mouseY)
+                self.MouseDown = True
 
                 for element in self.Elements:
                     element.CheckPressed(mouseX, mouseY)
 
             if event.type == pygame.MOUSEBUTTONUP:
-                self.Canvas.Dragging = False
+                self.MouseDown = False
 
             if event.type == pygame.MOUSEMOTION:
                 mouseX, mouseY = event.pos
-                self.Canvas.HandleDrag(mouseX, mouseY)
+                if self.MouseDown:
+                    for element in self.Elements:
+                        element.HandleDrag(mouseX, mouseY)
 
     def Draw(self):
         self.Screen.fill((127, 127, 127))
         # Update the canvas
-        self.Canvas.Render()
-        self.Screen.blit(self.Canvas.Surface, self.Canvas.SurfaceRect)
+        # self.Canvas.Render()
+        # self.Screen.blit(self.Canvas.Surface, self.Canvas.SurfaceRect)
 
         # Draw elements
         for element in self.Elements:
@@ -65,6 +70,12 @@ class Editor():
             element.Blit(self.Screen)
 
         pygame.display.update()
+
+    def Run(self):
+        while self.ShouldRun():
+            self.HandleEvents()
+            self.Draw()
+        self.Exit()
 
     def Exit(self):
         pygame.quit()
@@ -95,24 +106,21 @@ class Editor():
         print("TODO: clear sectors")
     #     self.Canvas.BSP = None
 
-    # def _ToggleDragMode(self):
-    #     self.Canvas.ToggleDragMode()
-    #     self.Buttons[1].Text = "Stop Dragging" if self.Canvas.DraggingMode else "Drag"
-
     def SetAddMode(self):
         print("setting add mode...")
-        self.Canvas.VertexMode = True
-        self.Canvas.DraggingMode = False
-
-        
+        print("TODO: add mode")
+        self.Canvas.EditMode = False
+    
     def SetEditMode(self):
         print("setting edit mode...")
-        self.Canvas.VertexMode = False
-        self.Canvas.DraggingMode = True
+        print("TODO: edit mode")
+        self.Canvas.EditMode = True
 
     def AddWall(self):
         print("adding wall...")
         print("TODO: add wall to map")
+        self.Canvas.AddWallMode()
+
 
     def EditWall(self):
         print("editing wall...")
@@ -121,7 +129,7 @@ class Editor():
     def CreateNewMap(self):
         print("creating new map...")
         print("TODO: cleanup?")
-        self.Canvas.Map = Map()
+        # self.Canvas.Map = Map()
 
     def SaveMap(self):
         print("saving map...")
@@ -137,11 +145,14 @@ class Editor():
 
     # UI CONFIGURATION
     def ConfigureElements(self) -> List[UIElement]:
+        # Canvas
+        canvas = self.ConfigureCanvas()
+
         # Overarching tray controlling the tools
         tools_tray = Tray(
                         title = "Tools",
-                        x = self.ScreenWidth - 125, y = self.ScreenHeight // 2,
-                        width = 250, height = self.ScreenHeight,
+                        x = self.ScreenWidth - (self.SidebarWidth // 2), y = self.ScreenHeight // 2,
+                        width = self.SidebarWidth, height = self.ScreenHeight,
                         parent = None,
                         elements = [],
                         background_color = (255, 255, 255),
@@ -156,8 +167,14 @@ class Editor():
         tools_tray.Elements.append(wall_options)
         tools_tray.Elements.append(sector_options)
 
-        return [tools_tray]
-    
+        return [canvas, tools_tray]
+
+    # CANVAS CONFIGURATION
+    def ConfigureCanvas(self) -> List[UIElement]:
+        x, y = (self.ScreenWidth - self.SidebarWidth) // 2, self.ScreenHeight // 2
+        canvas = Canvas(x, y, self.ScreenWidth - 250, self.ScreenHeight, self.Screen)
+        return canvas
+
     # EDITOR OPTIONS
     # Editor options tray
     # 1. Mode - Edit/Add
@@ -324,9 +341,4 @@ class Editor():
 
 if __name__ == '__main__':
     editor = Editor(1000, 750, "doomy Editor")
-
-    while editor.ShouldRun():
-        editor.HandleEvents()
-        editor.Draw()
-    editor.Exit()    
-                    
+    editor.Run()

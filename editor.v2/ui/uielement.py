@@ -41,7 +41,7 @@ class UIElement:
     def Blit(self, screen):
         screen.blit(self.Surface, self.SurfaceRect)
 
-    def CheckPressed(self, mouseX, mouseY): # TODO: use collidepoint to make this easier to read?
+    def CheckPressed(self, mouseX, mouseY):
         # Convert mouse coordinates to local coordinates
         cur_parent = self.Parent
         while cur_parent is not None:
@@ -49,3 +49,6 @@ class UIElement:
             mouseY -= cur_parent.y - (cur_parent._Height // 2)
             cur_parent = cur_parent.Parent
         return mouseX > self.x - (self._Width // 2) and mouseX < self.x + (self._Width // 2) and mouseY > self.y - (self._Height // 2) and mouseY < self.y + (self._Height // 2)
+    
+    def HandleDrag(self, mouseX, mouseY):
+        pass
