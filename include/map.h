@@ -253,9 +253,7 @@ private:
             if (iss) { // Check if parsing was successful
                 Flat flat = {
                     .id = id,
-                    .color[0] = r,
-                    .color[1] = g,
-                    .color[2] = b,
+                    .color = {r, g, b},
                     .height = height
                 };
                 this->flats.push_back(flat);

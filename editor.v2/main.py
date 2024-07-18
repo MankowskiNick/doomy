@@ -5,6 +5,7 @@ from ui.button import *
 from ui.textbox import *
 from ui.toggleable import *
 from ui.tray import *
+from ui.popup import *
 from canvas import Canvas
 from map_file_handler import *
 
@@ -134,6 +135,17 @@ class Editor():
     def SaveMap(self):
         print("saving map...")
         print("TODO: get filename from user")
+        popup = Popup(
+            x = self.ScreenWidth // 2, 
+            y = self.ScreenHeight // 2,
+            width = self.ScreenWidth // 2, 
+            height = self.ScreenHeight // 2,
+            parent = self
+        )
+
+        self.Elements.append(popup)
+            
+        popup.Popup()
         # self.FileHandler.SaveMapRaw(self.Canvas.Map, "lvldata.dat")
         return
     

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <cstring>
 
 #include <Glaze/gllib.h>
 #include <Glaze/std_graphics.h>

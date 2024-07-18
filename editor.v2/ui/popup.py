@@ -10,7 +10,7 @@ class Popup(StackableUIElement):
     def __init__(self, 
                 x, y, 
                 width, height, 
-                screen: pygame.Surface, 
+                # screen: pygame.Surface, 
                 parent: UIElement = None,
                 elements: List[UIElement] = []
     ) -> None:
@@ -20,13 +20,14 @@ class Popup(StackableUIElement):
             parent=parent,
             elements=elements,
             outlineColor=(0, 0, 0), 
-            elementColor=(200, 200, 200))
+            elementColor=(200, 200, 200)
+        )
 
-        self.Screen = screen
         self.Active = False
 
     def Popup(self):
         self.Active = True
+        # TODO: add x button
         while self.Active:
             for event in pygame.event.get():
                 if event.type == MOUSEBUTTONDOWN:
@@ -38,17 +39,13 @@ class Popup(StackableUIElement):
                         self.Destroy()
 
             self.Draw()
-            super().Blit(self.Screen)
-            pygame.display.update()
-
 
     def Draw(self):
         if self.Active:
             super().Draw()
-            for element in self.Elements:
-                element.Draw()
-                self.Surface.blit(element.Surface, element.SurfaceRect)
-        
+            self.Blit(self.Parent.Screen)
+            
+    
     def Save(self):
         self._Destroy()
 

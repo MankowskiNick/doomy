@@ -17,9 +17,14 @@
 
 #ifdef __APPLE__
     #define LEVEL "lvl/lvldata.bsp"
+#elif defined(__linux__)
+    #define LEVEL "lvl/lvldata.bsp"
+#elif defined(_WIN32)
+    #define LEVEL "lvl\\lvldata.bsp"
 #else
-    #define LEVEL "level\\lvldata.bsp"
+    #error "Unknown operating system"
 #endif
+
 
 int main() {
 
