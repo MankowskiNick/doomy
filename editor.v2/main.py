@@ -140,10 +140,20 @@ class Editor():
             y = self.ScreenHeight // 2,
             width = self.ScreenWidth // 2, 
             height = self.ScreenHeight // 2,
-            parent = self
+            screen = self.Screen
         )
 
-        self.Elements.append(popup)
+        popup.Elements += [
+            TextBox(
+                text = 'Filename', 
+                x = (popup._Width // 2),
+                y = (popup._Height // 2) - (popup._Height // 3),
+                width = 2 * popup._Width // 3,
+                height = popup._Height // 10,
+                defaultValue = 'map.dat',
+                parent = popup,
+            )
+        ]
             
         popup.Popup()
         # self.FileHandler.SaveMapRaw(self.Canvas.Map, "lvldata.dat")
