@@ -10,9 +10,17 @@ class Button(UIElement):
                  parent=None,
                  color: tuple = (255, 255, 255),
                  pressed_color: tuple = (200, 200, 200),
-                 outline_color: tuple = (0, 0, 0)
+                 outline_color: tuple = (0, 0, 0),
+                 fontsize: float = 10
     ) -> None:
-        super().__init__(x, y, width, height, parent, outlineColor=outline_color, elementColor=color)
+        super().__init__(
+            x, y, 
+            width, height, 
+            parent, 
+            outlineColor=outline_color, 
+            elementColor=color, 
+            fontsize=fontsize
+        )
 
         # Set the button text
         self.Text = text
@@ -23,6 +31,7 @@ class Button(UIElement):
         # Set the action handler for this button
         self.Action = action
 
+
     # Draw the button to the screen
     def Draw(self):
         super().Draw(self.Text)
@@ -30,7 +39,8 @@ class Button(UIElement):
     # If the button was pressed, perform the action binded to the button
     def CheckPressed(self, mouseX, mouseY):
         if super().CheckPressed(mouseX, mouseY):
-            self.Action()
+            if self.Action is not None:
+                self.Action()
             self.ElementColor = self.PressedColor
             return True
         self.ElementColor = self.DefaultColor

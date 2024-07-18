@@ -12,15 +12,17 @@ class Popup(StackableUIElement):
                 width, height, 
                 screen: pygame.Surface, 
                 parent: UIElement = None,
-                elements: List[UIElement] = []
+                elements: List[UIElement] = [],
+                outlineColor: tuple = (0, 0, 0),
+                elementColor: tuple = (200, 200, 200)
     ) -> None:
         super().__init__(
             x, y, 
             width, height, 
             parent=parent,
             elements=elements,
-            outlineColor=(0, 0, 0), 
-            elementColor=(200, 200, 200)
+            outlineColor=outlineColor, 
+            elementColor=elementColor
         )
 
         self.Active = False

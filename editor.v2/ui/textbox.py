@@ -6,14 +6,21 @@ from ui.uielement import *
 class TextBox(UIElement):
     def __init__(
         self, 
-        text, 
         x, y, 
         width, height, 
+        text = "",
         defaultValue = "", 
         parent = None, 
-        # screen = None
+        fontsize = 10
     ):        
-        super().__init__(x, y, width, height, parent, outlineColor=(0, 0, 0), elementColor=(255, 255, 255))
+        super().__init__(
+            x, y, 
+            width, height, 
+            parent, 
+            outlineColor=(0, 0, 0), 
+            elementColor=(255, 255, 255), 
+            fontsize=fontsize
+        )
 
         # Set the default text and text parameters
         self._DefaultText = text
@@ -24,8 +31,6 @@ class TextBox(UIElement):
         self.Screen = parent.Screen if parent is not None else None
 
         self.Active = False
-
-
         
     # Draw textbox to surface
     def Draw(self):

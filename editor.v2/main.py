@@ -85,9 +85,62 @@ class Editor():
     # EDITOR ACTIONS
             
     def ExportToBsp(self): # TODO: Fix bug with this button(can't press it twice)
-            print("exporting to bsp...")
-            print("TODO: get filename from user and export map to bsp")
+        print("exporting to bsp...")
+        print("TODO: get filename from user and export map to bsp")
+        popup = Popup(
+            x = self.ScreenWidth // 2, 
+            y = self.ScreenHeight // 2,
+            width = 2 * self.ScreenWidth // 3, 
+            height = self.ScreenHeight // 2,
+            screen = self.Screen,
+            elements = [],
+            elementColor = (255, 255, 255)
+        )
+
+        popup.Elements += [
+            UIElement(
+                text = 'Export Map',
+                x = popup._Width // 2,
+                y = popup._Height // 6,
+                width = 2 * popup._Width // 3,
+                height = popup._Height // 6,
+                parent = popup,
+                fontsize = 75,
+                outlineColor = (255, 255, 255),
+                elementColor = (255, 255, 255) 
+            ),
+            TextBox(
+                x = popup._Width // 2,
+                y = popup._Height // 2,
+                width = 2 * popup._Width // 3,
+                height = popup._Height // 6,
+                defaultValue = 'map.bsp',
+                parent = popup,
+                fontsize = 25
+            ),
+            Button(
+                text = 'Export',
+                action = None, # TODO: write export functionality
+                x = 1 * popup._Width // 3,
+                y = 5 * popup._Height // 6,
+                width = popup._Width // 4,
+                height = popup._Height // 6,
+                parent = popup,
+                fontsize = 25
+            ),
+            Button(
+                text = 'Cancel',
+                action = popup.Destroy,
+                x = 2 * popup._Width // 3,
+                y = 5 * popup._Height // 6,
+                width = popup._Width // 4,
+                height = popup._Height // 6,
+                parent = popup,
+                fontsize = 25
+            )
+        ]
             
+        popup.Popup()
             # Process the bsp for the map and reassign self.map to be this
             # bsp = BSP_Tree(self.Canvas.Map)
             # self.Canvas.Map = bsp.get_map()
@@ -134,24 +187,57 @@ class Editor():
 
     def SaveMap(self):
         print("saving map...")
-        print("TODO: get filename from user")
+        print("TODO: actually save file")
         popup = Popup(
             x = self.ScreenWidth // 2, 
             y = self.ScreenHeight // 2,
-            width = self.ScreenWidth // 2, 
+            width = 2 * self.ScreenWidth // 3, 
             height = self.ScreenHeight // 2,
-            screen = self.Screen
+            screen = self.Screen,
+            elements = [],
+            elementColor = (255, 255, 255)
         )
 
         popup.Elements += [
+            UIElement(
+                text = 'Save File',
+                x = popup._Width // 2,
+                y = popup._Height // 6,
+                width = popup._Width // 2,
+                height = popup._Height // 6,
+                parent = popup,
+                fontsize = 75,
+                outlineColor = (255, 255, 255),
+                elementColor = (255, 255, 255) 
+            ),
             TextBox(
-                text = 'Filename', 
-                x = (popup._Width // 2),
-                y = (popup._Height // 2) - (popup._Height // 3),
+                x = popup._Width // 2,
+                y = popup._Height // 2,
                 width = 2 * popup._Width // 3,
-                height = popup._Height // 10,
+                height = popup._Height // 6,
                 defaultValue = 'map.dat',
                 parent = popup,
+                fontsize = 25
+            ),
+            Button(
+                text = 'Save',
+                action = None, # TODO: write save functionality
+                x = 1 * popup._Width // 3,
+                y = 5 * popup._Height // 6,
+                width = popup._Width // 4,
+                height = popup._Height // 6,
+                parent = popup,
+                fontsize = 25
+            ),
+            Button(
+                text = 'Cancel',
+                action = popup.Destroy,
+                x = 2 * popup._Width // 3,
+                y = 5 * popup._Height // 6,
+                width = popup._Width // 4,
+                height = popup._Height // 6,
+                parent = popup,
+                fontsize = 25
             )
         ]
             
@@ -161,7 +247,62 @@ class Editor():
     
     def LoadMap(self):
         print("loading map...")
-        print("TODO: get filename from user and load appropriate map")
+        print("TODO: load appropriate map, check file exists")
+
+        popup = Popup(
+            x = self.ScreenWidth // 2, 
+            y = self.ScreenHeight // 2,
+            width = 2 * self.ScreenWidth // 3, 
+            height = self.ScreenHeight // 2,
+            screen = self.Screen,
+            elements = [],
+            elementColor = (255, 255, 255)
+        )
+
+        popup.Elements += [
+            UIElement(
+                text = 'Load File',
+                x = popup._Width // 2,
+                y = popup._Height // 6,
+                width = popup._Width // 2,
+                height = popup._Height // 6,
+                parent = popup,
+                fontsize = 75,
+                outlineColor = (255, 255, 255),
+                elementColor = (255, 255, 255) 
+            ),
+            TextBox(
+                x = popup._Width // 2,
+                y = popup._Height // 2,
+                width = 2 * popup._Width // 3,
+                height = popup._Height // 6,
+                defaultValue = 'map.dat',
+                parent = popup,
+                fontsize = 25
+            ),
+            Button(
+                text = 'Load',
+                action = None, # TODO: write load functionality
+                x = 1 * popup._Width // 3,
+                y = 5 * popup._Height // 6,
+                width = popup._Width // 4,
+                height = popup._Height // 6,
+                parent = popup,
+                fontsize = 25
+            ),
+            Button(
+                text = 'Cancel',
+                action = popup.Destroy,
+                x = 2 * popup._Width // 3,
+                y = 5 * popup._Height // 6,
+                width = popup._Width // 4,
+                height = popup._Height // 6,
+                parent = popup,
+                fontsize = 25
+            )
+        ]
+            
+        popup.Popup()
         # self.Canvas.Map = Map() # TODO: Fix bug where maps do not properly clear before reloading
         # self.Canvas.Map = self.FileHandler.LoadMap("lvldata.dat")
 
