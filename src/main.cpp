@@ -60,7 +60,7 @@ int main() {
         inputHandler.PerformKeyAction();
 
         // Render the scene
-        renderHandler.Renderw(map, camera);
+        renderHandler.Render(map, camera);
 
         // Draw the minimap
         minimapHandler.Draw();
