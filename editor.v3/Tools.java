@@ -23,6 +23,7 @@ public class Tools extends OptionMenu
             new SectorMenu()
         };
         this.AttachComponents();
+        setFocusable(false);
     }
 }
 

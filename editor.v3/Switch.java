@@ -7,15 +7,15 @@ public class Switch extends JToggleButton
 {
     Switch()
     {
-        this("On", "Off", (Supplier)null, (Supplier)null);
+        this("On", "Off", null, null);
     }
 
     Switch(String label1, String label2)
     {
-        this(label1, label2, (Supplier)null, (Supplier)null);
+        this(label1, label2, null, null);
     }
 
-    Switch(String label1, String label2, Supplier action1, Supplier action2)
+    Switch(String label1, String label2, Runnable action1, Runnable action2)
     {
         super();
         setText(label1);
@@ -29,13 +29,13 @@ public class Switch extends JToggleButton
                 {
                     setText(label2);
                     if (action2 != null)
-                        action2.get();
+                        action2.run();
                 } 
                 else 
                 {
                     setText(label1);
                     if (action1 != null)
-                        action1.get();
+                        action1.run();
                 }
             }
         });

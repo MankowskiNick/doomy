@@ -1,7 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.lang.Math;
 
@@ -20,6 +18,9 @@ public class Canvas extends JPanel
     private final float SelectionDistThreshold = 6;
     private final int VertexDrawRadius = 3;
 
+    public boolean Dragging = false;
+    public boolean DragMode = false;
+
     Canvas()
     {
         this(600, 600);
@@ -28,33 +29,8 @@ public class Canvas extends JPanel
     Canvas(int width, int height)
     {
         setSize(width, height);
-        setBackground(Color.WHITE);
-
-        // add mouse listener
-        this.addMouseListener(new MouseListener() 
-        {
-            @Override
-            public void mouseClicked(MouseEvent e) 
-            {
-                // add vertex if in add mode
-                if (Canvas.this.Mode == EditMode.ADD)
-                    Canvas.this.AddVertex(e.getX(), e.getY());
-
-                // select vertex if in edit mode
-                else if (Canvas.this.Mode == EditMode.EDIT)
-                    Canvas.this.SelectVertex(e.getX(), e.getY());
-            }
-            
-            // the rest of these are not used, but are required
-            @Override
-            public void mousePressed(MouseEvent e) { }
-            @Override
-            public void mouseReleased(MouseEvent e) { }
-            @Override
-            public void mouseEntered(MouseEvent e) { }
-            @Override
-            public void mouseExited(MouseEvent e) { }
-        });
+        setBackground(Color.WHITE);    
+        setFocusable(false);
     }
 
     @Override
@@ -94,14 +70,14 @@ public class Canvas extends JPanel
         }
     }
 
-    private void AddVertex(int x, int y)
+    public void AddVertex(int x, int y)
     {
         this.Vertices.add(new Vertex(this.NextVertexId, x, y));
         this.NextVertexId++;
         repaint();
     }
 
-    private void SelectVertex(int x, int y)
+    public void SelectVertex(int x, int y)
     {
         boolean found = false;
         for (Vertex v : this.Vertices)
