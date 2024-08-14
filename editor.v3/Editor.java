@@ -1,9 +1,47 @@
 import javax.swing.*;
 import java.awt.*;
+import com.tools.Tools;
+import com.canvas.Canvas;
+import com.handlers.*;
 
-public class Editor
+
+public class Editor extends JFrame
 {
     public static void main(String[] args) {
-        EditorWindow window = new EditorWindow(800, 600, "doomy Editor", new BorderLayout());
+        Editor window = new Editor(800, 600, "doomy Editor", new BorderLayout());
+    }
+    private Canvas Canvas;
+    private Tools Tools;
+    private KeyboardHandler KeyboardHandler;
+
+    Editor()
+    {
+        this(800, 600, "doomy Editor");
+    }
+    Editor(int width, int height, String title) 
+    {
+        this(width, height, title, null);
+    }
+    Editor(int width, int height, String title, LayoutManager layoutManager) 
+    {
+        // Set window properties
+        setSize(width, height);
+        setTitle(title);
+        setLayout(layoutManager);
+        setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setVisible(true);
+
+        // Create canvas and tools sidebar
+        Canvas = new Canvas();
+        Tools = new Tools(Canvas);
+
+        // Add canvas and tools to window
+        add(Canvas, BorderLayout.CENTER);
+        add(Tools, BorderLayout.EAST);
+
+        // Add input handlers
+        addMouseListener(new MouseHandler(Canvas));
+        KeyboardHandler = new KeyboardHandler(Canvas); // TODO: probably move this back to a key listener
     }
 }

@@ -1,21 +1,21 @@
+package com.extensions;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.function.Supplier;
 
 public class Switch extends JToggleButton
 {
-    Switch()
+    public Switch()
     {
         this("On", "Off", null, null);
     }
 
-    Switch(String label1, String label2)
+    public Switch(String label1, String label2)
     {
         this(label1, label2, null, null);
     }
 
-    Switch(String label1, String label2, Runnable action1, Runnable action2)
+    public Switch(String label1, String label2, Runnable action1, Runnable action2)
     {
         super();
         setText(label1);

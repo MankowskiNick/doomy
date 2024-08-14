@@ -1,12 +1,16 @@
+package com.handlers;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-class MouseHandler implements MouseListener
+import com.canvas.Canvas;
+import com.canvas.EditMode;
+
+public class MouseHandler implements MouseListener
 {
     private Canvas Canvas;
 
-    MouseHandler(Canvas canvas)
+    public MouseHandler(Canvas canvas)
     {
         this.Canvas = canvas;
     }

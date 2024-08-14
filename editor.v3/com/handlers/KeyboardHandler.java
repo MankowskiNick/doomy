@@ -1,3 +1,4 @@
+package com.handlers;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -6,10 +7,12 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
-class KeyboardHandler {
+import com.canvas.Canvas;
+
+public class KeyboardHandler {
     private Canvas Canvas;
 
-    KeyboardHandler(Canvas canvas) {
+    public KeyboardHandler(Canvas canvas) {
         Canvas = canvas;
         setupKeyBindings();
     }

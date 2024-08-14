@@ -1,4 +1,9 @@
+package com.canvas;
 import javax.swing.*;
+
+import com.models.Vertex;
+import com.models.Wall;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.lang.Math;
@@ -18,15 +23,14 @@ public class Canvas extends JPanel
     private final float SelectionDistThreshold = 6;
     private final int VertexDrawRadius = 3;
 
-    public boolean Dragging = false;
     public boolean DragMode = false;
 
-    Canvas()
+    public Canvas()
     {
         this(600, 600);
     }
 
-    Canvas(int width, int height)
+    public Canvas(int width, int height)
     {
         setSize(width, height);
         setBackground(Color.WHITE);    

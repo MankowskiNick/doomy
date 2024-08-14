@@ -1,10 +1,11 @@
+package com.extensions;
 import javax.swing.*;
 
 public class OptionMenu extends JPanel
 {
-    JComponent[] Components;
+    protected JComponent[] Components;
 
-    OptionMenu(String title) 
+    public OptionMenu(String title) 
     {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createTitledBorder(title));

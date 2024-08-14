@@ -1,15 +1,19 @@
+package com.tools;
 import javax.swing.*;
+
+import com.canvas.Canvas;
+import com.extensions.OptionMenu;
 
 public class Tools extends OptionMenu
 {
     private Canvas Canvas;
 
-    Tools(Canvas canvas)
+    public Tools(Canvas canvas2)
     {
-        this(200, 600, canvas);
+        this(200, 600, canvas2);
     }
 
-    Tools(int width, int height, Canvas canvas)
+    public Tools(int width, int height, Canvas canvas)
     {
         super("Tools");
         setSize(width, height);
@@ -26,6 +30,3 @@ public class Tools extends OptionMenu
         setFocusable(false);
     }
 }
-
-// chapter 35 thru va(?)
-// war orphans of ohio

@@ -1,24 +1,25 @@
+package com.extensions;
 
 import javax.swing.*;
 
 public class ActionButton extends JButton
 {
-    ActionButton()
+    public ActionButton()
     {
         super();
     }
 
-    ActionButton(String title)
+    public ActionButton(String title)
     {
         this(title, (Action)null, (Icon)null);
     }
 
-    ActionButton(String title, Action a)
+    public ActionButton(String title, Action a)
     {
         this(title, a, (Icon)null);
     }
 
-    ActionButton(String title, Action a, Icon i)
+    public ActionButton(String title, Action a, Icon i)
     {
         super(title, i);
         setAction(a);

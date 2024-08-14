@@ -1,4 +1,8 @@
+package com.tools;
 import javax.swing.JComponent;
+
+import com.extensions.ActionButton;
+import com.extensions.OptionMenu;
 
 public class WallMenu extends OptionMenu 
 {

@@ -1,8 +1,11 @@
-
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-
+package com.tools;
 import javax.swing.*;
+
+import com.canvas.Canvas;
+import com.canvas.EditMode;
+import com.extensions.ActionButton;
+import com.extensions.OptionMenu;
+import com.extensions.Switch;
 
 public class FileMenu extends OptionMenu
 {
