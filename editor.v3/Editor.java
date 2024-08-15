@@ -28,7 +28,6 @@ public class Editor extends JFrame
         setSize(width, height);
         setTitle(title);
         setLayout(layoutManager);
-        setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
 
@@ -39,9 +38,13 @@ public class Editor extends JFrame
         // Add canvas and tools to window
         add(Canvas, BorderLayout.CENTER);
         add(Tools, BorderLayout.EAST);
+        // add(new JButton("test"), BorderLayout.CENTER);
 
         // Add input handlers
         addMouseListener(new MouseHandler(Canvas));
         KeyboardHandler = new KeyboardHandler(Canvas); // TODO: probably move this back to a key listener
+        
+        revalidate();
+        repaint();
     }
 }

@@ -9,6 +9,7 @@ public class OptionMenu extends JPanel
     {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createTitledBorder(title));
+        setVisible(true);
     }
 
     public void AttachComponents()
@@ -17,5 +18,7 @@ public class OptionMenu extends JPanel
         {
             add(c);
         }
+        revalidate();
+        repaint();
     }
 }
