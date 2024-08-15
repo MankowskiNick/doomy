@@ -15,10 +15,11 @@ public class Canvas extends JPanel
 
     public EditMode Mode = EditMode.ADD;
 
-    private int NextVertexId = 0;
-    private int NextWallId = 0;
+    public int NextVertexId = 0;
+    public int NextWallId = 0;
 
-    public Vertex SelectedVertex = null;
+    public ArrayList<Vertex> SelectedVertices = new ArrayList<Vertex>();
+    public boolean MultiSelectMode = false;
 
     private final float SelectionDistThreshold = 6;
     private final int VertexDrawRadius = 3;
@@ -59,13 +60,16 @@ public class Canvas extends JPanel
         // draw walls
         for (Wall w : this.Walls)
         {
-            
+            g2d.setColor(new Color(w.Color[0], w.Color[1], w.Color[2]));
+            g2d.drawLine(
+                (int)w.Line.a.x, (int)w.Line.a.y,
+                (int)w.Line.b.x, (int)w.Line.b.y
+            );
         }
 
-        // draw outline around SelectedVertex
-        if (this.SelectedVertex != null)
+        // draw outline around SelectedVertices
+        for (Vertex v : this.SelectedVertices)
         {
-            Vertex v = this.SelectedVertex;
             g2d.setColor(Color.RED);
             g2d.drawOval(
                 (int)(v.x - this.VertexDrawRadius - 1), (int)(v.y - this.VertexDrawRadius - 1),
@@ -83,19 +87,17 @@ public class Canvas extends JPanel
 
     public void SelectVertex(int x, int y)
     {
-        boolean found = false;
+        if (!this.MultiSelectMode)
+            this.SelectedVertices = new ArrayList<Vertex>();
         for (Vertex v : this.Vertices)
         {
             double distTo = Math.pow(Math.pow(x - v.x, 2) + Math.pow(y - v.y, 2), 0.5);
             if (distTo < this.SelectionDistThreshold)
             {
-                found = true;
-                this.SelectedVertex = v;
+                this.SelectedVertices.add(v);
+                break;
             }
         }
-        if (!found)
-            this.SelectedVertex = null;
-
         repaint();
     }
 }

@@ -3,16 +3,18 @@ import javax.swing.JComponent;
 
 import com.extensions.ActionButton;
 import com.extensions.OptionMenu;
+import com.actions.*;
+import com.canvas.Canvas;
 
 public class WallMenu extends OptionMenu 
 {
-    WallMenu()
+    public WallMenu(Canvas canvas)
     {
         super("Wall Options");
 
         this.Components = new JComponent[] 
         {
-            new ActionButton("Add Wall"),
+            new ActionButton("Add Wall", new AddWall(canvas)),
             new ActionButton("Edit Wall"),
         };
         this.AttachComponents();

@@ -2,8 +2,8 @@ package com.models;
 public class Pair<T, V>
 {
     
-    private T a;
-    private V b;
+    public T a;
+    public V b;
 
     public Pair(T a, V b)
     {

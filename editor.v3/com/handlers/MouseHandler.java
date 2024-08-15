@@ -2,9 +2,11 @@ package com.handlers;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 
 import com.canvas.Canvas;
 import com.canvas.EditMode;
+import com.models.Vertex;
 
 public class MouseHandler implements MouseListener
 {
@@ -31,15 +33,11 @@ public class MouseHandler implements MouseListener
         else if (this.Canvas.Mode == EditMode.EDIT && !this.Canvas.DragMode)
             this.Canvas.SelectVertex(x, y);
 
-        else if (this.Canvas.Mode == EditMode.EDIT && this.Canvas.DragMode)
+        else if (this.Canvas.Mode == EditMode.EDIT && this.Canvas.DragMode && this.Canvas.SelectedVertices.size() == 1)
         {
-            // prevent null pointer exception
-            if (this.Canvas.SelectedVertex == null)
-                return;
-
             // move selected vertex
-            this.Canvas.SelectedVertex.x = x;
-            this.Canvas.SelectedVertex.y = y;
+            this.Canvas.SelectedVertices.get(0).x = x;
+            this.Canvas.SelectedVertices.get(0).y = y;
             this.Canvas.repaint();
         }
     }

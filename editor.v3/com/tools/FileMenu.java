@@ -1,4 +1,6 @@
 package com.tools;
+import java.util.ArrayList;
+
 import javax.swing.*;
 
 import com.canvas.Canvas;
@@ -6,6 +8,7 @@ import com.canvas.EditMode;
 import com.extensions.ActionButton;
 import com.extensions.OptionMenu;
 import com.extensions.Switch;
+import com.models.Vertex;
 
 public class FileMenu extends OptionMenu
 {
@@ -21,7 +24,7 @@ public class FileMenu extends OptionMenu
                 { 
                     canvas.Mode = EditMode.ADD; 
                     System.out.println("Mode set to ADD");
-                    canvas.SelectedVertex = null;
+                    canvas.SelectedVertices = new ArrayList<Vertex>();
                     System.out.println("Selected vertex cleared");
                 },
                 () -> {

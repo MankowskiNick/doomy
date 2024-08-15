@@ -23,7 +23,7 @@ public class Tools extends OptionMenu
         this.Components = new JComponent[]
         {
             new FileMenu(this.Canvas),
-            new WallMenu(),
+            new WallMenu(this.Canvas),
             new SectorMenu()
         };
         this.AttachComponents();

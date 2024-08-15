@@ -2,21 +2,21 @@ package com.models;
 
 public class Wall
 {
-    int Id;
+    public int Id;
 
-    Pair<Vertex, Vertex> Line;
+    public Pair<Vertex, Vertex> Line;
 
-    float MinHeight;
-    float MaxHeight;
+    public float MinHeight;
+    public float MaxHeight;
 
-    float FloorHeight;
-    float CeilingHeight;
+    public float FloorHeight;
+    public float CeilingHeight;
 
-    int[] Color;
+    public int[] Color;
 
-    WallType Type;
+    public WallType Type;
 
-    Wall(
+    public Wall(
         int id, 
         Pair<Vertex, Vertex> line, 
         int[] color, 

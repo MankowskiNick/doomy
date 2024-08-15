@@ -4,6 +4,7 @@ import com.tools.Tools;
 import com.canvas.Canvas;
 import com.handlers.*;
 
+// TODO: move runnables to actions
 
 public class Editor extends JFrame
 {
