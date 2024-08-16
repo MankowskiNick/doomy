@@ -3,6 +3,7 @@ import java.util.ArrayList;
 
 import javax.swing.*;
 
+import com.actions.*;
 import com.canvas.Canvas;
 import com.canvas.EditMode;
 import com.extensions.ActionButton;
@@ -32,7 +33,7 @@ public class FileMenu extends OptionMenu
                     System.out.println("Mode set to EDIT");
                 }
             ),
-            new ActionButton("New Map"),
+            new ActionButton("New Map", new NewMap(canvas)),
             new ActionButton("Save Map"),
             new ActionButton("Load Map"),
             new ActionButton("Export Map")

@@ -36,10 +36,4 @@ public class Wall
         this.FloorHeight = floorHeight;
         this.CeilingHeight = ceilingHeight;
     }
-
-    public enum WallType 
-    {
-        PORTAL,
-        WALL
-    }
 }

@@ -1,39 +1,54 @@
 package com.actions;
 
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-import javax.swing.*;
-import java.awt.*;
-import com.canvas.Canvas;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+
 import com.extensions.ActionWithDialog;
 import com.models.*;
+import com.canvas.Canvas;
 
-public class AddWall extends ActionWithDialog
+public class EditWall extends ActionWithDialog
 {
     private Canvas Canvas;
-    public AddWall(Canvas canvas)
+
+    public EditWall(Canvas canvas)
     {
         super();
         Canvas = canvas;
     }
+
     @Override
     public void actionPerformed(ActionEvent e) 
     {
-        // Add wall
-        if (Canvas.SelectedVertices.size() == 2)
+        if (Canvas.SelectedWalls.size() > 0)
         {
-            Wall wall = CreateWallFromDialog();
-            if (wall != null)
-                Canvas.Walls.add(wall);
-            Canvas.SelectedVertices.clear();
+            // edit walls
+            WallAttributes attribs = GetWallAttribsFromDialog();
+
+            for (Wall w : this.Canvas.SelectedWalls)
+            {
+                w.Color = attribs.Color;
+                w.CeilingHeight = attribs.CeilingHeight;
+                w.FloorHeight = attribs.FloorHeight;
+                w.MinHeight = attribs.MinHeight;
+                w.MaxHeight = attribs.MaxHeight;
+                w.Type = attribs.Type;
+            }
             Canvas.repaint();
         }
         else
         {
-            ShowError("Select 2 vertices to create a wall.");
+            ShowError("Select at least one wall to edit.");
         }
     }
 
-    private Wall CreateWallFromDialog() 
+    private WallAttributes GetWallAttribsFromDialog() 
     {   
         try
         {
@@ -101,20 +116,15 @@ public class AddWall extends ActionWithDialog
             int maxHeight = Integer.parseInt(maxHeightField.getText());
             WallType wallType = (WallType) wallTypeComboBox.getSelectedItem();
         
-            // Create and return Wall object
-            Pair<Vertex, Vertex> line = new Pair<>(
-                this.Canvas.SelectedVertices.get(0), 
-                this.Canvas.SelectedVertices.get(1)
+            WallAttributes attribs = new WallAttributes(
+                new int[] {r, g, b},
+                minHeight,
+                maxHeight,
+                floorHeight,
+                ceilingHeight,
+                wallType
             );
-            Wall wall = new Wall(
-                this.Canvas.NextWallId++, 
-                line, 
-                new int[] {r, g, b}, 
-                wallType,
-                floorHeight, ceilingHeight, 
-                minHeight, maxHeight
-            );
-            return wall;
+            return attribs;
         } 
         catch (Exception e) 
         {
@@ -122,4 +132,36 @@ public class AddWall extends ActionWithDialog
             return null;
         }
     }
+
+    // Container for wall attributes that can be mass applied(not id or vertices)
+    private class WallAttributes
+    {
+        int[] Color;
+
+        public float MinHeight;
+        public float MaxHeight;
+
+        public float FloorHeight;
+        public float CeilingHeight;
+
+        public WallType Type;
+
+        public WallAttributes(
+            int[] color,
+            float minHeight,
+            float maxHeight,
+            float floorHeight,
+            float ceilingHeight,
+            WallType type
+        )
+        {
+            this.Color = color;
+            this.MinHeight = minHeight;
+            this.MaxHeight = maxHeight;
+            this.FloorHeight = floorHeight;
+            this.CeilingHeight = ceilingHeight;
+            this.Type = type;
+        }
+    }
+    
 }

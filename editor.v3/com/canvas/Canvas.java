@@ -24,8 +24,8 @@ public class Canvas extends JPanel
 
     private static final float SelectionDistThreshold = 6;
     private static final int VertexDrawRadius = 3;
-    private static final int LineThickness = 2;
-    private static final int SelectedLineThickness = 4;
+    private static final int LineThickness = 1;
+    private static final int SelectedLineThickness = 2;
 
     public boolean DragMode = false;
 
@@ -51,15 +51,6 @@ public class Canvas extends JPanel
         Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(Color.BLACK);
 
-        // draw vertices
-        for (Vertex v : this.Vertices)
-        {
-            g2d.fillOval(
-                (int)(v.x - this.VertexDrawRadius), (int)(v.y - this.VertexDrawRadius), 
-                2 * this.VertexDrawRadius, 2 * this.VertexDrawRadius
-            );
-        }
-
         // draw walls
         for (Wall w : this.Walls)
         {
@@ -70,17 +61,7 @@ public class Canvas extends JPanel
                 (int)w.Line.b.x, (int)w.Line.b.y
             );
         }
-
-        // draw outline around SelectedVertices
-        for (Vertex v : this.SelectedVertices)
-        {
-            g2d.setColor(Color.RED);
-            g2d.drawOval(
-                (int)(v.x - this.VertexDrawRadius - 1), (int)(v.y - this.VertexDrawRadius - 1),
-                2 * (this.VertexDrawRadius + 1), 2 * (this.VertexDrawRadius + 1)    
-            );
-        }
-
+        // draw selected walls
         for (Wall w : this.SelectedWalls)
         {            
             g2d.setColor(new Color(w.Color[0], w.Color[1], w.Color[2]));
@@ -88,6 +69,27 @@ public class Canvas extends JPanel
             g2d.drawLine(
                 (int)w.Line.a.x, (int)w.Line.a.y,
                 (int)w.Line.b.x, (int)w.Line.b.y
+            );
+        }
+        
+        // draw vertices
+        for (Vertex v : this.Vertices)
+        {
+            g2d.setColor(Color.BLACK);
+            g2d.fillOval(
+                (int)(v.x - VertexDrawRadius), (int)(v.y - VertexDrawRadius), 
+                2 * VertexDrawRadius, 2 * VertexDrawRadius
+            );
+        }
+
+        // draw outline around SelectedVertices
+        for (Vertex v : this.SelectedVertices)
+        {
+            g2d.setColor(Color.RED);
+            g2d.setStroke(new BasicStroke(LineThickness));
+            g2d.drawOval(
+                (int)(v.x - VertexDrawRadius - 1), (int)(v.y - VertexDrawRadius - 1),
+                2 * (VertexDrawRadius + 1), 2 * (VertexDrawRadius + 1)    
             );
         }
     }
@@ -109,7 +111,7 @@ public class Canvas extends JPanel
         for (Vertex v : this.Vertices)
         {
             double distTo = Math.pow(Math.pow(x - v.x, 2) + Math.pow(y - v.y, 2), 0.5);
-            if (distTo < this.SelectionDistThreshold)
+            if (distTo < SelectionDistThreshold)
             {
                 // add vertex to SelectedVertices & return true
                 this.SelectedVertices.add(v);
@@ -146,15 +148,21 @@ public class Canvas extends JPanel
         return false;
     }
 
+    // Check if a line centered at (x, y) but perpendicular to the wall
+    // intersects with the wall
     private static boolean IsNearWall(int x, int y, Wall wall)
     {
+        // Makes it a bit easier to read
         float x1, x2, y1, y2;
         x1 = wall.Line.a.x;
         y1 = wall.Line.a.y;
         x2 = wall.Line.b.x;
         y2 = wall.Line.b.y;
 
+        // Get the angle of the orthogonal line
         float angle = (float)Math.atan2(x1 - x2, y2 - y1);
+
+        // Get vertices in the orthogonal line
         Vertex v1 = new Vertex(-1, 
             (float)(x - SelectionDistThreshold * Math.cos(angle)),
             (float)(y - SelectionDistThreshold * Math.sin(angle))
@@ -163,8 +171,11 @@ public class Canvas extends JPanel
             (float)(x + SelectionDistThreshold * Math.cos(angle)),
             (float)(y + SelectionDistThreshold * Math.sin(angle))
         );
+
+        // Create orthogonal line
         Pair<Vertex, Vertex> orthogonalLine = new Pair<Vertex, Vertex>(v1, v2);
 
+        // Do the lines intersect?
         return Intersect(wall.Line, orthogonalLine);
     }
 
@@ -179,7 +190,6 @@ public class Canvas extends JPanel
 
     private static boolean CCW(Vertex v1, Vertex v2, Vertex v3)
     {
-
-    return (v3.y - v1.y)*(v2.x - v1.x) > (v2.y - v1.y) * (v3.x - v1.x);
+        return (v3.y - v1.y)*(v2.x - v1.x) > (v2.y - v1.y) * (v3.x - v1.x);
     }
 }

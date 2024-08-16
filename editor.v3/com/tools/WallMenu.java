@@ -15,7 +15,7 @@ public class WallMenu extends OptionMenu
         this.Components = new JComponent[] 
         {
             new ActionButton("Add Wall", new AddWall(canvas)),
-            new ActionButton("Edit Wall"),
+            new ActionButton("Edit Wall", new EditWall(canvas)),
         };
         this.AttachComponents();
     }
