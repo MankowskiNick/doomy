@@ -31,7 +31,10 @@ public class MouseHandler implements MouseListener
 
         // select vertex if in edit mode
         else if (this.Canvas.Mode == EditMode.EDIT && !this.Canvas.DragMode)
+        {
             this.Canvas.SelectVertex(x, y);
+            this.Canvas.SelectWall(x, y);
+        }
 
         else if (this.Canvas.Mode == EditMode.EDIT && this.Canvas.DragMode && this.Canvas.SelectedVertices.size() == 1)
         {
