@@ -6,7 +6,7 @@ public class FileHandler<T>
 {
     public FileHandler() { }
     
-    public final boolean WriteObject(String filename, T contents)
+    public boolean WriteObject(String filename, T contents)
     {
         try
         {
@@ -27,7 +27,7 @@ public class FileHandler<T>
     }
     
     @SuppressWarnings("unchecked")
-    public final T ReadObject(String filename)
+    public T ReadObject(String filename)
     {
         try
         {

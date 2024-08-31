@@ -1,7 +1,11 @@
 package com.models;
 
-public class Wall
+import java.io.Serializable;
+
+public class Wall implements Serializable
 {
+    private static final long serialVersionUID = 1L;
+
     public int Id;
 
     public Pair<Vertex, Vertex> Line;

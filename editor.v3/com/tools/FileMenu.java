@@ -34,8 +34,8 @@ public class FileMenu extends OptionMenu
                 }
             ),
             new ActionButton("New Map", new NewMap(canvas)),
-            new ActionButton("Save Map"),
-            new ActionButton("Load Map"),
+            new ActionButton("Save Map", new SaveMap(canvas)),
+            new ActionButton("Load Map", new LoadMap(canvas)),
             new ActionButton("Export Map")
         };
 

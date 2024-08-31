@@ -1,7 +1,11 @@
 package com.models;
 
-public class Vertex
+import java.io.Serializable;
+
+public class Vertex implements Serializable
 {
+    private static final long serialVersionUID = 1L;
+    
     public int id;
     public float x, y;
 
