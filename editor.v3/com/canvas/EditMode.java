@@ -1,6 +1,6 @@
 package com.canvas;
-    public enum EditMode
-    {
-        ADD,
-        EDIT
-    }
+public enum EditMode
+{
+    ADD,
+    EDIT
+}

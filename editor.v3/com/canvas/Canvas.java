@@ -2,9 +2,14 @@ package com.canvas;
 import javax.swing.*;
 
 import com.models.*;
+import com.models.BSPTree.BSPNode;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 import java.lang.Math;
 
 
@@ -12,6 +17,7 @@ public class Canvas extends JPanel
 {
     public ArrayList<Vertex> Vertices = new ArrayList<Vertex>();
     public ArrayList<Wall> Walls = new ArrayList<Wall>();
+    private BSPTree Tree;
 
     public EditMode Mode = EditMode.ADD;
 
@@ -51,6 +57,8 @@ public class Canvas extends JPanel
         Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(Color.BLACK);
 
+        this.PaintBSPTree(g2d);
+
         // draw walls
         for (Wall w : this.Walls)
         {
@@ -59,6 +67,14 @@ public class Canvas extends JPanel
             g2d.drawLine(
                 (int)w.Line.a.x, (int)w.Line.a.y,
                 (int)w.Line.b.x, (int)w.Line.b.y
+            );
+            
+            // Draw wall id on the wall
+            g2d.setColor(Color.BLACK);
+            g2d.drawString(
+                Integer.toString(w.Id),
+                (int)(w.Line.a.x + w.Line.b.x) / 2,
+                (int)(w.Line.a.y + w.Line.b.y) / 2
             );
         }
         // draw selected walls
@@ -80,6 +96,14 @@ public class Canvas extends JPanel
                 (int)(v.x - VertexDrawRadius), (int)(v.y - VertexDrawRadius), 
                 2 * VertexDrawRadius, 2 * VertexDrawRadius
             );
+
+            // Draw vertex id on the vertex
+            g2d.setColor(Color.GRAY);
+            g2d.drawString(
+                Integer.toString(v.id),
+                (int)v.x - 3,
+                (int)v.y + 3
+            );
         }
 
         // draw outline around SelectedVertices
@@ -92,6 +116,72 @@ public class Canvas extends JPanel
                 2 * (VertexDrawRadius + 1), 2 * (VertexDrawRadius + 1)    
             );
         }
+    }
+
+    public void PaintBSPTree(Graphics2D g2d) 
+    {
+
+        if (this.Tree == null)
+            return;
+
+        for (BSPNode subsect : this.Tree.Subsectors)
+        {
+            Polygon subsectPolygon = new Polygon();
+            // ArrayList<Wall> sortedWalls = subsect.Walls;//this.SortWalls(subsect.Walls);
+            ArrayList<Pair<Integer, Integer>> sortedVertices = this.SortVertices(subsect.Walls);
+            for (Pair<Integer, Integer> point : sortedVertices)
+            {
+                subsectPolygon.addPoint(point.a, point.b);
+            }
+            Random rand = new Random();
+            g2d.setColor(
+                new Color(
+                    64 + rand.nextInt(192 - 64 + 1),
+                    64 + rand.nextInt(192 - 64 + 1),
+                    64 + rand.nextInt(192 - 64 + 1)
+                )
+            );
+            g2d.setStroke(new BasicStroke());
+            g2d.fill(subsectPolygon);
+        }
+    }
+
+    private ArrayList<Pair<Integer, Integer>> SortVertices(ArrayList<Wall> walls) 
+    {
+        // get all unique vertices
+        Set<Vertex> uniqueVertices = new HashSet<>();
+        for (Wall wall : walls) {
+            uniqueVertices.add(wall.Line.a);
+            uniqueVertices.add(wall.Line.b);
+        }
+
+        // get the midpoint of all vertices
+        double sumX = 0, sumY = 0;
+        int count = uniqueVertices.size();
+        for (Vertex v : uniqueVertices) {
+            sumX += v.x;
+            sumY += v.y;
+        }
+        Pair<Integer, Integer> middle = new Pair<Integer, Integer>(
+            (int)(sumX / count), 
+            (int)(sumY / count));
+
+        // order vertices in clockwise order
+        ArrayList<Pair<Integer, Integer>> vertexPairs = new ArrayList<Pair<Integer, Integer>>();
+        for (Vertex v : uniqueVertices) {
+            vertexPairs.add(new Pair<Integer, Integer>((int)v.x, (int)v.y));
+        }
+
+        vertexPairs.sort(new Comparator<Pair<Integer, Integer>>() {
+            @Override
+            public int compare(Pair<Integer, Integer> v1, Pair<Integer, Integer> v2) {
+                double angle1 = Math.atan2(v1.b - middle.b, v1.a - middle.a);
+                double angle2 = Math.atan2(v2.b - middle.b, v2.a - middle.a);
+                return Double.compare(angle1, angle2);
+            }
+        });
+
+        return new ArrayList<Pair<Integer, Integer>>(vertexPairs);
     }
 
     public void AddVertex(int x, int y)
@@ -146,6 +236,13 @@ public class Canvas extends JPanel
         // return false if no wall was selected
         repaint();
         return false;
+    }
+
+    public void SetTree(BSPTree tree) 
+    {
+        this.Tree = tree;
+        this.Walls = tree.Map.Walls;
+        this.Vertices = tree.Map.Vertices;
     }
 
     // Check if a line centered at (x, y) but perpendicular to the wall

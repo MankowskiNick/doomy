@@ -24,7 +24,7 @@ public class Tools extends OptionMenu
         {
             new FileMenu(this.Canvas),
             new WallMenu(this.Canvas),
-            new SectorMenu()
+            new SectorMenu(this.Canvas)
         };
         this.AttachComponents();
         setFocusable(false);

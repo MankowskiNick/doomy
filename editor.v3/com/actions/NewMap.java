@@ -21,10 +21,11 @@ public class NewMap extends ActionWithDialog
     @Override
     public void actionPerformed(ActionEvent e) 
     {
-        Canvas.Vertices = new ArrayList<Vertex>();
-        Canvas.Walls = new ArrayList<Wall>();
-        Canvas.SelectedVertices = new ArrayList<Vertex>();
-        Canvas.SelectedWalls = new ArrayList<Wall>();
-        Canvas.repaint();
+        this.Canvas.Vertices = new ArrayList<Vertex>();
+        this.Canvas.Walls = new ArrayList<Wall>();
+        this.Canvas.SelectedVertices = new ArrayList<Vertex>();
+        this.Canvas.SelectedWalls = new ArrayList<Wall>();
+        this.Canvas.Tree = null;
+        this.Canvas.repaint();
     }
 }

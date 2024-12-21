@@ -15,4 +15,11 @@ public class Vertex implements Serializable
         this.x = x;
         this.y = y;
     }
+
+    public Vertex(Vertex v)
+    {
+        this.id = v.id;
+        this.x = v.x;
+        this.y = v.y;
+    }
 }
