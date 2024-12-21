@@ -25,7 +25,7 @@ public class NewMap extends ActionWithDialog
         this.Canvas.Walls = new ArrayList<Wall>();
         this.Canvas.SelectedVertices = new ArrayList<Vertex>();
         this.Canvas.SelectedWalls = new ArrayList<Wall>();
-        this.Canvas.Tree = null;
+        this.Canvas.SetTree(null);
         this.Canvas.repaint();
     }
 }
